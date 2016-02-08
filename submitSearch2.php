@@ -22,6 +22,7 @@ $dbconn = pg_connect($connectionString)
 
 		<link rel="stylesheet" href="js2/jquery-ui-1.11.4/jquery-ui.css" />
         <link rel="stylesheet" href="js2/jquiext.css" />
+        <link rel="stylesheet" href="../searches/css/style.css" />
          
         <script src="js2/jquery-2.2.0.js"></script>
         <script src="js2/jquery-ui-1.11.4/jquery-ui.js"></script>
@@ -361,11 +362,6 @@ $dbconn = pg_connect($connectionString)
 
         <!--
         <script src="js2/jquery.ui.touch-punch.min.js"></script>
-        <script src="js2/bootstrap.min.js"></script>
-        <script src="js2/bootstrap-select.js"></script>
-        <script src="js2/bootstrap-switch.js"></script>
-        <script src="js2/flatui-checkbox.js"></script>
-        <script src="js2/flatui-radio.js"></script>
         <script src="js2/jquery.tagsinput.js"></script>
         <script src="js2/jquery.placeholder.js"></script>
         <script src="js2/jquery.stacktable.js"></script>
@@ -394,7 +390,15 @@ $dbconn = pg_connect($connectionString)
                 console.log ("ready, yo");
                 
                 var options = d3.select("#xlinkerCombobox").selectAll("option");
-                 console.log ("sort", $("#xlinkerCombobox").sort_select_box(), options);
+                var names= [];
+                options.each (function () {
+                    names.push (d3.select(this).text()); 
+                });
+                options.data(names);
+                options.sort();
+                console.log ("options", options, names);
+                
+                 //console.log ("sort", $("#xlinkerCombobox").sort_select_box(), options);
                 $("#xlinkerCombobox").combobox();
                 $("#enzymeCombobox").combobox();
             });
