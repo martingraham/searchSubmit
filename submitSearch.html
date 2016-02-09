@@ -1,33 +1,68 @@
-<?php
-session_start();
-if (!$_SESSION['session_name']) {
-    header("location:login.html");
-}
-
-$pageName = "New Search";
-
-include('../connectionString.php');
-//open connection
-$dbconn = pg_connect($connectionString)
-        or die('Could not connect: ' . pg_last_error());
-?>
-
 <!DOCTYPE html>
 <html lang="en">
      <head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		      <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
-		<link rel="stylesheet" href="js2/jquery-ui-1.11.4/jquery-ui.css" />
-        <link rel="stylesheet" href="js2/jquiext.css" />
+		      <link rel="stylesheet" href="js2/jquery-ui-1.11.4/jquery-ui.css" />
+        <link rel="stylesheet" href="css/jquiext.css" />
+        <link rel="stylesheet" href="css/datatables.css" />
+        <link rel="stylesheet" href="css/dataTables.jqueryui.css" />
+        <link rel="stylesheet" href="css/submitSearch.css" />
         <link rel="stylesheet" href="../searches/css/style.css" />
          
         <script src="js2/jquery-2.2.0.js"></script>
         <script src="js2/jquery-ui-1.11.4/jquery-ui.js"></script>
         <script src="js2/d3.js"></script>
         <script src="js2/jquiext.js"></script>
+        <script src="js2/jquery.dataTables.js"></script>
+         
+        <script src="js2/dataTables.jqueryui.js"></script>
+
+         
+         
+        <!--TODO - sort out these scripts-->
+        <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+        <!-- <script src="./js2/uploadjs/vendor/jquery.ui.widget.js"></script> -->
+        <!-- The Templates plugin is included to render the upload/download listings -->
+        <!--<script src="http://blueimp.github.io/JavaScript-Templates/js2/tmpl.min.js"></script> -->
+        <!-- The Load Image plugin is included for the preview images and image resizing functionality -->
+        <!--<script src="http://blueimp.github.io/JavaScript-Load-Image/js2/load-image.min.js"></script> -->
+        <!-- The Canvas to Blob plugin is included for image resizing functionality -->
+        <!--<script src="http://blueimp.github.io/JavaScript-Canvas-to-Blob/js2/canvas-to-blob.min.js"></script> -->
+        <!-- Bootstrap JS is not required, but included for the responsive demo navigation -->
+        <!-- <script src="http://blueimp.github.io/cdn/js2/bootstrap.min.js"></script>-->
+        <!-- blueimp Gallery script -->
+        <!--<script src="http://blueimp.github.io/Gallery/js2/blueimp-gallery.min.js"></script> -->
+        <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+        <script src="js2/uploadjs/jquery.iframe-transport.js"></script>
+        <!-- The basic File Upload plugin -->
+        <script src="js2/uploadjs/jquery.fileupload.js"></script>
+        <!-- The File Upload processing plugin -->
+        <script src="js2/uploadjs/jquery.fileupload-process.js"></script>
+        <!-- The File Upload image preview & resize plugin -->
+        <script src="js2/uploadjs/jquery.fileupload-image.js"></script>
+        <!-- The File Upload audio preview plugin -->
+        <script src="js2/uploadjs/jquery.fileupload-audio.js"></script>
+        <!-- The File Upload video preview plugin -->
+        <script src="js2/uploadjs/jquery.fileupload-video.js"></script>
+        <!-- The File Upload validation plugin -->
+        <script src="js2/uploadjs/jquery.fileupload-validate.js"></script>
+        <!-- The File Upload user interface plugin -->
+        <script src="js2/uploadjs/jquery.fileupload-ui.js"></script>
+        <!-- The main application script -->
+        <script src="js2/uploadjs/main.js"></script>
+
+        <!--
+        <script src="js2/jquery.ui.touch-punch.min.js"></script>
+        <script src="js2/jquery.tagsinput.js"></script>
+        <script src="js2/jquery.placeholder.js"></script>
+        <script src="js2/jquery.stacktable.js"></script>
+        <script src="http://vjs.zencdn.net/c/video.js"></script>
+        <script src="js2/application.js"></script> 
+        -->
      </head>
      <body>
         <div class="page-container">
@@ -98,24 +133,12 @@ $dbconn = pg_connect($connectionString)
 
                 <div class="acquisitions-previous" style="display:none;">
                     <h3>Previous Acquisitions</h3>
-                    <br/>
-                    <?php
-                    $query = "SELECT name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";
-                    $result = pg_query($query) or die('Query failed: ' . pg_last_error());
-                    print_results($result, "previousAcqui");
-                    // free resultset
-                    pg_free_result($result);
-                    ?>
+                    <div id="previousAcqui"></div>
+                    <!-- insert data here -->
+
                     <script>
                         /* 
-                        $('#previousAcqui').dataTable( {
-                            "bPaginate": true,
-                            "bLengthChange": false,
-                            "bFilter": true,
-                            "bSort": false,
-                            "bInfo": true,
-                            "bAutoWidth": true
-                        } );
+     
                         */
                     </script>
                 </div>
@@ -185,15 +208,9 @@ $dbconn = pg_connect($connectionString)
                 </div>
 
                 <div class="sequence-db-previous" style="display:none;">
-                    <h3>Previous Acquisitions</h3>
+                    <h3>Previous Sequences</h3>
                     <br/>
-                    <?php
-                    $query = "SELECT name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";
-                    $result = pg_query($query) or die('Query failed: ' . pg_last_error());
-                    print_results($result, "previousSeqDb");
-                    // free resultset
-                    pg_free_result($result);
-                    ?>
+                    <!-- insert data here -->
                     <script>
                         //                $(document).ready(function() {
                         /*
@@ -211,35 +228,33 @@ $dbconn = pg_connect($connectionString)
                 </div>
 
                 <!--                <form   name="login_form" method="post" action="searchParameters.php">-->
-                <div class="search-params-group">
+                <div class="search-params-group bgroup">
 
                     <h3>Search Parameters</h3>
-                    <div class="left-column">
-                        <div class="mstol-line">
-                            <h5>MS TOLERANCE</h5>
-                            <input class="mstol" type="text" value="" placeholder="4" />
-                            <div class="switch" data-on-label="ppm" data-off-label="Da"  data-on="success" data-off="warning">
-                                <input type="checkbox" checked/>
-                            </div>
-                        </div> <!-- MSTOL LINE -->
-                        <div class="crosslinker-enzyme-line">
-                            <h5>CROSS-LINKER</h5>
-                            <div class="cross-linker">
-                                <select name="herolist" id="xlinkerCombobox">
-                                    <?php
-                                        $query = "SELECT id, name from crosslinker;";
-                                        $result = pg_query($query) or die('Query failed: ' . pg_last_error());
-                                        resultsAsOptions($result);
-                                        // free resultset
-                                        pg_free_result($result);
-                                    ?>
-                                </select>
-                            </div> <!-- CROSS-LINKER -->
-                        </div> <!-- CROSSLINKER-ENZYME-LINE -->
-                        <div class="cleavage-losses-line">
-                            <h5>MISSED CLEAVAGES</h5>
-                            <input type="text" value="" placeholder="4" />
-                        </div> <!-- CLEAVAGE LOSSES LINE -->
+                    
+                    <div width="50%">
+                        <div class="paramSetting" id="paramTolerance">
+                            <P>Ms Tolerance</P>
+                        </div>
+                        <div class="paramSetting" id="paramTolerance2">
+                            <P>Ms2 Tolerance</P>
+                        </div>
+                        <div class="paramSetting" id="paramMissedCleavages">
+                            <P>Missed cleavages</P>
+                        </div>
+                    </div>
+                    <div width="50%">
+                        <div class="paramSetting">
+                            <P>Cross-Linker</P>
+                            <select name="herolist" id="xlinkerCombobox"></select>
+                        </div>
+                        <div class="paramSetting">
+                            <P>Enzyme</P>
+                            <select name="herolist" id="enzymeCombobox"></select>
+                        </div>
+                    </div>
+                    <div>
+                        
                         <div class="mods-line">
                             <h5>FIXED MODS</h5>
                             <div size="4" class="fixed-mods">
@@ -259,28 +274,9 @@ $dbconn = pg_connect($connectionString)
                         </div> <!-- MODS LINE -->
                     </div> <!-- LEFT COLUMN -->
                     <div class="right-column">
-                        <div class="mstol-line">
-                            <div class="ms2-grouped">
-                                <h5>MS2 TOLERANCE</h5>
-                                <input class="mstol" type="text" value="" placeholder="20" />
-                                <div class="switch" data-on-label="ppm" data-off-label="Da"  data-on="success" data-off="warning">
-                                    <input type="checkbox" checked/>
-                                </div>
-                            </div> <!-- MS2 GROUPED -->
-                        </div> <!-- MSTOL LINE -->
+                        
                         <div class="crosslinker-enzyme-line">
-                            <h5>ENZYME</h5>
-                            <div class="enzyme">
-                                <select name="herolist" id="enzymeCombobox">
-                                    <?php
-                                    $query = "SELECT id, name from enzyme;";
-                                    $result = pg_query($query) or die('Query failed: ' . pg_last_error());
-                                    resultsAsOptions($result);
-                                    // free resultset
-                                    pg_free_result($result);
-                                    ?>
-                                </select>
-                            </div> <!-- ENZYME -->
+                            
                         </div>  <!-- CROSSLINKER-ENZYME-LINE -->
                         <div class="cleavage-losses-line">
                             <h5 class="losses-title">LOSSES</h5>
@@ -325,50 +321,6 @@ $dbconn = pg_connect($connectionString)
             </div> <!-- MAIN BODY -->
         </div> <!-- PAGE CONTAINER -->
 
-        <!--TODO - sort out these scripts-->
-        <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
-        <!-- <script src="./js2/uploadjs/vendor/jquery.ui.widget.js"></script> -->
-        <!-- The Templates plugin is included to render the upload/download listings -->
-        <!--<script src="http://blueimp.github.io/JavaScript-Templates/js2/tmpl.min.js"></script> -->
-        <!-- The Load Image plugin is included for the preview images and image resizing functionality -->
-        <!--<script src="http://blueimp.github.io/JavaScript-Load-Image/js2/load-image.min.js"></script> -->
-        <!-- The Canvas to Blob plugin is included for image resizing functionality -->
-        <!--<script src="http://blueimp.github.io/JavaScript-Canvas-to-Blob/js2/canvas-to-blob.min.js"></script> -->
-        <!-- Bootstrap JS is not required, but included for the responsive demo navigation -->
-<!--            <script src="http://blueimp.github.io/cdn/js2/bootstrap.min.js"></script>-->
-        <!-- blueimp Gallery script -->
-        <!--<script src="http://blueimp.github.io/Gallery/js2/blueimp-gallery.min.js"></script> -->
-        <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
-        <script src="js2/uploadjs/jquery.iframe-transport.js"></script>
-        <!-- The basic File Upload plugin -->
-        <script src="js2/uploadjs/jquery.fileupload.js"></script>
-        <!-- The File Upload processing plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-process.js"></script>
-        <!-- The File Upload image preview & resize plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-image.js"></script>
-        <!-- The File Upload audio preview plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-audio.js"></script>
-        <!-- The File Upload video preview plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-video.js"></script>
-        <!-- The File Upload validation plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-validate.js"></script>
-        <!-- The File Upload user interface plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-ui.js"></script>
-        <!-- The main application script -->
-        <script src="js2/uploadjs/main.js"></script>
-
-
-        <!-- Load JS here for greater good =============================-->
-
-        <!--
-        <script src="js2/jquery.ui.touch-punch.min.js"></script>
-        <script src="js2/jquery.tagsinput.js"></script>
-        <script src="js2/jquery.placeholder.js"></script>
-        <script src="js2/jquery.stacktable.js"></script>
-        <script src="http://vjs.zencdn.net/c/video.js"></script>
-        -->
-        <!-- <script src="js2/application.js"></script> -->
-
         <script>
             $(document).ready(function () {
                 /*
@@ -387,20 +339,113 @@ $dbconn = pg_connect($connectionString)
                     }
                 });
                 */
-                console.log ("ready, yo");
+            
+                // http://stackoverflow.com/questions/23740548/how-to-pass-variables-and-data-from-php-to-javascript
+                var oReq = new XMLHttpRequest(); //New request object
+                oReq.onload = function() {
+                    //This is where you handle what to do with the response.
+                    //The actual data is found on this.responseText
+                    var result = this.responseText;
+                    var data = JSON.parse (result);
+                    
+                    var populateOptionLists = [
+                        {data: data.xlinkers, domid: "#xlinkerCombobox"},
+                        {data: data.enzymes, domid: "#enzymeCombobox"},
+                    ];
+                    
+                    populateOptionLists.forEach (function (poplist) {
+                        var dataJoin = d3.select(poplist.domid).selectAll("option")
+                            .data(poplist.data, function(d) { return d.id; })
+                        ;
+
+                        dataJoin.enter().append("option")
+                            .attr("value", function(d) { return d.id; })
+                            .text(function(d) { return d.name; })
+                        ;
+
+                        console.log ("$", $, $(poplist.domid));
+                        $(poplist.domid).combobox();
+                    });
+                    
+                    var prevAcqData = data.previousAcqui;
+                    var sel = d3.select("#previousAcqui");
+                    sel.html ("<TABLE><THEAD><TR></TR></THEAD><TBODY></TBODY></TABLE>");
+                    sel.select("table").attr("id", "previousAcqui"+"Table");
+                    var hrow = sel.select("tr");
+                    var headers = d3.keys(prevAcqData[0]);
+                    headers.push("selected");
+                    console.log ("headers", headers);
+                    hrow.selectAll("th").data(headers).enter().append("th").text(function(d) { return d; });
+                    
+                    var tbody = sel.select("tbody");
+                    var rowJoin = tbody.selectAll("tr").data(prevAcqData, function(d) { return d.name; });
+                    var newRows = rowJoin.enter().append("tr");
+                    
+                    var cellJoin = newRows.selectAll("td").data (function(d) { return d3.values(d); });
+                    cellJoin.enter().append("td").text(function(d) { return d; })
+                    
+                    newRows.append ("td").append("input")
+                        .attr ("type", "checkbox")
+                        .attr ("id", function(d) { return d.name; })
+                    ;
+                    
+                    $('#previousAcquiTable').dataTable( {
+                        "paging": true,
+                        "jQueryUI": true,
+                        "ordering": true,
+
+                    } );
+                    
+                    
+                    
+                    var numberInputSettings = [
+                        {domid: "#paramTolerance", min: 0, default: 4,},
+                        {domid: "#paramTolerance2", min: 0, default: 20,},
+                        {domid: "#paramMissedCleavages", min: 0, default: 4,},
+                    ];
+                    numberInputSettings.forEach (function (settings) {
+                        var elem = d3.select(settings.domid);
+                        var iid = settings.domid.slice(1)+"Value";
+                        var inputElem = elem.append("input")
+                            .attr("name", iid)
+                            .attr("id", iid)
+                        ;
+                        
+                        var spinner = $("#"+iid).spinner({
+                            min: settings.min,
+                            max: settings.max,
+                            value: settings.default,
+                        });
+                        
+                        $("#"+iid).spinner("value", settings.default);
+                    });
+                    
+                    
+                    
+                    var unitSettings = [
+                        {domid: "#paramTolerance", units: ["ppm", "Da"], default: "ppm",},
+                        {domid: "#paramTolerance2", units: ["ppm", "Da"], default: "ppm",},
+                    ];
+                    unitSettings.forEach (function (settings) {
+                        var elem = d3.select(settings.domid);
+                        var selElem = elem.append("select")
+                            .attr("name", settings.domid.slice(1)+"Units")
+                            .attr("id", settings.domid.slice(1)+"Units")
+                        ;
+                        var optionJoin = selElem.selectAll("option").data(settings.units);
+                        optionJoin.enter()
+                            .append("option")
+                            .text (function(d) { return d; })
+                            .property ("selected", function(d) { return d === settings.default; })
+                        ;
+                    });
+                    
+
+                };
+                oReq.open("get", "populate.php", true);     // true == asynchronous call
+                oReq.send();
+
                 
-                var options = d3.select("#xlinkerCombobox").selectAll("option");
-                var names= [];
-                options.each (function () {
-                    names.push (d3.select(this).text()); 
-                });
-                options.data(names);
-                options.sort();
-                console.log ("options", options, names);
-                
-                 //console.log ("sort", $("#xlinkerCombobox").sort_select_box(), options);
-                $("#xlinkerCombobox").combobox();
-                $("#enzymeCombobox").combobox();
             });
         </script>
 
@@ -477,43 +522,3 @@ $dbconn = pg_connect($connectionString)
         {% } %}
     </script>
 </html>
-
-<?php
-// free resultset
-pg_free_result($result);
-
-//close connection
-pg_close($dbconn);
-
-// Printing results in HTML, assuming id and name field in result set
-function resultsAsOptions($result) {
-    echo "<p>".$result."</p>";
-    while ($line = pg_fetch_array($result, null, PGSQL_ASSOC)) {
-        echo "\t<option value='" . $line['id'] . "'>" . $line['name'] . "</option>\n";
-    }
-}
-
-// Printing results in HTML
-function print_results($result, $tableId) {
-    $count = 0;
-    echo "<table id='" . $tableId . "'>\n<thead>";
-    echo "\t<tr>\n";
-    for ($field_number = 0; $field_number < pg_num_fields($result); $field_number++) {
-        echo "\t\t<th>" . pg_field_name($result, $field_number) . "</th>\n";
-    }
-    echo "\t\t<th>Selected</th>\n";
-    echo "\t</tr>\n\t</thead>\n\t<tbody>";
-    while ($line = pg_fetch_array($result, null, PGSQL_ASSOC)) {
-        echo "\t<tr>\n";
-        foreach ($line as $col_value) {
-            echo "\t\t<td>$col_value</td>\n";
-        }
-        echo "\t\t<td><input type='checkbox'></td>\n";
-        echo "\t</tr>\n";
-        $count++;
-    }
-    echo "</tbody>\n</table>\n";
-//    echo '<p>(' . $count . ' rows)</p>';
-}
-?>
-
