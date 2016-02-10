@@ -4,22 +4,22 @@
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-		      <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
-		      <link rel="stylesheet" href="js2/jquery-ui-1.11.4/jquery-ui.css" />
-        <link rel="stylesheet" href="css/jquiext.css" />
-        <link rel="stylesheet" href="css/datatables.css" />
-        <link rel="stylesheet" href="css/dataTables.jqueryui.css" />
+        <link rel="stylesheet" href="vendor/js/jquery-ui-1.11.4/jquery-ui.css" />
+        <link rel="stylesheet" href="vendor/css/datatables.css" />
+        <!-- <link rel="stylesheet" href="vendor/css/dataTables.jqueryui.css" /> -->
+        <link rel="stylesheet" href="vendor/css/multiple-select.css" />
+        <link rel="stylesheet" href="vendor/css/jquiext.css" />
         <link rel="stylesheet" href="css/submitSearch.css" />
         <link rel="stylesheet" href="../searches/css/style.css" />
          
-        <script src="js2/jquery-2.2.0.js"></script>
-        <script src="js2/jquery-ui-1.11.4/jquery-ui.js"></script>
-        <script src="js2/d3.js"></script>
-        <script src="js2/jquiext.js"></script>
-        <script src="js2/jquery.dataTables.js"></script>
-         
-        <script src="js2/dataTables.jqueryui.js"></script>
+        <script src="vendor/js/jquery-2.2.0.js"></script>
+        <script src="vendor/js/jquery-ui-1.11.4/jquery-ui.js"></script>
+        <script src="vendor/js/d3.js"></script>
+        <script src="js/jquiext.js"></script>
+        <script src="vendor/js/jquery.dataTables.js"></script>
+        <script src="vendor/js/dataTables.jqueryui.js"></script>
+        <script src="vendor/js/multiple-select.js"></script>
 
          
          
@@ -37,23 +37,23 @@
         <!-- blueimp Gallery script -->
         <!--<script src="http://blueimp.github.io/Gallery/js2/blueimp-gallery.min.js"></script> -->
         <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
-        <script src="js2/uploadjs/jquery.iframe-transport.js"></script>
+        <script src="vendor/js/uploadjs/jquery.iframe-transport.js"></script>
         <!-- The basic File Upload plugin -->
-        <script src="js2/uploadjs/jquery.fileupload.js"></script>
+        <script src="vendor/js/uploadjs/jquery.fileupload.js"></script>
         <!-- The File Upload processing plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-process.js"></script>
+        <script src="vendor/js/uploadjs/jquery.fileupload-process.js"></script>
         <!-- The File Upload image preview & resize plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-image.js"></script>
+        <script src="vendor/js/uploadjs/jquery.fileupload-image.js"></script>
         <!-- The File Upload audio preview plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-audio.js"></script>
+        <script src="vendor/js/uploadjs/jquery.fileupload-audio.js"></script>
         <!-- The File Upload video preview plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-video.js"></script>
+        <script src="vendor/js/uploadjs/jquery.fileupload-video.js"></script>
         <!-- The File Upload validation plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-validate.js"></script>
+        <script src="vendor/js/uploadjs/jquery.fileupload-validate.js"></script>
         <!-- The File Upload user interface plugin -->
-        <script src="js2/uploadjs/jquery.fileupload-ui.js"></script>
+        <script src="vendor/js/uploadjs/jquery.fileupload-ui.js"></script>
         <!-- The main application script -->
-        <script src="js2/uploadjs/main.js"></script>
+        <script src="vendor/js/uploadjs/main.js"></script>
 
         <!--
         <script src="js2/jquery.ui.touch-punch.min.js"></script>
@@ -72,13 +72,13 @@
                     <h3>Acquisition</h3>
                     <div class="left-column">
                         <div class="upload-button">
-                            <a onClick="$('.acquisitions-group').hide();$('.acquisitions-upload').show();" class="btn btn-large btn-block btn-inverse">Upload</a>
+                            <a onclick="$('.acquisitions-group').hide();$('.acquisitions-upload').show();" class="btn btn-large btn-block btn-inverse">Upload</a>
                         </div> <!-- UPLOAD BUTTON -->
                     </div> <!-- LEFT COLUMN -->
                     <p class="ortext">Or</p>
                     <div class="right-column">
                         <div class="browse-button">
-                            <a onClick="$('.acquisitions-group').hide();$('.acquisitions-previous').show();" class="btn btn-large btn-block btn-inverse">Browse previous</a>
+                            <a onclick="$('.acquisitions-group').hide();$('.acquisitions-previous').show();" class="btn btn-large btn-block btn-inverse">Browse previous</a>
                         </div> <!-- BROWSE BUTTON -->
                     </div> <!-- RIGHT COLUMN -->
                 </div> <!-- ACQUISITIONS GROUP -->
@@ -86,7 +86,7 @@
                 <div class="acquisitions-upload" style="display:none;">
                     <h3>Acquisition Upload</h3>
                     <br/>
-                    <input class="acquis-name" type="text" value="" placeholder="Type acquisition name here" /></input>
+                    <input class="acquis-name" type="text" value="" placeholder="Type acquisition name here"></input>
                     <!-- The file upload form used as target for the file upload widget -->
                     <form class="fileupload" action="./upload/uploadIndex.php" method="POST" enctype="multipart/form-data">
                         <!-- Redirect browsers with JavaScript disabled to the origin page -->
@@ -134,13 +134,6 @@
                 <div class="acquisitions-previous" style="display:none;">
                     <h3>Previous Acquisitions</h3>
                     <div id="previousAcqui"></div>
-                    <!-- insert data here -->
-
-                    <script>
-                        /* 
-     
-                        */
-                    </script>
                 </div>
 
 
@@ -148,13 +141,13 @@
                     <h3>Sequence Database</h3>
                     <div class="left-column">
                         <div class="upload-button">
-                            <a  onClick="$('.sequence-db-group').hide();$('.sequence-db-upload').show();" href="#sequenceupload" class="btn btn-large btn-block btn-inverse">Upload</a>
+                            <a onclick="$('.sequence-db-group').hide();$('.sequence-db-upload').show();" href="#sequenceupload" class="btn btn-large btn-block btn-inverse">Upload</a>
                         </div> <!-- UPLOAD BUTTON -->
                     </div> <!-- LEFT COLUMN -->
                     <p class="ortext">Or</p>
                     <div class="right-column">
                         <div class="browse-button">
-                            <a onClick="$('.sequence-db-group').hide();$('.sequence-db-previous').show();" class="btn btn-large btn-block btn-inverse">Browse previous</a>
+                            <a onclick="$('.sequence-db-group').hide();$('.sequence-db-previous').show();" class="btn btn-large btn-block btn-inverse">Browse previous</a>
                         </div> <!-- BROWSE BUTTON -->
                     </div> <!-- RIGHT COLUMN -->
                 </div> <!-- SEQUENCE DB GROUP -->
@@ -162,7 +155,7 @@
                 <div class="sequence-db-upload" style="display:none;">
                     <h3>Sequence Database Upload</h3>
                     <br/>
-                    <input class="sequence-db-name" type="text" value="" placeholder="Type sequence db name here..." /></input>
+                    <input class="sequence-db-name" type="text" value="" placeholder="Type sequence db name here..."></input>
                     <!-- The file upload form used as target for the file upload widget -->
                     <form class="fileupload" action="upload/uploadIndex.php" method="POST" enctype="multipart/form-data">
                         <!-- Redirect browsers with JavaScript disabled to the origin page -->
@@ -209,103 +202,58 @@
 
                 <div class="sequence-db-previous" style="display:none;">
                     <h3>Previous Sequences</h3>
-                    <br/>
-                    <!-- insert data here -->
-                    <script>
-                        //                $(document).ready(function() {
-                        /*
-                        $('#previousSeqDb').dataTable( {
-                            "bPaginate": true,
-                            "bLengthChange": false,
-                            "bFilter": true,
-                            "bSort": false,
-                            "bInfo": true,
-                            "bAutoWidth": true
-                        } );
-                        */
-                        //} );
-                    </script>
+                    <div id="previousSeq"></div>
                 </div>
 
                 <!--                <form   name="login_form" method="post" action="searchParameters.php">-->
-                <div class="search-params-group bgroup">
+                <div class="bgroup">
 
                     <h3>Search Parameters</h3>
                     
-                    <div width="50%">
-                        <div class="paramSetting" id="paramTolerance">
+                    <div class="row">
+                        <div class="col-6 paramSetting" id="paramCrossLinker">
+                            <P>Cross-Linker</P>
+                        </div>
+                        <div class="col-6 paramSetting" id="paramEnzyme">
+                            <P>Enzyme</P>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-4 paramSetting" id="paramTolerance">
                             <P>Ms Tolerance</P>
                         </div>
-                        <div class="paramSetting" id="paramTolerance2">
+                        <div class="col-4 paramSetting" id="paramTolerance2">
                             <P>Ms2 Tolerance</P>
                         </div>
-                        <div class="paramSetting" id="paramMissedCleavages">
+                        <div class="col-4 paramSetting" id="paramMissedCleavages">
                             <P>Missed cleavages</P>
                         </div>
                     </div>
-                    <div width="50%">
-                        <div class="paramSetting">
-                            <P>Cross-Linker</P>
-                            <select name="herolist" id="xlinkerCombobox"></select>
+                    
+                    <div class="row"> 
+                        <div class="col-6 paramSetting" id="paramFixedMods">
+                            <P>Fixed Mods</P>
                         </div>
-                        <div class="paramSetting">
-                            <P>Enzyme</P>
-                            <select name="herolist" id="enzymeCombobox"></select>
+                        <div class="col-6 paramSetting" id="paramVarMods">
+                            <P>Var Mods</P>
                         </div>
                     </div>
-                    <div>
-                        
-                        <div class="mods-line">
-                            <h5>FIXED MODS</h5>
-                            <div size="4" class="fixed-mods">
-                                <label class="checkbox" for="checkbox1">
-                                    <input type="checkbox" value="" id="checkbox1" data-toggle="checkbox">
-                                    Oxidation (M)
-                                </label>
-                                <label class="checkbox" for="checkbox1">
-                                    <input type="checkbox" value="" id="checkbox1" data-toggle="checkbox">
-                                    Carbamidomethylation
-                                </label>
-                                <label class="checkbox" for="checkbox1">
-                                    <input type="checkbox" value="" id="checkbox1" data-toggle="checkbox">
-                                    Arg 6
-                                </label>
-                            </div> <!-- FIXED MODS -->
-                        </div> <!-- MODS LINE -->
-                    </div> <!-- LEFT COLUMN -->
-                    <div class="right-column">
-                        
-                        <div class="crosslinker-enzyme-line">
-                            
-                        </div>  <!-- CROSSLINKER-ENZYME-LINE -->
-                        <div class="cleavage-losses-line">
-                            <h5 class="losses-title">LOSSES</h5>
-                            <div class="switch" data-on-label="On" data-off-label="Off" style="margin-top:15px;">
-                                <input type="checkbox"/>
-                            </div>
-                        </div> <!-- CLEAVAGE LOSSES LINE -->
-                        <div class="mods-line">
-                            <h5 class="varmods-title">VAR MODS</h5>
-                            <div class="var-mods">
-                                <label class="checkbox" for="checkbox1">
-                                    <input type="checkbox" value="" id="checkbox1" data-toggle="checkbox">
-                                    Oxidation (M)
-                                </label>
-                                <label class="checkbox" for="checkbox1">
-                                    <input type="checkbox" value="" id="checkbox1" data-toggle="checkbox">
-                                    Carbamidomethylation
-                                </label>
-                                <label class="checkbox" for="checkbox1">
-                                    <input type="checkbox" value="" id="checkbox1" data-toggle="checkbox">
-                                    Arg 6
-                                </label>
-                            </div> <!-- VAR MODS -->
-                        </div> <!-- MODS LINE -->
-                    </div> <!-- RIGHT COLUMN -->
+                    
+                    <div class="row">
+                        <div class="col-6 paramSetting" id="paramIons">
+                            <P>Ions</P>
+                        </div>
+                        <div class="col-6 paramSetting" id="paramLosses">
+                            <P>Losses</P>
+                        </div>
+                    </div>
+                    
+                    
                 </div> <!-- SEARCH PARAMS GROUP -->
                 <div class="search-notes-group">
                     <h3>Search Notes</h3>
-                    <textarea class="search-notes" type="text" value="" placeholder="Click here to start typing..." /></textarea>
+                    <textarea class="search-notes" type="text" value="" placeholder="Click here to start typing..."></textarea>
                     <!-- SUBMIT BUTTON -->
 <!--                        <input id="submitSearch" name="Submit" value="Submit Search" type="submit" class="btn btn-primary btn-large btn-block"/>-->
 
@@ -347,14 +295,29 @@
                     //The actual data is found on this.responseText
                     var result = this.responseText;
                     var data = JSON.parse (result);
+                    console.log ("data", data);
                     
+                    
+                    // Make combobox and multiple selection elements
+                    // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                     var populateOptionLists = [
-                        {data: data.xlinkers, domid: "#xlinkerCombobox"},
-                        {data: data.enzymes, domid: "#enzymeCombobox"},
+                        {data: data.xlinkers, domid: "#paramCrossLinker", filter: true, multiple: false, placeHolder: "Select A Cross Linker",},
+                        {data: data.enzymes, domid: "#paramEnzyme", filter: true, multiple: false, placeHolder: "Select An Enzyme",},
+                        {data: data.modifications, domid: "#paramFixedMods", multiple: true, filter: true, placeHolder: "Select Modifications",},
+                        {data: data.modifications, domid: "#paramVarMods", multiple: true, filter: true, placeHolder: "Select Modifications",},
+                        {data: data.ions, domid: "#paramIons", multiple: true, filter: false, placeHolder: "Select At Least One Ion",},
+                        {data: data.losses, domid: "#paramLosses", multiple: true, filter: false, placeHolder: "Select At Least One Loss",},
                     ];
-                    
                     populateOptionLists.forEach (function (poplist) {
-                        var dataJoin = d3.select(poplist.domid).selectAll("option")
+                        var elem = d3.select(poplist.domid);
+                        var baseId = poplist.domid.slice(1)+"Select";
+                        var selElem = elem.append("select")
+                            .attr("id", baseId)
+                            .attr("name", "heroList")
+                            .property("multiple", poplist.multiple)
+                        ;
+                        
+                        var dataJoin = selElem.selectAll("option")
                             .data(poplist.data, function(d) { return d.id; })
                         ;
 
@@ -363,41 +326,68 @@
                             .text(function(d) { return d.name; })
                         ;
 
-                        console.log ("$", $, $(poplist.domid));
-                        $(poplist.domid).combobox();
+                        //if (poplist.multiple) {
+                            $("#"+baseId).multipleSelect({ 
+                                single: !poplist.multiple,
+                                filter: poplist.filter, 
+                                placeholder: poplist.placeHolder,
+                                multiple: true, // this is to show multiple options per row, not to do with multiple selections (that's single)
+                                width: 450,
+                                multipleWidth: 200,
+                            });
+                            elem.selectAll(".ms-choice")
+                                .classed("ui-widget", true)
+                                .classed("ui-state-default", true)
+                            ;
+                        
+
+                        /*
+                        } else {
+                            $("#"+baseId).combobox();
+                        }
+                        */
                     });
                     
-                    var prevAcqData = data.previousAcqui;
-                    var sel = d3.select("#previousAcqui");
-                    sel.html ("<TABLE><THEAD><TR></TR></THEAD><TBODY></TBODY></TABLE>");
-                    sel.select("table").attr("id", "previousAcqui"+"Table");
-                    var hrow = sel.select("tr");
-                    var headers = d3.keys(prevAcqData[0]);
-                    headers.push("selected");
-                    console.log ("headers", headers);
-                    hrow.selectAll("th").data(headers).enter().append("th").text(function(d) { return d; });
                     
-                    var tbody = sel.select("tbody");
-                    var rowJoin = tbody.selectAll("tr").data(prevAcqData, function(d) { return d.name; });
-                    var newRows = rowJoin.enter().append("tr");
                     
-                    var cellJoin = newRows.selectAll("td").data (function(d) { return d3.values(d); });
-                    cellJoin.enter().append("td").text(function(d) { return d; })
                     
-                    newRows.append ("td").append("input")
-                        .attr ("type", "checkbox")
-                        .attr ("id", function(d) { return d.name; })
-                    ;
-                    
-                    $('#previousAcquiTable').dataTable( {
-                        "paging": true,
-                        "jQueryUI": true,
-                        "ordering": true,
+                    // Make previous tables
+                    var previousSettings = [
+                        {domid: "#previousAcqui", data: data.previousAcqui,},
+                        {domid: "#previousSeq", data: data.previousSeq,},
+                    ];
+                    previousSettings.forEach (function (psetting) {
+                        var sel = d3.select (psetting.domid);
+                        var baseId = psetting.domid.slice(1)+"Table";
+                        sel.html ("<TABLE><THEAD><TR></TR></THEAD><TBODY></TBODY></TABLE>");
+                        sel.select("table").attr("id", baseId);
+                        var hrow = sel.select("tr");
+                        var headers = d3.keys(psetting.data[0]);
+                        headers.push("selected");
+                        hrow.selectAll("th").data(headers).enter().append("th").text(function(d) { return d; });
 
-                    } );
+                        var tbody = sel.select("tbody");
+                        var rowJoin = tbody.selectAll("tr").data(psetting.data, function(d) { return d.name; });
+                        var newRows = rowJoin.enter().append("tr");
+
+                        var cellJoin = newRows.selectAll("td").data (function(d) { return d3.values(d); });
+                        cellJoin.enter().append("td").text(function(d) { return d; })
+
+                        newRows.append ("td").append("input")
+                            .attr ("type", "checkbox")
+                            .attr ("id", function(d) { return d.name; })
+                        ;
+
+                        $("#"+baseId).dataTable ({
+                            "paging": true,
+                            "jQueryUI": true,
+                            "ordering": true,
+                        });
+                    });
+  
+                
                     
-                    
-                    
+                    // Make number inputs
                     var numberInputSettings = [
                         {domid: "#paramTolerance", min: 0, default: 4,},
                         {domid: "#paramTolerance2", min: 0, default: 20,},
@@ -418,19 +408,26 @@
                         });
                         
                         $("#"+iid).spinner("value", settings.default);
+                        
+                        elem.selectAll(".ui-spinner")
+                            .style("vertical-align", "baseline")    // baseline is different to selectmenu, causing vertical offset
+                            .style("width", "5em")
+                        ;
                     });
                     
                     
                     
+                    // Make unit drop-downs
                     var unitSettings = [
                         {domid: "#paramTolerance", units: ["ppm", "Da"], default: "ppm",},
                         {domid: "#paramTolerance2", units: ["ppm", "Da"], default: "ppm",},
                     ];
                     unitSettings.forEach (function (settings) {
                         var elem = d3.select(settings.domid);
+                        var baseId = settings.domid.slice(1)+"Units";
                         var selElem = elem.append("select")
-                            .attr("name", settings.domid.slice(1)+"Units")
-                            .attr("id", settings.domid.slice(1)+"Units")
+                            .attr("name", baseId)
+                            .attr("id", baseId)
                         ;
                         var optionJoin = selElem.selectAll("option").data(settings.units);
                         optionJoin.enter()
@@ -438,8 +435,39 @@
                             .text (function(d) { return d; })
                             .property ("selected", function(d) { return d === settings.default; })
                         ;
+                        
+                        $("#"+baseId).selectmenu();
+                        
+                        elem.selectAll(".ui-selectmenu-button").style("width", null);   // calculated width in selectmenu is dodgy, kill it
                     });
                     
+                    
+                    
+                    // Make checkbox/radio choice controls
+                    var buttonGroups = [
+                        //{domid: "#paramIons", choices: data.ions, type: "radio", nameFunc: function(d) { return d.name; },},
+                        //{domid: "#paramLosses", choices: data.losses, type: "radio", nameFunc: function(d) { return d.name; },},
+                    ];
+                    buttonGroups.forEach (function (buttonGroup) {
+                        var elem = d3.select (buttonGroup.domid);
+                        var baseId = buttonGroup.domid.slice(1)+"Choice";
+                        var choiceJoin = elem.selectAll("input").data(buttonGroup.choices);
+                        choiceJoin.enter()
+                            .append ("label")
+                            .attr ("for", function(d,i) { return baseId+i; })
+                            .text (buttonGroup.nameFunc)
+                        ;
+                        choiceJoin.enter()
+                            .append("input")
+                            .attr ("type", buttonGroup.type)
+                            .attr ("id", function(d,i) { return baseId+i; })
+                            .attr ("name", buttonGroup.type === "radio" ? baseId : null)
+                        ;
+                        
+                        $(buttonGroup.domid).buttonset();
+                    });
+     
+
 
                 };
                 oReq.open("get", "populate.php", true);     // true == asynchronous call

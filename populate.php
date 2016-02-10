@@ -18,6 +18,13 @@ $previousAcqui = resultsAsArray($result);
 // free resultset
 pg_free_result($result);
 
+// Get previous acquisitions from DB
+$query = "SELECT name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";
+$result = pg_query($query) or die('Query failed: ' . pg_last_error());
+$previousSeq = resultsAsArray($result);
+// free resultset
+pg_free_result($result);
+
 // Get crosslinkers from DB
 $query = "SELECT id, name from crosslinker WHERE name NOT LIKE '#%' ORDER by name;";
 $result = pg_query($query) or die('Query failed: ' . pg_last_error());
@@ -29,6 +36,27 @@ pg_free_result($result);
 $query = "SELECT id, name from enzyme ORDER by name;";
 $result = pg_query($query) or die('Query failed: ' . pg_last_error());
 $enzymes = resultsAsArray($result);
+// free resultset
+pg_free_result($result);
+
+// Get modifications from DB
+$query = "SELECT id, name from modification WHERE name NOT LIKE '#%' ORDER by name;";
+$result = pg_query($query) or die('Query failed: ' . pg_last_error());
+$mods = resultsAsArray($result);
+// free resultset
+pg_free_result($result);
+
+// Get ions from DB
+$query = "SELECT id, name from ion WHERE name NOT LIKE '#%' ORDER by name;";
+$result = pg_query($query) or die('Query failed: ' . pg_last_error());
+$ions = resultsAsArray($result);
+// free resultset
+pg_free_result($result);
+
+// Get losses from DB
+$query = "SELECT id, name from loss WHERE name NOT LIKE '#%' ORDER by name;";
+$result = pg_query($query) or die('Query failed: ' . pg_last_error());
+$losses = resultsAsArray($result);
 // free resultset
 pg_free_result($result);
 
@@ -47,6 +75,9 @@ function resultsAsArray($result) {
     return $arr;
 }
 
-echo json_encode (array("xlinkers" => $xlinkers, "enzymes" => $enzymes, "previousAcqui" => $previousAcqui));
+echo json_encode (array(
+    "xlinkers" => $xlinkers, "enzymes" => $enzymes, "previousAcqui" => $previousAcqui, "previousSeq" => $previousSeq,
+    "ions" => $ions, "modifications" => $mods, "losses" => $losses
+));
 
 ?>

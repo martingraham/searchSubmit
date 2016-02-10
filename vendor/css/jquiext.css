@@ -3,9 +3,11 @@
     overflow-y: auto;
     /* prevent horizontal scrollbar */
     overflow-x: hidden;
+    /*
     -webkit-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.6);
     -moz-box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.6);
     box-shadow: 10px 10px 5px 0px rgba(0,0,0,0.6);
+    */
 }
 
 .custom-combobox {
