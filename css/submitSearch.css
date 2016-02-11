@@ -38,3 +38,7 @@
     padding: 0;
     margin: 0;
 }
+
+#acquisitions-upload, #acquisitions-browse, #sequence-upload, #sequence-browse {
+    display: none;
+}

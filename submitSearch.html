@@ -5,33 +5,25 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-        <link rel="stylesheet" href="vendor/js/jquery-ui-1.11.4/jquery-ui.css" />
-        <link rel="stylesheet" href="vendor/css/datatables.css" />
-        <!-- <link rel="stylesheet" href="vendor/css/dataTables.jqueryui.css" /> -->
+        <link rel="stylesheet" href="vendor/css/jquery-ui.css" />
+        <!-- <link rel="stylesheet" href="vendor/css/datatables.css" /> -->
+        <link rel="stylesheet" href="vendor/css/dataTables.jqueryui.css" />
         <link rel="stylesheet" href="vendor/css/multiple-select.css" />
-        <link rel="stylesheet" href="vendor/css/jquiext.css" />
         <link rel="stylesheet" href="css/submitSearch.css" />
         <link rel="stylesheet" href="../searches/css/style.css" />
          
         <script src="vendor/js/jquery-2.2.0.js"></script>
-        <script src="vendor/js/jquery-ui-1.11.4/jquery-ui.js"></script>
+        <script src="vendor/js/jquery-ui.js"></script>
         <script src="vendor/js/d3.js"></script>
-        <script src="js/jquiext.js"></script>
         <script src="vendor/js/jquery.dataTables.js"></script>
-        <script src="vendor/js/dataTables.jqueryui.js"></script>
+        <!-- <script src="vendor/js/dataTables.jqueryui.js"></script> -->
         <script src="vendor/js/multiple-select.js"></script>
 
          
          
         <!--TODO - sort out these scripts-->
-        <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
-        <!-- <script src="./js2/uploadjs/vendor/jquery.ui.widget.js"></script> -->
         <!-- The Templates plugin is included to render the upload/download listings -->
         <!--<script src="http://blueimp.github.io/JavaScript-Templates/js2/tmpl.min.js"></script> -->
-        <!-- The Load Image plugin is included for the preview images and image resizing functionality -->
-        <!--<script src="http://blueimp.github.io/JavaScript-Load-Image/js2/load-image.min.js"></script> -->
-        <!-- The Canvas to Blob plugin is included for image resizing functionality -->
-        <!--<script src="http://blueimp.github.io/JavaScript-Canvas-to-Blob/js2/canvas-to-blob.min.js"></script> -->
         <!-- Bootstrap JS is not required, but included for the responsive demo navigation -->
         <!-- <script src="http://blueimp.github.io/cdn/js2/bootstrap.min.js"></script>-->
         <!-- blueimp Gallery script -->
@@ -42,12 +34,6 @@
         <script src="vendor/js/uploadjs/jquery.fileupload.js"></script>
         <!-- The File Upload processing plugin -->
         <script src="vendor/js/uploadjs/jquery.fileupload-process.js"></script>
-        <!-- The File Upload image preview & resize plugin -->
-        <script src="vendor/js/uploadjs/jquery.fileupload-image.js"></script>
-        <!-- The File Upload audio preview plugin -->
-        <script src="vendor/js/uploadjs/jquery.fileupload-audio.js"></script>
-        <!-- The File Upload video preview plugin -->
-        <script src="vendor/js/uploadjs/jquery.fileupload-video.js"></script>
         <!-- The File Upload validation plugin -->
         <script src="vendor/js/uploadjs/jquery.fileupload-validate.js"></script>
         <!-- The File Upload user interface plugin -->
@@ -55,37 +41,19 @@
         <!-- The main application script -->
         <script src="vendor/js/uploadjs/main.js"></script>
 
-        <!--
-        <script src="js2/jquery.ui.touch-punch.min.js"></script>
-        <script src="js2/jquery.tagsinput.js"></script>
-        <script src="js2/jquery.placeholder.js"></script>
-        <script src="js2/jquery.stacktable.js"></script>
-        <script src="http://vjs.zencdn.net/c/video.js"></script>
-        <script src="js2/application.js"></script> 
-        -->
      </head>
      <body>
         <div class="page-container">
     
             <div class="main-body">
-                <div class="acquisitions-group">
-                    <h3>Acquisition</h3>
-                    <div class="left-column">
-                        <div class="upload-button">
-                            <a onclick="$('.acquisitions-group').hide();$('.acquisitions-upload').show();" class="btn btn-large btn-block btn-inverse">Upload</a>
-                        </div> <!-- UPLOAD BUTTON -->
-                    </div> <!-- LEFT COLUMN -->
-                    <p class="ortext">Or</p>
-                    <div class="right-column">
-                        <div class="browse-button">
-                            <a onclick="$('.acquisitions-group').hide();$('.acquisitions-previous').show();" class="btn btn-large btn-block btn-inverse">Browse previous</a>
-                        </div> <!-- BROWSE BUTTON -->
-                    </div> <!-- RIGHT COLUMN -->
+                <div class="paramSetting" id="acquire">
+                    <H3>Acquisition</H3>
+                    <button id="aUpload">Upload Acquisition</button>
+                    <button id="aBrowse">Select from Previous</button>
                 </div> <!-- ACQUISITIONS GROUP -->
 
-                <div class="acquisitions-upload" style="display:none;">
-                    <h3>Acquisition Upload</h3>
-                    <br/>
+                <div id="acquisitions-upload">
+                    <P>Acquisition Upload</P>
                     <input class="acquis-name" type="text" value="" placeholder="Type acquisition name here"></input>
                     <!-- The file upload form used as target for the file upload widget -->
                     <form class="fileupload" action="./upload/uploadIndex.php" method="POST" enctype="multipart/form-data">
@@ -131,30 +99,20 @@
                     </form>
                 </div>
 
-                <div class="acquisitions-previous" style="display:none;">
-                    <h3>Previous Acquisitions</h3>
+                <div id="acquisitions-browse">
+                    <P>Previous Acquisitions</P>
                     <div id="previousAcqui"></div>
                 </div>
 
 
-                <div class="sequence-db-group">
-                    <h3>Sequence Database</h3>
-                    <div class="left-column">
-                        <div class="upload-button">
-                            <a onclick="$('.sequence-db-group').hide();$('.sequence-db-upload').show();" href="#sequenceupload" class="btn btn-large btn-block btn-inverse">Upload</a>
-                        </div> <!-- UPLOAD BUTTON -->
-                    </div> <!-- LEFT COLUMN -->
-                    <p class="ortext">Or</p>
-                    <div class="right-column">
-                        <div class="browse-button">
-                            <a onclick="$('.sequence-db-group').hide();$('.sequence-db-previous').show();" class="btn btn-large btn-block btn-inverse">Browse previous</a>
-                        </div> <!-- BROWSE BUTTON -->
-                    </div> <!-- RIGHT COLUMN -->
-                </div> <!-- SEQUENCE DB GROUP -->
+                <div class="paramSetting" id="sequence">
+                    <H3>Sequence</H3>
+                    <button id="seqUpload">Upload Sequence</button>
+                    <button id="seqBrowse">Select from Previous</button>
+                </div> <!-- ACQUISITIONS GROUP -->
 
-                <div class="sequence-db-upload" style="display:none;">
-                    <h3>Sequence Database Upload</h3>
-                    <br/>
+                <div id="sequence-upload">
+                    <P>Sequence Database Upload</P>
                     <input class="sequence-db-name" type="text" value="" placeholder="Type sequence db name here..."></input>
                     <!-- The file upload form used as target for the file upload widget -->
                     <form class="fileupload" action="upload/uploadIndex.php" method="POST" enctype="multipart/form-data">
@@ -200,14 +158,13 @@
                     </form>
                 </div>
 
-                <div class="sequence-db-previous" style="display:none;">
-                    <h3>Previous Sequences</h3>
+                <div id="sequence-browse">
+                    <P>Previous Sequences</P>
                     <div id="previousSeq"></div>
                 </div>
 
-                <!--                <form   name="login_form" method="post" action="searchParameters.php">-->
-                <div class="bgroup">
-
+                <form name="login_form" method="post" action="php/submitParams.php">
+                <div>
                     <h3>Search Parameters</h3>
                     
                     <div class="row">
@@ -251,43 +208,27 @@
                     
                     
                 </div> <!-- SEARCH PARAMS GROUP -->
-                <div class="search-notes-group">
+                <div>
                     <h3>Search Notes</h3>
-                    <textarea class="search-notes" type="text" value="" placeholder="Click here to start typing..."></textarea>
+                    <textarea type="text" value="" placeholder="Click here to start typing..."></textarea>
                     <!-- SUBMIT BUTTON -->
 <!--                        <input id="submitSearch" name="Submit" value="Submit Search" type="submit" class="btn btn-primary btn-large btn-block"/>-->
 
                     <section class="progress-demo">
-                        <button class="ladda-button" onclick="alert('Please do not press this button again.')" data-color="purple" data-style="expand-right"><span class="ladda-label">Start Processing</span></button>
+                        <button type="submit" id="startProcessing">Start Processing</button>
                     </section>
                     <!--                     SUCCESSFUL UPLOAD ICON-->
                     <!--                    <div class="control-group success">
                                             <i class="input-icon fui-check-inverted"></i>
                                         </div>  CONTROL GROUP SUCCESS-->
                 </div> <!-- SEARCH NOTES GROUP -->
-                <!--                </form>-->
+                </form>
             </div> <!-- MAIN BODY -->
         </div> <!-- PAGE CONTAINER -->
 
         <script>
             $(document).ready(function () {
-                /*
-                var top = $('.todo').offset().top - parseFloat($('.todo').css('marginTop').replace(/auto/, 0));
-                $(window).scroll(function (event) {
-                    // what the y position of the scroll is
-                    var y = $(this).scrollTop();
-
-                    // whether that's below the form
-                    if (y >= top) {
-                        // if so, ad the fixed class
-                        $('.todo').addClass('fixed');
-                    } else {
-                        // otherwise remove it
-                        $('.todo').removeClass('fixed');
-                    }
-                });
-                */
-            
+                
                 // http://stackoverflow.com/questions/23740548/how-to-pass-variables-and-data-from-php-to-javascript
                 var oReq = new XMLHttpRequest(); //New request object
                 oReq.onload = function() {
@@ -300,6 +241,7 @@
                     
                     // Make combobox and multiple selection elements
                     // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
+                    // Multiple Selects need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
                     var populateOptionLists = [
                         {data: data.xlinkers, domid: "#paramCrossLinker", filter: true, multiple: false, placeHolder: "Select A Cross Linker",},
                         {data: data.enzymes, domid: "#paramEnzyme", filter: true, multiple: false, placeHolder: "Select An Enzyme",},
@@ -313,7 +255,8 @@
                         var baseId = poplist.domid.slice(1)+"Select";
                         var selElem = elem.append("select")
                             .attr("id", baseId)
-                            .attr("name", "heroList")
+                            .attr("name", baseId + (poplist.multiple ? "[]" : ""))  // magic. Need [] at end of name of elements that can submit multiple values
+                            .classed("formPart", true)
                             .property("multiple", poplist.multiple)
                         ;
                         
@@ -334,20 +277,20 @@
                                 multiple: true, // this is to show multiple options per row, not to do with multiple selections (that's single)
                                 width: 450,
                                 multipleWidth: 200,
+                                onClick: function (view) {
+                                    var selects = $("#"+baseId).multipleSelect("getSelects");         
+                                },
                             });
                             elem.selectAll(".ms-choice")
                                 .classed("ui-widget", true)
                                 .classed("ui-state-default", true)
                             ;
-                        
-
                         /*
                         } else {
                             $("#"+baseId).combobox();
                         }
                         */
                     });
-                    
                     
                     
                     
@@ -399,6 +342,7 @@
                         var inputElem = elem.append("input")
                             .attr("name", iid)
                             .attr("id", iid)
+                            .classed("formPart", true)
                         ;
                         
                         var spinner = $("#"+iid).spinner({
@@ -428,6 +372,7 @@
                         var selElem = elem.append("select")
                             .attr("name", baseId)
                             .attr("id", baseId)
+                            .classed("formPart", true)
                         ;
                         var optionJoin = selElem.selectAll("option").data(settings.units);
                         optionJoin.enter()
@@ -466,11 +411,57 @@
                         
                         $(buttonGroup.domid).buttonset();
                     });
+                    
+                    
+                    var todoList = d3.set();
+                    var updateCompleteness = function () {
+                        var curVals = todoList.values();
+                        curVals.forEach (function (val) {
+                            todoList.remove (val);
+                        });
+                        d3.selectAll(".formPart").each (function() {
+                            if (this.id && !this.value) {
+                                todoList.add (this.id);
+                            }
+                        });
+                    };
+                    updateCompleteness();
+                    console.log ("todoList", todoList);
      
+                    
+                    d3.select("#aUpload")
+                        .on ("click", function() {
+                            d3.select("#acquisitions-upload").style("display", "block");
+                            d3.select("#acquisitions-browse").style("display", "none");
+                        })
+                    ;
+                    
+                    d3.select("#aBrowse")
+                        .on ("click", function() {
+                            d3.select("#acquisitions-upload").style("display", "none");
+                            d3.select("#acquisitions-browse").style("display", "block");
+                        })
+                    ;
+                    
+                    d3.select("#seqUpload")
+                        .on ("click", function() {
+                            d3.select("#sequence-upload").style("display", "block");
+                            d3.select("#sequence-browse").style("display", "none");
+                        })
+                    ;
+                    
+                    d3.select("#seqBrowse")
+                        .on ("click", function() {
+                            d3.select("#sequence-upload").style("display", "none");
+                            d3.select("#sequence-browse").style("display", "block");
+                        })
+                    ;
+                    
+                    $("#aUpload, #aBrowse, #seqUpload, #seqBrowse, #startProcessing").button();
 
 
                 };
-                oReq.open("get", "populate.php", true);     // true == asynchronous call
+                oReq.open("get", "php/populate.php", true);     // true == asynchronous call
                 oReq.send();
 
                 
