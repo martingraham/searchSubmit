@@ -46,123 +46,125 @@
         <div class="page-container">
     
             <div class="main-body">
+                
+                
                 <div class="paramSetting" id="acquire">
-                    <H3>Acquisition</H3>
-                    <button id="aUpload">Upload Acquisition</button>
-                    <button id="aBrowse">Select from Previous</button>
-                </div> <!-- ACQUISITIONS GROUP -->
+                    <P>Acquisition</P>
 
-                <div id="acquisitions-upload">
-                    <P>Acquisition Upload</P>
-                    <input class="acquis-name" type="text" value="" placeholder="Type acquisition name here"></input>
-                    <!-- The file upload form used as target for the file upload widget -->
-                    <form class="fileupload" action="./upload/uploadIndex.php" method="POST" enctype="multipart/form-data">
-                        <!-- Redirect browsers with JavaScript disabled to the origin page -->
-                <!--        <noscript><input type="hidden" name="redirect" value="http://blueimp.github.io/jQuery-File-Upload/"></noscript>-->
-                        <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
-                        <div class="row fileupload-buttonbar">
-                            <div class="span7">
-                                <!-- The fileinput-button span is used to style the file input field as button -->
-                                <span class="btn btn-success fileinput-button">
-                                    <i class="icon-plus icon-white"></i>
-                                    <span>Add files...</span>
-                                    <input type="file" name="files[]" multiple>
-                                </span>
-                                <button type="submit" class="btn btn-primary start">
-                                    <i class="icon-upload icon-white"></i>
-                                    <span>Start upload</span>
-                                </button>
-                                <button type="reset" class="btn btn-warning cancel">
-                                    <i class="icon-ban-circle icon-white"></i>
-                                    <span>Cancel upload</span>
-                                </button>
-                                <button type="button" class="btn btn-danger delete">
-                                    <i class="icon-trash icon-white"></i>
-                                    <span>Delete</span>
-                                </button>
-                                <input type="checkbox" class="toggle">
-                                <!-- The loading indicator is shown during file processing -->
-                                <span class="fileupload-loading"></span>
-                            </div>
-                            <!-- The global progress information -->
-                            <div class="span5 fileupload-progress fade">
-                                <!-- The global progress bar -->
-                                <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                                    <div class="bar" style="width:0%;"></div>
+                    <div id="acqAccordion">
+                        <h3>Upload Acquisitions</h3>
+                        <div id="acquisitions-upload">
+                            <input class="acquis-name" type="text" value="" placeholder="Type acquisition name here"></input>
+                            <!-- The file upload form used as target for the file upload widget -->
+                            <form class="fileupload" action="./upload/uploadIndex.php" method="POST" enctype="multipart/form-data">
+                                <!-- Redirect browsers with JavaScript disabled to the origin page -->
+                        <!--        <noscript><input type="hidden" name="redirect" value="http://blueimp.github.io/jQuery-File-Upload/"></noscript>-->
+                                <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+                                <div class="row fileupload-buttonbar">
+                                    <div class="span7">
+                                        <!-- The fileinput-button span is used to style the file input field as button -->
+                                        <span class="btn btn-success fileinput-button">
+                                            <i class="icon-plus icon-white"></i>
+                                            <span>Add files...</span>
+                                            <input type="file" name="files[]" multiple>
+                                        </span>
+                                        <button type="submit" class="btn btn-primary start">
+                                            <i class="icon-upload icon-white"></i>
+                                            <span>Start upload</span>
+                                        </button>
+                                        <button type="reset" class="btn btn-warning cancel">
+                                            <i class="icon-ban-circle icon-white"></i>
+                                            <span>Cancel upload</span>
+                                        </button>
+                                        <button type="button" class="btn btn-danger delete">
+                                            <i class="icon-trash icon-white"></i>
+                                            <span>Delete</span>
+                                        </button>
+                                        <input type="checkbox" class="toggle">
+                                        <!-- The loading indicator is shown during file processing -->
+                                        <span class="fileupload-loading"></span>
+                                    </div>
+                                    <!-- The global progress information -->
+                                    <div class="span5 fileupload-progress fade">
+                                        <!-- The global progress bar -->
+                                        <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="bar" style="width:0%;"></div>
+                                        </div>
+                                        <!-- The extended global progress information -->
+                                        <div class="progress-extended">&nbsp;</div>
+                                    </div>
                                 </div>
-                                <!-- The extended global progress information -->
-                                <div class="progress-extended">&nbsp;</div>
-                            </div>
+                                <!-- The table listing the files available for upload/download -->
+                                <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
+                            </form>
                         </div>
-                        <!-- The table listing the files available for upload/download -->
-                        <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
-                    </form>
+
+                        <H3>Use Previous Acquisitions</H3>
+                        <div id="previousAcqui"></div>
+                    </div>
                 </div>
 
-                <div id="acquisitions-browse">
-                    <P>Previous Acquisitions</P>
-                    <div id="previousAcqui"></div>
-                </div>
-
+            
 
                 <div class="paramSetting" id="sequence">
-                    <H3>Sequence</H3>
-                    <button id="seqUpload">Upload Sequence</button>
-                    <button id="seqBrowse">Select from Previous</button>
-                </div> <!-- ACQUISITIONS GROUP -->
+                    <P>Sequence</P>
 
-                <div id="sequence-upload">
-                    <P>Sequence Database Upload</P>
-                    <input class="sequence-db-name" type="text" value="" placeholder="Type sequence db name here..."></input>
-                    <!-- The file upload form used as target for the file upload widget -->
-                    <form class="fileupload" action="upload/uploadIndex.php" method="POST" enctype="multipart/form-data">
-                        <!-- Redirect browsers with JavaScript disabled to the origin page -->
-                <!--        <noscript><input type="hidden" name="redirect" value="http://blueimp.github.io/jQuery-File-Upload/"></noscript>-->
-                        <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
-                        <div class="row fileupload-buttonbar">
-                            <div class="span7">
-                                <!-- The fileinput-button span is used to style the file input field as button -->
-                                <span class="btn btn-success fileinput-button">
-                                    <i class="icon-plus icon-white"></i>
-                                    <span>Add files...</span>
-                                    <input type="file" name="files[]" multiple>
-                                </span>
-                                <button type="submit" class="btn btn-primary start">
-                                    <i class="icon-upload icon-white"></i>
-                                    <span>Start upload</span>
-                                </button>
-                                <button type="reset" class="btn btn-warning cancel">
-                                    <i class="icon-ban-circle icon-white"></i>
-                                    <span>Cancel upload</span>
-                                </button>
-                                <button type="button" class="btn btn-danger delete">
-                                    <i class="icon-trash icon-white"></i>
-                                    <span>Delete</span>
-                                </button>
-                                <input type="checkbox" class="toggle">
-                                <!-- The loading indicator is shown during file processing -->
-                                <span class="fileupload-loading"></span>
-                            </div>
-                            <!-- The global progress information -->
-                            <div class="span5 fileupload-progress fade">
-                                <!-- The global progress bar -->
-                                <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                                    <div class="bar" style="width:0%;"></div>
+                    <div id="seqAccordion">
+                        <h3>Upload Sequences</h3>
+                        <div id="sequence-upload">
+                            <P>Sequence Database Upload</P>
+                            <input class="sequence-db-name" type="text" value="" placeholder="Type sequence db name here..."></input>
+                            <!-- The file upload form used as target for the file upload widget -->
+                            <form class="fileupload" action="upload/uploadIndex.php" method="POST" enctype="multipart/form-data">
+                                <!-- Redirect browsers with JavaScript disabled to the origin page -->
+                        <!--        <noscript><input type="hidden" name="redirect" value="http://blueimp.github.io/jQuery-File-Upload/"></noscript>-->
+                                <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+                                <div class="row fileupload-buttonbar">
+                                    <div class="span7">
+                                        <!-- The fileinput-button span is used to style the file input field as button -->
+                                        <span class="btn btn-success fileinput-button">
+                                            <i class="icon-plus icon-white"></i>
+                                            <span>Add files...</span>
+                                            <input type="file" name="files[]" multiple>
+                                        </span>
+                                        <button type="submit" class="btn btn-primary start">
+                                            <i class="icon-upload icon-white"></i>
+                                            <span>Start upload</span>
+                                        </button>
+                                        <button type="reset" class="btn btn-warning cancel">
+                                            <i class="icon-ban-circle icon-white"></i>
+                                            <span>Cancel upload</span>
+                                        </button>
+                                        <button type="button" class="btn btn-danger delete">
+                                            <i class="icon-trash icon-white"></i>
+                                            <span>Delete</span>
+                                        </button>
+                                        <input type="checkbox" class="toggle">
+                                        <!-- The loading indicator is shown during file processing -->
+                                        <span class="fileupload-loading"></span>
+                                    </div>
+                                    <!-- The global progress information -->
+                                    <div class="span5 fileupload-progress fade">
+                                        <!-- The global progress bar -->
+                                        <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                                            <div class="bar" style="width:0%;"></div>
+                                        </div>
+                                        <!-- The extended global progress information -->
+                                        <div class="progress-extended">&nbsp;</div>
+                                    </div>
                                 </div>
-                                <!-- The extended global progress information -->
-                                <div class="progress-extended">&nbsp;</div>
-                            </div>
+                                <!-- The table listing the files available for upload/download -->
+                                <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
+                            </form>
                         </div>
-                        <!-- The table listing the files available for upload/download -->
-                        <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
-                    </form>
+                    
+                        <h3>Use Previous Sequences</h3>
+                        <div id="previousSeq"></div>
+                    </div>
                 </div>
 
-                <div id="sequence-browse">
-                    <P>Previous Sequences</P>
-                    <div id="previousSeq"></div>
-                </div>
 
+         
                 <form name="login_form" method="post" action="php/submitParams.php">
                 <div>
                     <h3>Search Parameters</h3>
@@ -328,6 +330,14 @@
                         });
                     });
   
+                    var accordions = ["#acqAccordion", "#seqAccordion"];
+                    accordions.forEach (function (accordion) {
+                        $(accordion).accordion ({
+                            collapsible: true,
+                            active: false,
+                            heightStyle: "content",
+                        });
+                    });
                 
                     
                     // Make number inputs
@@ -427,37 +437,8 @@
                     };
                     updateCompleteness();
                     console.log ("todoList", todoList);
-     
                     
-                    d3.select("#aUpload")
-                        .on ("click", function() {
-                            d3.select("#acquisitions-upload").style("display", "block");
-                            d3.select("#acquisitions-browse").style("display", "none");
-                        })
-                    ;
-                    
-                    d3.select("#aBrowse")
-                        .on ("click", function() {
-                            d3.select("#acquisitions-upload").style("display", "none");
-                            d3.select("#acquisitions-browse").style("display", "block");
-                        })
-                    ;
-                    
-                    d3.select("#seqUpload")
-                        .on ("click", function() {
-                            d3.select("#sequence-upload").style("display", "block");
-                            d3.select("#sequence-browse").style("display", "none");
-                        })
-                    ;
-                    
-                    d3.select("#seqBrowse")
-                        .on ("click", function() {
-                            d3.select("#sequence-upload").style("display", "none");
-                            d3.select("#sequence-browse").style("display", "block");
-                        })
-                    ;
-                    
-                    $("#aUpload, #aBrowse, #seqUpload, #seqBrowse, #startProcessing").button();
+                    $("#startProcessing").button();
 
 
                 };
