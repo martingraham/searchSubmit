@@ -12,12 +12,12 @@ $dbconn = pg_connect($connectionString)
         or die('Could not connect: ' . pg_last_error());
 
 // Get previous acquisitions from DB
-$query = "SELECT name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";
+$query = "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";
 $result = pg_query($query) or die('Query failed: ' . pg_last_error());
 $previousAcqui = resultsAsArray($result);
 
 // Get previous acquisitions from DB
-$query = "SELECT name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";
+$query = "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";
 $result = pg_query($query) or die('Query failed: ' . pg_last_error());
 $previousSeq = resultsAsArray($result);
 

@@ -12,7 +12,8 @@
 /*jslint nomen: true, regexp: true */
 /*global $, window, navigator, blueimp */
 
-$(function () {
+var submitter = submitter || {};
+submitter.upload = function () {
     'use strict';
 
     // Initialize the jQuery File Upload widget:
@@ -92,4 +93,4 @@ $(function () {
         }
     });
 
-});
+};
