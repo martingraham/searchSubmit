@@ -23,43 +23,41 @@
 
         <!--TODO - sort out these scripts-->
         <!-- The Templates plugin is included to render the upload/download listings -->
-        <script src="vendor/js/upload/tmpl.js"></script>
+        <script src="vendor/js/tmpl.js"></script>
         <!-- Bootstrap JS is not required, but included for the responsive demo navigation -->
         <!-- <script src="http://blueimp.github.io/cdn/js2/bootstrap.min.js"></script>-->
         <!-- blueimp Gallery script -->
         <!--<script src="http://blueimp.github.io/Gallery/js2/blueimp-gallery.min.js"></script> -->
         <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
-        <script src="vendor/js/upload/jquery.iframe-transport.js"></script>
+        <script src="vendor/js/jquery.iframe-transport.js"></script>
         <!-- The basic File Upload plugin -->
-        <script src="vendor/js/upload/jquery.fileupload.js"></script>
+        <script src="vendor/js/jquery.fileupload.js"></script>
         <!-- The File Upload processing plugin -->
-        <script src="vendor/js/upload/jquery.fileupload-process.js"></script>
+        <script src="vendor/js/jquery.fileupload-process.js"></script>
         <!-- The File Upload validation plugin -->
-        <script src="vendor/js/upload/jquery.fileupload-validate.js"></script>
+        <script src="vendor/js/jquery.fileupload-validate.js"></script>
         <!-- The File Upload user interface plugin -->
-        <script src="vendor/js/upload/jquery.fileupload-ui.js"></script>
+        <script src="vendor/js/jquery.fileupload-ui.js"></script>
          
-        <script src="vendor/js/upload/jquery.fileupload-jquery-ui.js"></script>
+        <script src="vendor/js/jquery.fileupload-jquery-ui.js"></script>
         <!-- The main application script -->
-        <script src="vendor/js/upload/main.js"></script>
+        <script src="vendor/js/main.js"></script>
 
      </head>
      <body>
         <div>
             <div class="paramSetting" id="acquire">
-                <P><span>Acquisition</span></P>
+                <P>Acquisition</P>
 
                 <div id="acqAccordion">
                     <h3>Upload Acquisitions</h3>
                     <div id="acquisitions-upload">
-                        <input type="text" value="" placeholder="Type acquisition name here"></input>
                         <!-- The file upload form used as target for the file upload widget -->
-                        <form id="fileupload" action="./vendor/js/upload/server/php/index.php" method="POST" enctype="multipart/form-data">
-                            <!-- Redirect browsers with JavaScript disabled to the origin page -->
-                            <noscript><input type="hidden" name="redirect" value="https://blueimp.github.io/jQuery-File-Upload/"></noscript>
+                        <form class="fileupload" id="acqfileupload" action="./vendor/server/php/index.php" method="POST" enctype="multipart/form-data">
                             <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
-                            <div class="fileupload-buttonbar">
+                            <div class="row fileupload-buttonbar">
                                 <div class="fileupload-buttons">
+                                    <input type="text" value="" id="newAcqID" name="newAcqID" placeholder="Set acquisition name here..."></input>
                                     <!-- The fileinput-button span is used to style the file input field as button -->
                                     <span class="fileinput-button">
                                         <span>Add files...</span>
@@ -81,7 +79,7 @@
                                 </div>
                             </div>
                             <!-- The table listing the files available for upload/download -->
-                            <table role="presentation"><tbody class="files"></tbody></table>
+                            <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
                         </form>
                     </div>
 
@@ -93,49 +91,35 @@
 
 
             <div class="paramSetting" id="sequence">
-                <P><span>Sequence</span></P>
+                <P>Sequence</P>
 
                 <div id="seqAccordion">
                     <h3>Upload Sequences</h3>
                     <div id="sequence-upload">
-                        <P>Sequence Database Upload</P>
-                        <input type="text" value="" placeholder="Type sequence db name here..."></input>
+                        
                         <!-- The file upload form used as target for the file upload widget -->
-                        <form class="fileupload" action="upload/uploadIndex.php" method="POST" enctype="multipart/form-data">
-                            <!-- Redirect browsers with JavaScript disabled to the origin page -->
-                    <!--        <noscript><input type="hidden" name="redirect" value="http://blueimp.github.io/jQuery-File-Upload/"></noscript>-->
+                        <form class="fileupload" id="seqfileupload" action="./vendor/server/php/seqUpload.php" method="POST" enctype="multipart/form-data">
                             <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
                             <div class="row fileupload-buttonbar">
-                                <div class="span7">
+                               <div class="fileupload-buttons">
+                                   <input type="text" value="" id="newSeqID" name="newSeqID" placeholder="Set sequence DB name here..."></input>
                                     <!-- The fileinput-button span is used to style the file input field as button -->
-                                    <span class="btn btn-success fileinput-button">
-                                        <i class="icon-plus icon-white"></i>
+                                    <span class="fileinput-button">
                                         <span>Add files...</span>
                                         <input type="file" name="files[]" multiple>
                                     </span>
-                                    <button type="submit" class="btn btn-primary start">
-                                        <i class="icon-upload icon-white"></i>
-                                        <span>Start upload</span>
-                                    </button>
-                                    <button type="reset" class="btn btn-warning cancel">
-                                        <i class="icon-ban-circle icon-white"></i>
-                                        <span>Cancel upload</span>
-                                    </button>
-                                    <button type="button" class="btn btn-danger delete">
-                                        <i class="icon-trash icon-white"></i>
-                                        <span>Delete</span>
-                                    </button>
-                                    <input type="checkbox" class="toggle">
+                                    <button type="submit" class="start">Start upload</button>
+                                    <button type="reset" class="cancel">Cancel upload</button>
+                                    <button type="button" class="delete">Delete</button>
+                                    <!-- <input type="checkbox" class="toggle"> -->
                                     <!-- The loading indicator is shown during file processing -->
                                     <span class="fileupload-loading"></span>
                                 </div>
                                 <!-- The global progress information -->
-                                <div class="span5 fileupload-progress fade">
+                                <div class="fileupload-progress fade" style="display:none">
                                     <!-- The global progress bar -->
-                                    <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                                        <div class="bar" style="width:0%;"></div>
-                                    </div>
-                                    <!-- The extended global progress information -->
+                                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <!-- The extended global progress state -->
                                     <div class="progress-extended">&nbsp;</div>
                                 </div>
                             </div>
@@ -451,16 +435,46 @@
                     });
                     
                     $(submitter.upload);
-
+                    
+                    var enableSubmit = function (textinputid, formid) {
+                        var nonzeroes = {filesAwaiting: 0, namelength: 0,};
+                        var enabler = function () {
+                            var vals = d3.values (nonzeroes);
+                            var blocked = vals.some (function(d) { return d === 0; });
+                            var buttons = $(formid+" button");
+                            console.log (formid, vals, blocked, buttons);
+                            buttons.button (blocked ? "disable" : "enable");
+                        };
+                        this.enabler = enabler;
+                        
+                        $(formid).on("fileuploadadded", function (e, data) {
+                            nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
+                            enabler();
+                        });
+                        $(formid).on("fileuploadfailed", function (e, data) {
+                            if (data.errorThrown === "abort") {
+                                nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
+                                enabler();
+                            }
+                        });
+                        d3.select(textinputid).on("input", function () {
+                            nonzeroes.namelength = this.value.length;
+                            enabler();
+                        });
+                        
+                        return this;
+                    };
+                    
+                    var seqEnableSubmit = new enableSubmit ("#newSeqID", "#seqfileupload");
+                    var acqEnableSubmit = new enableSubmit ("#newAcqID", "#acqfileupload");
+                    seqEnableSubmit.enabler();
+                    acqEnableSubmit.enabler();
                 };
+                
                 oReq.open("get", "php/populate.php", true);     // true == asynchronous call
                 oReq.send();
-
-                
             });
         </script>
-
-
 
     </body>
 
@@ -485,14 +499,12 @@
             </td>
             <td>
                 {% if (!o.files.error && !i && !o.options.autoUpload) { %}
-                <button class="btn btn-primary start">
-                    <i class="icon-upload icon-white"></i>
+                <button class="btn-primary start">
                     <span>Start</span>
                 </button>
                 {% } %}
                 {% if (!i) { %}
-                <button class="btn btn-warning cancel">
-                    <i class="icon-ban-circle icon-white"></i>
+                <button class="btn-warning cancel">
                     <span>Cancel</span>
                 </button>
                 {% } %}
@@ -523,8 +535,7 @@
                 <span class="size">{%=o.formatFileSize(file.size)%}</span>
             </td>
             <td>
-                <button class="btn btn-danger delete" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}"{% if (file.delete_with_credentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
-                        <i class="icon-trash icon-white"></i>
+                <button class="btn-danger delete" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}"{% if (file.delete_with_credentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
                     <span>Delete</span>
                 </button>
                 <input type="checkbox" name="delete" value="1" class="toggle">

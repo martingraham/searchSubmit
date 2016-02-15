@@ -10,6 +10,10 @@
  * http://www.opensource.org/licenses/MIT
  */
 
+include '../../../php/ChromePhp.php';
+ChromePhp::log('Hello console!');
+ChromePhp::log(json_encode($_POST));
+
 error_reporting(E_ALL | E_STRICT);
 require('UploadHandler.php');
 $upload_handler = new UploadHandler();

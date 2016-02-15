@@ -42,3 +42,11 @@
 #acquisitions-upload, #acquisitions-browse, #sequence-upload, #sequence-browse {
     display: none;
 }
+
+.table-striped {
+    margin-top: 0.2em;
+}
+
+.table-striped TR:nth-child(2n) {
+    background: #f8f8f8;
+}
