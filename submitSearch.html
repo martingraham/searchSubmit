@@ -47,13 +47,13 @@
      <body>
         <div>
             <div class="paramSetting" id="acquire">
-                <P>Acquisition</P>
+                <H3>Acquisition</H3>
 
                 <div id="acqAccordion">
                     <h3>Upload Acquisitions</h3>
                     <div id="acquisitions-upload">
                         <!-- The file upload form used as target for the file upload widget -->
-                        <form class="fileupload" id="acqfileupload" action="./vendor/server/php/index.php" method="POST" enctype="multipart/form-data">
+                        <form class="fileupload" id="acqfileupload" action="./vendor/server/php/CLMSUpload.php" method="POST" enctype="multipart/form-data">
                             <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
                             <div class="row fileupload-buttonbar">
                                 <div class="fileupload-buttons">
@@ -65,8 +65,8 @@
                                     </span>
                                     <button type="submit" class="start">Start upload</button>
                                     <button type="reset" class="cancel">Cancel upload</button>
-                                    <button type="button" class="delete">Delete</button>
-                                    <input type="checkbox" class="toggle">
+                                    <!-- <button type="button" class="delete">Delete</button> -->
+                                    <!-- <input type="checkbox" class="toggle"> -->
                                     <!-- The global file processing state -->
                                     <span class="fileupload-process"></span>
                                 </div>
@@ -91,14 +91,14 @@
 
 
             <div class="paramSetting" id="sequence">
-                <P>Sequence</P>
+                <H3>Sequence</H3>
 
                 <div id="seqAccordion">
                     <h3>Upload Sequences</h3>
                     <div id="sequence-upload">
                         
                         <!-- The file upload form used as target for the file upload widget -->
-                        <form class="fileupload" id="seqfileupload" action="./vendor/server/php/seqUpload.php" method="POST" enctype="multipart/form-data">
+                        <form class="fileupload" id="seqfileupload" action="./vendor/server/php/CLMSUpload.php" method="POST" enctype="multipart/form-data">
                             <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
                             <div class="row fileupload-buttonbar">
                                <div class="fileupload-buttons">
@@ -110,7 +110,7 @@
                                     </span>
                                     <button type="submit" class="start">Start upload</button>
                                     <button type="reset" class="cancel">Cancel upload</button>
-                                    <button type="button" class="delete">Delete</button>
+                                    <!-- <button type="button" class="delete">Delete</button> -->
                                     <!-- <input type="checkbox" class="toggle"> -->
                                     <!-- The loading indicator is shown during file processing -->
                                     <span class="fileupload-loading"></span>
@@ -180,21 +180,96 @@
 
 
             </div> <!-- SEARCH PARAMS GROUP -->
-            <div>
-                <h3>Search Notes</h3>
-                <textarea type="text" value="" placeholder="Click here to start typing..."></textarea>
-                <section>
+            <div class="row">
+                <div class="col-6">
                     <button type="submit" id="startProcessing">Start Processing</button>
-                </section>
-                <!--                     SUCCESSFUL UPLOAD ICON-->
-                <!--                    <div class="control-group success">
-                                        <i class="input-icon fui-check-inverted"></i>
-                                    </div>  CONTROL GROUP SUCCESS-->
-            </div> <!-- SEARCH NOTES GROUP -->
+                    <!-- SUCCESSFUL UPLOAD ICON-->
+                    <!--    <div class="control-group success">
+                        <i class="input-icon fui-check-inverted"></i>
+                    </div>  CONTROL GROUP SUCCESS-->
+                </div>
+                <div class="col-6 paramSetting">
+                    <P>Search Notes</P>
+                    <textarea class="formPart" wrap="soft" maxlength="10000" cols="80" rows="4" name="paramNotes" value="" placeholder="Click here to start typing..."></textarea>
+                </div>
+            </div>
             </form>
         </div> <!-- MAIN BODY -->
 
         <script>
+            function canDoImmediately () {
+                
+                // Make number inputs
+                var numberInputSettings = [
+                    {domid: "#paramTolerance", min: 0, default: 4,},
+                    {domid: "#paramTolerance2", min: 0, default: 20,},
+                    {domid: "#paramMissedCleavages", min: 0, default: 4,},
+                ];
+                numberInputSettings.forEach (function (settings) {
+                    var elem = d3.select(settings.domid);
+                    var iid = settings.domid.slice(1)+"Value";
+                    var inputElem = elem.append("input")
+                        .attr("name", iid)
+                        .attr("id", iid)
+                        .classed("formPart", true)
+                    ;
+
+                    var spinner = $("#"+iid).spinner({
+                        min: settings.min,
+                        max: settings.max,
+                        value: settings.default,
+                    });
+
+                    $("#"+iid).spinner("value", settings.default);
+
+                    elem.selectAll(".ui-spinner")
+                        .style("vertical-align", "baseline")    // baseline is different to selectmenu, causing vertical offset
+                        .style("width", "5em")
+                    ;
+                });
+                
+                
+                // Make unit drop-downs
+                var unitSettings = [
+                    {domid: "#paramTolerance", units: ["ppm", "Da"], default: "ppm",},
+                    {domid: "#paramTolerance2", units: ["ppm", "Da"], default: "ppm",},
+                ];
+                unitSettings.forEach (function (settings) {
+                    var elem = d3.select(settings.domid);
+                    var baseId = settings.domid.slice(1)+"Units";
+                    var selElem = elem.append("select")
+                        .attr("name", baseId)
+                        .attr("id", baseId)
+                        .classed("formPart", true)
+                    ;
+                    var optionJoin = selElem.selectAll("option").data(settings.units);
+                    optionJoin.enter()
+                        .append("option")
+                        .text (function(d) { return d; })
+                        .property ("selected", function(d) { return d === settings.default; })
+                    ;
+
+                    $("#"+baseId).selectmenu();
+
+                    elem.selectAll(".ui-selectmenu-button").style("width", null);   // calculated width in selectmenu is dodgy, kill it
+                });
+                    
+                
+                // Make accordions
+                var accordions = ["#acqAccordion", "#seqAccordion"];
+                accordions.forEach (function (accordion) {
+                    $(accordion).accordion ({
+                        collapsible: true,
+                        active: false,
+                        heightStyle: "content",
+                    });
+                });
+                
+                
+                // Make buttons
+                $("#startProcessing").button();       
+            };
+            
             $(document).ready(function () {
                 
                 // http://stackoverflow.com/questions/23740548/how-to-pass-variables-and-data-from-php-to-javascript
@@ -313,78 +388,11 @@
                                 d3.select("#"+baseId+"Hidden").attr("value", ids);
                                 //console.log ("ids", ids);
                             })
-                        ;
-                        
+                        ;   
                         
                     });
   
-                    var accordions = ["#acqAccordion", "#seqAccordion"];
-                    accordions.forEach (function (accordion) {
-                        $(accordion).accordion ({
-                            collapsible: true,
-                            active: false,
-                            heightStyle: "content",
-                        });
-                    });
-                
-                    
-                    // Make number inputs
-                    var numberInputSettings = [
-                        {domid: "#paramTolerance", min: 0, default: 4,},
-                        {domid: "#paramTolerance2", min: 0, default: 20,},
-                        {domid: "#paramMissedCleavages", min: 0, default: 4,},
-                    ];
-                    numberInputSettings.forEach (function (settings) {
-                        var elem = d3.select(settings.domid);
-                        var iid = settings.domid.slice(1)+"Value";
-                        var inputElem = elem.append("input")
-                            .attr("name", iid)
-                            .attr("id", iid)
-                            .classed("formPart", true)
-                        ;
-                        
-                        var spinner = $("#"+iid).spinner({
-                            min: settings.min,
-                            max: settings.max,
-                            value: settings.default,
-                        });
-                        
-                        $("#"+iid).spinner("value", settings.default);
-                        
-                        elem.selectAll(".ui-spinner")
-                            .style("vertical-align", "baseline")    // baseline is different to selectmenu, causing vertical offset
-                            .style("width", "5em")
-                        ;
-                    });
-                    
-                    
-                    
-                    // Make unit drop-downs
-                    var unitSettings = [
-                        {domid: "#paramTolerance", units: ["ppm", "Da"], default: "ppm",},
-                        {domid: "#paramTolerance2", units: ["ppm", "Da"], default: "ppm",},
-                    ];
-                    unitSettings.forEach (function (settings) {
-                        var elem = d3.select(settings.domid);
-                        var baseId = settings.domid.slice(1)+"Units";
-                        var selElem = elem.append("select")
-                            .attr("name", baseId)
-                            .attr("id", baseId)
-                            .classed("formPart", true)
-                        ;
-                        var optionJoin = selElem.selectAll("option").data(settings.units);
-                        optionJoin.enter()
-                            .append("option")
-                            .text (function(d) { return d; })
-                            .property ("selected", function(d) { return d === settings.default; })
-                        ;
-                        
-                        $("#"+baseId).selectmenu();
-                        
-                        elem.selectAll(".ui-selectmenu-button").style("width", null);   // calculated width in selectmenu is dodgy, kill it
-                    });
-                    
-                    
+
                     
                     // Make checkbox/radio choice controls
                     var buttonGroups = [
@@ -417,7 +425,7 @@
                         curVals.forEach (function (val) {
                             todoList.remove (val);
                         });
-                        d3.selectAll(".formPart").each (function() {
+                        d3.select("#parameterForm").selectAll(".formPart").each (function() {
                             if (this.id && !this.value) {
                                 todoList.add (this.id);
                             }
@@ -425,15 +433,39 @@
                     };
                     updateCompleteness();
                     console.log ("todoList", todoList);
-                    
-                    $("#startProcessing").button();
 
                     
+                    // AJAX form submission
+                    // PITA have to reconstruct form data from all fields (marked them with .formPart class to make it easier)
                     $("#parameterForm").submit(function (event) {
-                      alert("Handler for .submit() called.");
-                      event.preventDefault();
+                        event.preventDefault();
+                        
+                        var formData = {};
+                        d3.select("#parameterForm").selectAll(".formPart").each (function() {
+                            if (this.id) {
+                                var val = this.value;
+                                // If one of the multiple select widgets, must get multiple values like this
+                                if (this.type === "select-multiple") {
+                                    val = $("#"+this.id).multipleSelect("getSelects");
+                                }
+                                formData[this.name] = val;
+                            }
+                        });
+                        console.log ("formData", formData);
+                        
+                        $.ajax ({
+                            type: "POST",
+                            url: "php/submitParams.php",
+                            data: formData,
+                            dataType: "json",
+                            encode: true,
+                        })
+                        .done (function (data) {
+                            console.log ("params submitted");
+                        })
                     });
                     
+                    // initialize blueimp file uploader bits
                     $(submitter.upload);
                     
                     var enableSubmit = function (textinputid, formid) {
@@ -452,6 +484,7 @@
                             enabler();
                         });
                         $(formid).on("fileuploadfailed", function (e, data) {
+                            console.log ("failed", data.jqXHR.responseText);
                             if (data.errorThrown === "abort") {
                                 nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
                                 enabler();
@@ -467,13 +500,14 @@
                     
                     var seqEnableSubmit = new enableSubmit ("#newSeqID", "#seqfileupload");
                     var acqEnableSubmit = new enableSubmit ("#newAcqID", "#acqfileupload");
-                    seqEnableSubmit.enabler();
-                    acqEnableSubmit.enabler();
+                    [seqEnableSubmit, acqEnableSubmit].forEach (function(sub) { sub.enabler(); });
                 };
                 
                 oReq.open("get", "php/populate.php", true);     // true == asynchronous call
                 oReq.send();
             });
+            
+            canDoImmediately();
         </script>
 
     </body>
@@ -492,9 +526,9 @@
                 {% } %}
             </td>
             <td>
-                <p class="size">{%=o.formatFileSize(file.size)%}</p>
+                <!-- <p class="size">{%=o.formatFileSize(file.size)%}</p> -->
                 {% if (!o.files.error) { %}
-                <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" style="width:0%;"></div></div>
+                <div class="progress progress-success progress-striped active size" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" style="width:0%;"></div></div>
                 {% } %}
             </td>
             <td>
@@ -534,12 +568,14 @@
             <td>
                 <span class="size">{%=o.formatFileSize(file.size)%}</span>
             </td>
+            <!--
             <td>
                 <button class="btn-danger delete" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}"{% if (file.delete_with_credentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
                     <span>Delete</span>
                 </button>
                 <input type="checkbox" name="delete" value="1" class="toggle">
             </td>
+            -->
         </tr>
         {% } %}
     </script>

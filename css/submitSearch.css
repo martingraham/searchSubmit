@@ -50,3 +50,6 @@
 .table-striped TR:nth-child(2n) {
     background: #f8f8f8;
 }
+
+#parameterForm textarea {
+}
