@@ -36,18 +36,18 @@ function normalizeString ($str = '')
 }
 
 $relFolderPath = "/";
-if (array_key_exists ("newAcqID", $_POST)) {
+if (array_key_exists ("newacqID", $_POST)) {
     $userName = $_SESSION["session_name"];
     $userID = $_SESSION["user_id"];
     $userName = normalizeString ($userName);
 
-    $dirName = $_POST["newAcqID"];
+    $dirName = $_POST["newacqID"];
     $dirName = normalizeString ($dirName);
 
     $relFolderPath = "users/".$userName."/".$dirName."/";
 }
-else if (array_key_exists ("newSeqID", $_POST)) {
-    $dirName = $_POST["newSeqID"];
+else if (array_key_exists ("newseqID", $_POST)) {
+    $dirName = $_POST["newseqID"];
     $dirName = normalizeString ($dirName);
 
     $relFolderPath = "sequenceDB/".$dirName."/";

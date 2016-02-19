@@ -45,98 +45,53 @@
 
      </head>
      <body>
+         <script id="template-acqseq-section" type="text/x-tmpl">
+            <h3>{%=o.singleLabel%}</h3>
+            <span id="{%=o.partialId%}Selected"></span>
+
+            <div id="{%=o.partialId%}Accordion">
+                <h3>Upload {%=o.pluralLabel%}</h3>
+
+                <div id="{%=o.partialId%}Upload">
+                    <!-- The file upload form used as target for the file upload widget -->
+                    <form class="fileupload" id="{%=o.partialId%}fileupload" action="./vendor/server/php/CLMSUpload.php" method="POST" enctype="multipart/form-data">
+                        <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+                        <div class="row fileupload-buttonbar">
+                            <div class="fileupload-buttons">
+                                <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="Set {%=o.singleLabel%} name here..."></input>
+                                <!-- The fileinput-button span is used to style the file input field as button -->
+                                <span class="fileinput-button">
+                                    <span>Add files...</span>
+                                    <input type="file" name="files[]" multiple>
+                                </span>
+                                <button type="submit" class="start">Start upload</button>
+                                <button type="reset" class="cancel">Cancel upload</button>
+                                <!-- <button type="button" class="delete">Delete</button> -->
+                                <!-- <input type="checkbox" class="toggle"> -->
+                                <!-- The global file processing state -->
+                                <span class="fileupload-process"></span>
+                            </div>
+                            <!-- The global progress state -->
+                            <div class="fileupload-progress fade" style="display:none">
+                                <!-- The global progress bar -->
+                                <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+                                <!-- The extended global progress state -->
+                                <div class="progress-extended">&nbsp;</div>
+                            </div>
+                        </div>
+                        <!-- The table listing the files available for upload/download -->
+                        <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
+                    </form>
+                </div>
+
+                <h3>Use Previous {%=o.pluralLabel%}</h3>
+                <div id="{%=o.partialId%}Previous"></div>
+            </div>
+        </script>
+         
         <div>
-            <div class="paramSetting" id="acquire">
-                <H3>Acquisition</H3>
-                <span id="acq-selected"></span>
-
-                <div id="acqAccordion">
-                    <h3>Upload Acquisitions</h3>
-                    
-                    <div id="acquisitions-upload">
-                        <!-- The file upload form used as target for the file upload widget -->
-                        <form class="fileupload" id="acqfileupload" action="./vendor/server/php/CLMSUpload.php" method="POST" enctype="multipart/form-data">
-                            <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
-                            <div class="row fileupload-buttonbar">
-                                <div class="fileupload-buttons">
-                                    <input type="text" value="" id="newAcqID" name="newAcqID" placeholder="Set acquisition name here..."></input>
-                                    <!-- The fileinput-button span is used to style the file input field as button -->
-                                    <span class="fileinput-button">
-                                        <span>Add files...</span>
-                                        <input type="file" name="files[]" multiple>
-                                    </span>
-                                    <button type="submit" class="start">Start upload</button>
-                                    <button type="reset" class="cancel">Cancel upload</button>
-                                    <!-- <button type="button" class="delete">Delete</button> -->
-                                    <!-- <input type="checkbox" class="toggle"> -->
-                                    <!-- The global file processing state -->
-                                    <span class="fileupload-process"></span>
-                                </div>
-                                <!-- The global progress state -->
-                                <div class="fileupload-progress fade" style="display:none">
-                                    <!-- The global progress bar -->
-                                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
-                                    <!-- The extended global progress state -->
-                                    <div class="progress-extended">&nbsp;</div>
-                                </div>
-                            </div>
-                            <!-- The table listing the files available for upload/download -->
-                            <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
-                        </form>
-                    </div>
-
-                    <h3>Use Previous Acquisitions</h3>
-                    <div id="previousAcqui"></div>
-                </div>
-            </div>
-
-
-
-            <div class="paramSetting" id="sequence">
-                <H3>Sequence</H3>
-                <span id="seq-selected"></span>
-
-                <div id="seqAccordion">
-                    <h3>Upload Sequences</h3>
-                              
-                    <div id="sequence-upload"> 
-                        <!-- The file upload form used as target for the file upload widget -->
-                        <form class="fileupload" id="seqfileupload" action="./vendor/server/php/CLMSUpload.php" method="POST" enctype="multipart/form-data">
-                            <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
-                            <div class="row fileupload-buttonbar">
-                               <div class="fileupload-buttons">
-                                   <input type="text" value="" id="newSeqID" name="newSeqID" placeholder="Set sequence DB name here..."></input>
-                                    <!-- The fileinput-button span is used to style the file input field as button -->
-                                    <span class="fileinput-button">
-                                        <span>Add files...</span>
-                                        <input type="file" name="files[]" multiple>
-                                    </span>
-                                    <button type="submit" class="start">Start upload</button>
-                                    <button type="reset" class="cancel">Cancel upload</button>
-                                    <!-- <button type="button" class="delete">Delete</button> -->
-                                    <!-- <input type="checkbox" class="toggle"> -->
-                                    <!-- The loading indicator is shown during file processing -->
-                                    <span class="fileupload-loading"></span>
-                                </div>
-                                <!-- The global progress information -->
-                                <div class="fileupload-progress fade" style="display:none">
-                                    <!-- The global progress bar -->
-                                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
-                                    <!-- The extended global progress state -->
-                                    <div class="progress-extended">&nbsp;</div>
-                                </div>
-                            </div>
-                            <!-- The table listing the files available for upload/download -->
-                            <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
-                        </form>
-                    </div>
-
-                    <h3>Use Previous Sequences</h3>
-                    <div id="previousSeq"></div>
-                </div>
-            </div>
-
-
+            <div class="paramSetting" id="acquire"></div>
+            <div class="paramSetting" id="sequence"></div>
 
             <form id="parameterForm" name="login_form" method="post" action="php/submitParams.php">
             <div>
@@ -186,10 +141,20 @@
         <script>
             function canDoImmediately () {
                 
+                // Make acquisition and sequence divs via shared template
+                var acqSeqTemplateData = [
+                    {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "partialId":"seq",}},
+                    {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "partialId":"acq",}},
+                ];
+                acqSeqTemplateData.forEach (function (datum) {
+                    d3.select(datum.id).html (tmpl("template-acqseq-section", datum.fields));
+                });
+
+                
                 // Make number inputs
                 var numberInputSettings = [
                     {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, default: 4,},
-                    {domid: "#paramTolerance2",niceLabel: "Ms2 Tolerance",  min: 0, default: 20,},
+                    {domid: "#paramTolerance2", niceLabel: "Ms2 Tolerance", min: 0, default: 20,},
                     {domid: "#paramMissedCleavages", niceLabel: "Missed cleavages", min: 0, default: 4,},
                 ];
                 numberInputSettings.forEach (function (settings) {
@@ -331,8 +296,8 @@
                     
                     // Make previous tables
                     var previousSettings = [
-                        {domid: "#previousAcqui", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acq-selected",},
-                        {domid: "#previousSeq", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seq-selected",},
+                        {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected",},
+                        {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected",},
                     ];
                     previousSettings.forEach (function (psetting) {
                         var sel = d3.select (psetting.domid);
@@ -491,18 +456,39 @@
                             buttons.button ("option", "disabled", blocked);
                         };
                         this.enabler = enabler;
+                        var success = true;
                         
-                        $(formid).on("fileuploadadded", function (e, data) {
-                            nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
-                            enabler();
-                        });
-                        $(formid).on("fileuploadfailed", function (e, data) {                         
-                            console.log ("failed", data);
-                            //console.log ("failed", data.jqXHR.responseText);
-                            if (data.errorThrown === "abort") {
+                        $(formid).on({
+                            "fileuploadstart": function (e, data) {
+                                console.log ("started", e, data);
+                                success = true;
+                            },
+                            "fileuploadadded": function (e, data) {
                                 nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
                                 enabler();
-                            }
+                            },
+                            "fileuploadfailed": function (e, data) {                         
+                                console.log ("failed", data);
+                                //console.log ("failed", data.jqXHR.responseText);
+                                if (data.errorThrown === "abort") {
+                                    nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
+                                    enabler();
+                                }
+                                success = false;
+                            },
+                            "fileuploadstopped": function (e, data) {
+                                console.log ("stopped", e, data, success);
+                                if (success) {
+                                    var formData = {name: d3.select(textinputid).text(),};
+                                    $.ajax ({
+                                        type: "POST",
+                                        url: "php/submitSeqAcq.php",
+                                        data: formData,
+                                        dataType: "json",
+                                        encode: true,
+                                    })
+                                }
+                            },
                         });
                         d3.select(textinputid).on("input", function () {
                             nonzeroes.namelength = this.value.length;
@@ -512,8 +498,8 @@
                         return this;
                     };
                     
-                    var seqEnableSubmit = new enableSubmit ("#newSeqID", "#seqfileupload");
-                    var acqEnableSubmit = new enableSubmit ("#newAcqID", "#acqfileupload");
+                    var seqEnableSubmit = new enableSubmit ("#newseqID", "#seqfileupload");
+                    var acqEnableSubmit = new enableSubmit ("#newacqID", "#acqfileupload");
                     [seqEnableSubmit, acqEnableSubmit].forEach (function(sub) { sub.enabler(); });
                 };
                 
@@ -530,9 +516,6 @@
     <script id="template-upload" type="text/x-tmpl">
         {% for (var i=0, file; file=o.files[i]; i++) { %}
         <tr class="template-upload fade">
-            <td>
-                <span class="preview"></span>
-            </td>
             <td>
                 <p class="name">{%=file.name%}</p>
                 {% if (file.error) { %}
@@ -564,13 +547,6 @@
     <script id="template-download" type="text/x-tmpl">
         {% for (var i=0, file; file=o.files[i]; i++) { %}
         <tr class="template-download fade">
-            <td>
-                <span class="preview">
-                    {% if (file.thumbnail_url) { %}
-                    <a href="{%=file.url%}" title="{%=file.name%}" class="gallery" download="{%=file.name%}"><img src="{%=file.thumbnail_url%}"></a>
-                    {% } %}
-                </span>
-            </td>
             <td>
                 <p class="name">
                     <a href="{%=file.url%}" title="{%=file.name%}" class="{%=file.thumbnail_url?'gallery':''%}" download="{%=file.name%}">{%=file.name%}</a>
