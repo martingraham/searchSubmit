@@ -52,4 +52,21 @@
 }
 
 #parameterForm textarea {
+    width: 100%;
+}
+
+#todo {
+    background: #fdd;
+}
+
+#todo span {
+    display: inline-block;
+}
+
+#acquire > H3, #sequence > H3 {
+    display: inline;
+}
+
+#acquire > span, #sequence > span {
+    margin-left: 2em;
 }

@@ -48,9 +48,11 @@
         <div>
             <div class="paramSetting" id="acquire">
                 <H3>Acquisition</H3>
+                <span id="acq-selected"></span>
 
                 <div id="acqAccordion">
                     <h3>Upload Acquisitions</h3>
+                    
                     <div id="acquisitions-upload">
                         <!-- The file upload form used as target for the file upload widget -->
                         <form class="fileupload" id="acqfileupload" action="./vendor/server/php/CLMSUpload.php" method="POST" enctype="multipart/form-data">
@@ -92,11 +94,12 @@
 
             <div class="paramSetting" id="sequence">
                 <H3>Sequence</H3>
+                <span id="seq-selected"></span>
 
                 <div id="seqAccordion">
                     <h3>Upload Sequences</h3>
-                    <div id="sequence-upload">
-                        
+                              
+                    <div id="sequence-upload"> 
                         <!-- The file upload form used as target for the file upload widget -->
                         <form class="fileupload" id="seqfileupload" action="./vendor/server/php/CLMSUpload.php" method="POST" enctype="multipart/form-data">
                             <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
@@ -140,57 +143,41 @@
                 <h3>Search Parameters</h3>
 
                 <div class="row">
-                    <div class="col-6 paramSetting" id="paramCrossLinker">
-                        <P>Cross-Linker</P>
-                    </div>
-                    <div class="col-6 paramSetting" id="paramEnzyme">
-                        <P>Enzyme</P>
-                    </div>
+                    <div class="col-6 paramSetting" id="paramCrossLinker"></div>
+                    <div class="col-6 paramSetting" id="paramEnzyme"></div>
                 </div>
 
                 <div class="row">
-                    <div class="col-4 paramSetting" id="paramTolerance">
-                        <P>Ms Tolerance</P>
-                    </div>
-                    <div class="col-4 paramSetting" id="paramTolerance2">
-                        <P>Ms2 Tolerance</P>
-                    </div>
-                    <div class="col-4 paramSetting" id="paramMissedCleavages">
-                        <P>Missed cleavages</P>
-                    </div>
+                    <div class="col-4 paramSetting" id="paramTolerance"></div>
+                    <div class="col-4 paramSetting" id="paramTolerance2"></div>
+                    <div class="col-4 paramSetting" id="paramMissedCleavages"></div>
                 </div>
 
                 <div class="row"> 
-                    <div class="col-6 paramSetting" id="paramFixedMods">
-                        <P>Fixed Mods</P>
-                    </div>
-                    <div class="col-6 paramSetting" id="paramVarMods">
-                        <P>Var Mods</P>
-                    </div>
+                    <div class="col-6 paramSetting" id="paramFixedMods"></div>
+                    <div class="col-6 paramSetting" id="paramVarMods"></div>
                 </div>
 
                 <div class="row">
-                    <div class="col-6 paramSetting" id="paramIons">
-                        <P>Ions</P>
-                    </div>
-                    <div class="col-6 paramSetting" id="paramLosses">
-                        <P>Losses</P>
-                    </div>
+                    <div class="col-6 paramSetting" id="paramIons"></div>
+                    <div class="col-6 paramSetting" id="paramLosses"></div>
                 </div>
 
 
             </div> <!-- SEARCH PARAMS GROUP -->
             <div class="row">
-                <div class="col-6">
+                <div class="col-2">
                     <button type="submit" id="startProcessing">Start Processing</button>
                     <!-- SUCCESSFUL UPLOAD ICON-->
                     <!--    <div class="control-group success">
                         <i class="input-icon fui-check-inverted"></i>
                     </div>  CONTROL GROUP SUCCESS-->
                 </div>
+                <div class="col-4" id="todo">
+                </div>
                 <div class="col-6 paramSetting">
                     <P>Search Notes</P>
-                    <textarea class="formPart" wrap="soft" maxlength="10000" cols="80" rows="4" name="paramNotes" value="" placeholder="Click here to start typing..."></textarea>
+                    <textarea class="formPart" wrap="soft" maxlength="10000" cols="50" rows="4" name="paramNotes" value="" placeholder="Click here to start typing..."></textarea>
                 </div>
             </div>
             </form>
@@ -201,12 +188,13 @@
                 
                 // Make number inputs
                 var numberInputSettings = [
-                    {domid: "#paramTolerance", min: 0, default: 4,},
-                    {domid: "#paramTolerance2", min: 0, default: 20,},
-                    {domid: "#paramMissedCleavages", min: 0, default: 4,},
+                    {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, default: 4,},
+                    {domid: "#paramTolerance2",niceLabel: "Ms2 Tolerance",  min: 0, default: 20,},
+                    {domid: "#paramMissedCleavages", niceLabel: "Missed cleavages", min: 0, default: 4,},
                 ];
                 numberInputSettings.forEach (function (settings) {
                     var elem = d3.select(settings.domid);
+                    elem.append("p").text(settings.niceLabel);
                     var iid = settings.domid.slice(1)+"Value";
                     var inputElem = elem.append("input")
                         .attr("name", iid)
@@ -281,26 +269,30 @@
                     var data = JSON.parse (result);
                     console.log ("data", data);
                     
+                    var dispatchObj = d3.dispatch("inputChanged");
                     
                     // Make combobox and multiple selection elements
                     // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                     // Multiple Selects need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
                     var populateOptionLists = [
-                        {data: data.xlinkers, domid: "#paramCrossLinker", filter: true, multiple: false, placeHolder: "Select A Cross Linker",},
-                        {data: data.enzymes, domid: "#paramEnzyme", filter: true, multiple: false, placeHolder: "Select An Enzyme",},
-                        {data: data.modifications, domid: "#paramFixedMods", multiple: true, filter: true, placeHolder: "Select Modifications",},
-                        {data: data.modifications, domid: "#paramVarMods", multiple: true, filter: true, placeHolder: "Select Modifications",},
-                        {data: data.ions, domid: "#paramIons", multiple: true, filter: false, placeHolder: "Select At Least One Ion",},
-                        {data: data.losses, domid: "#paramLosses", multiple: true, filter: false, placeHolder: "Select At Least One Loss",},
+                        {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker",},
+                        {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
+                        {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Mods", required: true, multiple: true, filter: true, placeHolder: "Select Modifications",},
+                        {data: data.modifications, domid: "#paramVarMods", niceLabel: "Var Mods", required: true, multiple: true, filter: true, placeHolder: "Select Modifications",},
+                        {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion",},
+                        {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Loss",},
                     ];
                     populateOptionLists.forEach (function (poplist) {
                         var elem = d3.select(poplist.domid);
+                        elem.append("p").text(poplist.niceLabel);
                         var baseId = poplist.domid.slice(1)+"Select";
                         var selElem = elem.append("select")
                             .attr("id", baseId)
                             .attr("name", baseId + (poplist.multiple ? "[]" : ""))  // magic. Need [] at end of name of elements that can submit multiple values
+                            .attr("data-label", poplist.niceLabel)    
                             .classed("formPart", true)
                             .property("multiple", poplist.multiple)
+                            .property("required", poplist.required)
                         ;
                         
                         var dataJoin = selElem.selectAll("option")
@@ -321,7 +313,7 @@
                                 width: 450,
                                 multipleWidth: 200,
                                 onClick: function (view) {
-                                    var selects = $("#"+baseId).multipleSelect("getSelects");         
+                                    dispatchObj.inputChanged();   
                                 },
                             });
                             elem.selectAll(".ms-choice")
@@ -339,8 +331,8 @@
                     
                     // Make previous tables
                     var previousSettings = [
-                        {domid: "#previousAcqui", data: data.previousAcqui,},
-                        {domid: "#previousSeq", data: data.previousSeq,},
+                        {domid: "#previousAcqui", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acq-selected",},
+                        {domid: "#previousSeq", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seq-selected",},
                     ];
                     previousSettings.forEach (function (psetting) {
                         var sel = d3.select (psetting.domid);
@@ -376,7 +368,9 @@
                             .attr ("type", "hidden")
                             .attr ("name", baseId+"[]") // add [] because value can/will be an array
                             .attr ("id", baseId+"Hidden")
+                            .attr ("data-label", psetting.niceLabel)   
                             .attr ("value", "")
+                            .property ("required", psetting.required)
                         ;
                         
                         // on a selection in the table, we then smuggle the current selection set of ids into the hidden form
@@ -386,7 +380,10 @@
                                 var curSel = sel.select("table").selectAll("input:checked");
                                 var ids = curSel.data().map (function(d) { return d.id; });
                                 d3.select("#"+baseId+"Hidden").attr("value", ids);
-                                //console.log ("ids", ids);
+                            
+                                var names = curSel.data().map (function(d) { return d.name; });
+                                d3.select(psetting.selectSummaryid).text (names.length ? "Selected "+names.join(", ") : null);
+                                dispatchObj.inputChanged();
                             })
                         ;   
                         
@@ -419,21 +416,36 @@
                     });
                     
                     
-                    var todoList = d3.set();
-                    var updateCompleteness = function () {
-                        var curVals = todoList.values();
-                        curVals.forEach (function (val) {
-                            todoList.remove (val);
-                        });
-                        d3.select("#parameterForm").selectAll(".formPart").each (function() {
+                    
+                    // Sections to control availability of main submit button and explain why disabled if so
+                    d3.select("#todo").selectAll("span").data(["ui-icon","notice"])
+                        .enter()
+                        .append("span")
+                        .attr ("class", function(d) { return d; })
+                    ;
+                    
+                    dispatchObj.on ("inputChanged", function () {
+                        var todoList = d3.set();
+                        d3.select("#parameterForm").selectAll(".formPart[required]").each (function() {
                             if (this.id && !this.value) {
-                                todoList.add (this.id);
+                                todoList.add (d3.select(this).attr("data-label") || d3.select(this).attr("name"));
                             }
                         });
-                    };
-                    updateCompleteness();
-                    console.log ("todoList", todoList);
+                        $("#startProcessing").button("option", "disabled", !todoList.empty());
+                        d3.select("#todo")
+                            .selectAll("span.ui-icon")
+                            .classed ("ui-icon-notice", !todoList.empty())
+                            .classed ("ui-icon-check", todoList.empty())
+                        ;
+                        d3.select("#todo")
+                            .selectAll("span.notice")
+                            .html(function(d) { return todoList.empty() ? "Ready to Process" : "Values Required for:<br>"+todoList.values(); } )
+                        ;
+                        
+                    });
+                    dispatchObj.inputChanged();
 
+                    
                     
                     // AJAX form submission
                     // PITA have to reconstruct form data from all fields (marked them with .formPart class to make it easier)
@@ -468,6 +480,7 @@
                     // initialize blueimp file uploader bits
                     $(submitter.upload);
                     
+                    // Function to control 
                     var enableSubmit = function (textinputid, formid) {
                         var nonzeroes = {filesAwaiting: 0, namelength: 0,};
                         var enabler = function () {
@@ -475,7 +488,7 @@
                             var blocked = vals.some (function(d) { return d === 0; });
                             var buttons = $(formid+" button");
                             console.log (formid, vals, blocked, buttons);
-                            buttons.button (blocked ? "disable" : "enable");
+                            buttons.button ("option", "disabled", blocked);
                         };
                         this.enabler = enabler;
                         
@@ -483,8 +496,9 @@
                             nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
                             enabler();
                         });
-                        $(formid).on("fileuploadfailed", function (e, data) {
-                            console.log ("failed", data.jqXHR.responseText);
+                        $(formid).on("fileuploadfailed", function (e, data) {                         
+                            console.log ("failed", data);
+                            //console.log ("failed", data.jqXHR.responseText);
                             if (data.errorThrown === "abort") {
                                 nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
                                 enabler();
