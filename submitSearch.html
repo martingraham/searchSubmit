@@ -398,13 +398,16 @@
                         });
                         $("#startProcessing").button("option", "disabled", !todoList.empty());
                         d3.select("#todo")
+                            .classed ("paramSubmitReady", todoList.empty())
+                        ;
+                        d3.select("#todo")
                             .selectAll("span.ui-icon")
                             .classed ("ui-icon-notice", !todoList.empty())
                             .classed ("ui-icon-check", todoList.empty())
                         ;
                         d3.select("#todo")
                             .selectAll("span.notice")
-                            .html(function(d) { return todoList.empty() ? "Ready to Process" : "Values Required for:<br>"+todoList.values(); } )
+                            .html(function(d) { return todoList.empty() ? "Ready to Process" : "Values are required for:<br>"+todoList.values(); } )
                         ;
                         
                     });
@@ -446,7 +449,7 @@
                     $(submitter.upload);
                     
                     // Function to control 
-                    var enableSubmit = function (textinputid, formid) {
+                    var enableSubmit = function (textinputid, formid, type) {
                         var nonzeroes = {filesAwaiting: 0, namelength: 0,};
                         var enabler = function () {
                             var vals = d3.values (nonzeroes);
@@ -457,6 +460,7 @@
                         };
                         this.enabler = enabler;
                         var success = true;
+                        var lastFileUploaded;
                         
                         $(formid).on({
                             "fileuploadstart": function (e, data) {
@@ -476,10 +480,18 @@
                                 }
                                 success = false;
                             },
+                            "fileuploaddone": function (e, data) {
+                                console.log ("done", e, data);
+                                lastFileUploaded = data.files[0].name;
+                            },
                             "fileuploadstopped": function (e, data) {
                                 console.log ("stopped", e, data, success);
                                 if (success) {
-                                    var formData = {name: d3.select(textinputid).text(),};
+                                    var formData = {
+                                        name: d3.select(textinputid).property("value"),
+                                        filename: lastFileUploaded,
+                                        type: type,
+                                    };
                                     $.ajax ({
                                         type: "POST",
                                         url: "php/submitSeqAcq.php",
@@ -498,8 +510,8 @@
                         return this;
                     };
                     
-                    var seqEnableSubmit = new enableSubmit ("#newseqID", "#seqfileupload");
-                    var acqEnableSubmit = new enableSubmit ("#newacqID", "#acqfileupload");
+                    var seqEnableSubmit = new enableSubmit ("#newseqID", "#seqfileupload", "seq");
+                    var acqEnableSubmit = new enableSubmit ("#newacqID", "#acqfileupload", "acq");
                     [seqEnableSubmit, acqEnableSubmit].forEach (function(sub) { sub.enabler(); });
                 };
                 

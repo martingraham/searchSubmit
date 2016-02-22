@@ -7,9 +7,10 @@ if (!$_SESSION['session_name']) {
 $pageName = "New Search";
 
 include('../../connectionString.php');
+
 //open connection
 $dbconn = pg_connect($connectionString)
-        or die('Could not connect: ' . pg_last_error());
+       or die('Could not connect: ' . pg_last_error());
 
 // Get previous acquisitions from DB
 $query = "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";

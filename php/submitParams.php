@@ -31,16 +31,23 @@ $paramLinkTableMap = array (
     "paramLossesSelect" => array ("table" => "chosen_losses", "sqlname" => "loss_id", "required" => true, "validate" => FILTER_VALIDATE_INT),
 );
 
+
 $searchLinkTableMap = array (
     "previousAcquiTable" => array ("table" => "search_acquisition", "sqlname" => "acq_id", "required" => true, "validate" => FILTER_VALIDATE_INT),
     "previousSeqTable" => array ("table" => "search_sequencedb", "sqlname" => "seqdb_id", "required" => true, "validate" => FILTER_VALIDATE_INT)
 );
 
+$preparedStatementTexts = array (
+    "paramSet" => "INSERT INTO parameter-set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, upload_date, notes)"
+        ."VALUES (%1, %2, %3, %4, %5, %6, %7, %8, NOW(), %9)",
+    "paramFixedModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
+    "paramVarModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
+    "paramVarIonsSelect" => "INSERT INTO chosen_ions (paramset_id, ion_id) VALUES ($1, $2)",
+    "paramLossesSelect" => "INSERT INTO chosen_losses (paramset_id, loss_id) VALUES ($1, $2)",
+);
+
 $allUserFieldsMap = array_merge ($paramFieldNameMap, $paramLinkTableMap, $searchLinkTableMap);
 
-$paramInsert = array (
-    "uploadedby" => $userID
-);
 
 // Check everything necessary is in the bag
 $allGood = true;
@@ -69,69 +76,42 @@ foreach ($allUserFieldsMap as $key => $value) {
 }
 
 
-ChromePhp::log(json_encode($paramInsert));
 ChromePhp::log(json_encode($allGood));
 
 
 if (true /*$allGood*/) {
     
-    $sqlInserts = array ();
-    
-    $sqlStr = "INSERT INTO parameter_set (uploadedby";
-    foreach ($paramFieldNameMap as $key => $value) {
-        $sqlStr .= ",".$value["sqlname"];
-    }
-    $sqlStr .= ") VALUES (";
-    $sqlStr .= $userID;
-    foreach ($paramFieldNameMap as $key => $value) {
-        $sqlStr .= ",".$_POST[$key];
-    }
-    $sqlStr .= ")";
-    ChromePhp::log(json_encode($sqlStr));
-    $sqlInserts[] = $sqlStr;
-
-    // little bobby tables - https://xkcd.com/327/
-    
-    foreach ($paramLinkTableMap as $key => $value) {
-        $arrval = $_POST[$key];
-        $count = count($arrval);
-        if (($count == 0 || ($count == 1 && $arrval[0] == "")) && $value["required"] == true) {
-            $allGood = false;
-        } else {
-            foreach ($arrval as $mval) {
-                $sqlStr = "INSERT INTO ".$value["table"]." (paramset_id,".$value["sqlname"];
-                if (array_key_exists ("defaults", $value)) {
-                    foreach ($value["defaults"] as $dkey => $dval) {
-                        $sqlStr .= ",".$dkey;
-                    }
-                }
-                $sqlStr .= ") VALUES (";
-                $sqlStr .= "<pid>, ".$mval;
-                if (array_key_exists ("defaults", $value)) {
-                    foreach ($value["defaults"] as $dkey => $dval) {
-                        $sqlStr .= ", ".$dval;
-                    }
-                } 
-                $sqlStr .= ")";
-                ChromePhp::log(json_encode($sqlStr));
-                $sqlInserts[] = $sqlStr;
-            }
-        }
-    }
-
-    ChromePhp::log(json_encode($sqlInserts));
-    
-
-
-    include('../../connectionString.php');
+    include('../../connectionStringSafe.php');
     //open connection
     $dbconn = pg_connect($connectionString)
             or die('Could not connect: ' . pg_last_error());
-
-    // insert search parameters into db
-    //$query = "INSERT INTO parameter_set (upload_date) VALUES (now(), )
-    //$result = pg_query($query) or die('Query failed: ' . pg_last_error());
-
+    
+    // little bobby tables - https://xkcd.com/327/
+    $paramid = 1234567890;
+    $result = pg_prepare($dbconn, "paramsAdd", $preparedStatementTexts["paramSet"]);
+    ChromePhp::log(json_encode(pg_fetch_all($result)));
+    //$result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], , $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],
+    //                                           $_POST["paramTolerance2Value"], $_POST["paramToleranceUnits"], $_POST["paramTolerance2Units"], $_POST["paramNotes"]]);
+    // $paramid = pg_fetch_assoc($result)['id'];
+    
+    foreach ($paramLinkTableMap as $key => $value) {
+        $arrval = $_POST[$key];
+        $pname = $key."add";
+        $result = pg_prepare ($dbconn, $pname, $preparedStatementTexts[$key]);
+        // change to multi-insert later? http://php.net/manual/en/mysqli.quickstart.prepared-statements.php
+        foreach ($arrval as $mval) {
+            $arr = [$paramid, $mval];
+            if (array_key_exists ("defaults", $value)) {
+                foreach ($value["defaults"] as $dkey => $dval) {
+                    $arr[] = $dval; // append $dval to $arr
+                }
+            } 
+            ChromePhp::log(json_encode($arr));
+            //$result = pg_execute($dbconn, $pname, $arr);
+        }
+    }
+    
+    
 
     //close connection
     pg_close($dbconn);

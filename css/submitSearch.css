@@ -18,7 +18,7 @@
 [class*="col-"] {
     float: left;
     padding: 0.5em;
-    border: 1px solid red;
+    /*border: 1px solid gray;*/
     margin-right: 0;
 }
 
@@ -55,8 +55,17 @@
     width: 100%;
 }
 
+#parameterForm .paramSetting {
+    border: 1px solid #ccc;
+    border-bottom: 0;
+}
+
 #todo {
     background: #fdd;
+}
+
+#todo.paramSubmitReady {
+    background: #dfd;
 }
 
 #todo span {
