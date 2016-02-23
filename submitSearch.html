@@ -460,7 +460,7 @@
                         };
                         this.enabler = enabler;
                         var success = true;
-                        var lastFileUploaded;
+                        var filesUploaded = [];
                         
                         $(formid).on({
                             "fileuploadstart": function (e, data) {
@@ -482,14 +482,14 @@
                             },
                             "fileuploaddone": function (e, data) {
                                 console.log ("done", e, data);
-                                lastFileUploaded = data.files[0].name;
+                                filesUploaded.push (data.files[0].name);
                             },
                             "fileuploadstopped": function (e, data) {
                                 console.log ("stopped", e, data, success);
                                 if (success) {
                                     var formData = {
                                         name: d3.select(textinputid).property("value"),
-                                        filename: lastFileUploaded,
+                                        filenames: filesUploaded,
                                         type: type,
                                     };
                                     $.ajax ({
@@ -498,7 +498,8 @@
                                         data: formData,
                                         dataType: "json",
                                         encode: true,
-                                    })
+                                    });
+                                    filesUploaded.length = 0;
                                 }
                             },
                         });

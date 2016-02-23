@@ -47,6 +47,11 @@ $query = "SELECT id, name from loss WHERE name NOT LIKE '#%' ORDER by name;";
 $result = pg_query($query) or die('Query failed: ' . pg_last_error());
 $losses = resultsAsArray($result);
 
+// Get basedir for file uploads
+$query = "SELECT setting FROM base_setting WHERE name='base_directory_path';";
+$result = pg_query($query) or die('Query failed: ' . pg_last_error());
+$baseDir = pg_fetch_row($result)[0];
+
 
 //close connection
 pg_close($dbconn);
@@ -67,7 +72,7 @@ function resultsAsArray($result) {
 
 echo json_encode (array(
     "xlinkers" => $xlinkers, "enzymes" => $enzymes, "previousAcqui" => $previousAcqui, "previousSeq" => $previousSeq,
-    "ions" => $ions, "modifications" => $mods, "losses" => $losses
+    "ions" => $ions, "modifications" => $mods, "losses" => $losses, "baseDir" => $baseDir
 ));
 
 ?>
