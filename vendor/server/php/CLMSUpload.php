@@ -14,11 +14,21 @@ session_start();
 if (!$_SESSION['session_name']) {
     header("location:login.html");
 }
-
+ 
 include '../../../php/ChromePhp.php';
 ChromePhp::log('Hello console!');
 ChromePhp::log(json_encode($_POST));
 ChromePhp::log(json_encode($_SESSION));
+
+// make a timestamp in the session to use in filepaths and name entries (so db php routines can use it) 
+if ($_SESSION["uploadTimeStamp"] == null) {
+    $date = new DateTime();
+    $dateStr = $date->format("-H_i_s-d_M_Y");
+    $_SESSION["uploadTimeStamp"] = $dateStr;
+}
+ChromePhp::log(json_encode($_SESSION["uploadTimeStamp"]));
+
+$baseDir = $_SESSION["baseDir"];
 
 // from http://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
 
@@ -38,22 +48,21 @@ function normalizeString ($str = '')
 $relFolderPath = "/";
 if (array_key_exists ("newacqID", $_POST)) {
     $userName = $_SESSION["session_name"];
-    $userID = $_SESSION["user_id"];
     $userName = normalizeString ($userName);
 
-    $dirName = $_POST["newacqID"];
+    $dirName = $_POST["newacqID"].$_SESSION["uploadTimeStamp"];
     $dirName = normalizeString ($dirName);
-
-    $relFolderPath = "users/".$userName."/".$dirName."/";
+    
+    $folder = $baseDir."xi/users/".$userName."/".$dirName."/";
 }
 else if (array_key_exists ("newseqID", $_POST)) {
-    $dirName = $_POST["newseqID"];
+    $dirName = $_POST["newseqID"].$_SESSION["uploadTimeStamp"];
     $dirName = normalizeString ($dirName);
 
-    $relFolderPath = "sequenceDB/".$dirName."/";
+    $folder = $baseDir."xi/sequenceDB/".$dirName."/";
 }
 
-$options = array('upload_dir' => $relFolderPath, 'upload_url' => $relFolderPath);
+$options = array('upload_dir' => $folder, 'upload_url' => $folder);
 ChromePhp::log($options);
 
 error_reporting(E_ALL | E_STRICT);

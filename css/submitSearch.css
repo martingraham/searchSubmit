@@ -79,3 +79,7 @@
 #acquire > span, #sequence > span {
     margin-left: 2em;
 }
+
+.hiddenFromUser {
+    display: none;
+}

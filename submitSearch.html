@@ -65,7 +65,7 @@
                                     <input type="file" name="files[]" multiple>
                                 </span>
                                 <button type="submit" class="start">Start upload</button>
-                                <button type="reset" class="cancel">Cancel upload</button>
+                                <button type="reset" class="cancel">Remove all files</button>
                                 <!-- <button type="button" class="delete">Delete</button> -->
                                 <!-- <input type="checkbox" class="toggle"> -->
                                 <!-- The global file processing state -->
@@ -234,7 +234,7 @@
                     var data = JSON.parse (result);
                     console.log ("data", data);
                     
-                    var dispatchObj = d3.dispatch("inputChanged");
+                    var dispatchObj = d3.dispatch("formInputChanged", "newEntryUploaded");
                     
                     // Make combobox and multiple selection elements
                     // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
@@ -278,7 +278,7 @@
                                 width: 450,
                                 multipleWidth: 200,
                                 onClick: function (view) {
-                                    dispatchObj.inputChanged();   
+                                    dispatchObj.formInputChanged();   
                                 },
                             });
                             elem.selectAll(".ms-choice")
@@ -295,6 +295,7 @@
                     
                     
                     // Make previous tables
+                    var prevTableClickFuncs = {}; // so we can keep thse for later
                     var previousSettings = [
                         {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected",},
                         {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected",},
@@ -340,18 +341,19 @@
                         
                         // on a selection in the table, we then smuggle the current selection set of ids into the hidden form
                         // where they can be picked up on the paramter form submit
+                        prevTableClickFuncs[baseId] = function () {
+                            var curSel = sel.select("table").selectAll("input:checked");
+                            var ids = curSel.data().map (function(d) { return d.id; });
+                            d3.select("#"+baseId+"Hidden").attr("value", ids);
+
+                            var names = curSel.data().map (function(d) { return d.name; });
+                            d3.select(psetting.selectSummaryid).text (names.length ? "Selected "+names.join(", ") : null);
+                            dispatchObj.formInputChanged();
+                        }; 
+
                         newRows.selectAll("input[type=checkbox]")
-                            .on ("click", function() {
-                                var curSel = sel.select("table").selectAll("input:checked");
-                                var ids = curSel.data().map (function(d) { return d.id; });
-                                d3.select("#"+baseId+"Hidden").attr("value", ids);
-                            
-                                var names = curSel.data().map (function(d) { return d.name; });
-                                d3.select(psetting.selectSummaryid).text (names.length ? "Selected "+names.join(", ") : null);
-                                dispatchObj.inputChanged();
-                            })
+                            .on ("click", prevTableClickFuncs[baseId])
                         ;   
-                        
                     });
   
 
@@ -389,7 +391,7 @@
                         .attr ("class", function(d) { return d; })
                     ;
                     
-                    dispatchObj.on ("inputChanged", function () {
+                    dispatchObj.on ("formInputChanged", function () {
                         var todoList = d3.set();
                         d3.select("#parameterForm").selectAll(".formPart[required]").each (function() {
                             if (this.id && !this.value) {
@@ -411,7 +413,7 @@
                         ;
                         
                     });
-                    dispatchObj.inputChanged();
+                    dispatchObj.formInputChanged();
 
                     
                     
@@ -445,48 +447,56 @@
                         })
                     });
                     
+                    
                     // initialize blueimp file uploader bits
                     $(submitter.upload);
                     
-                    // Function to control 
-                    var enableSubmit = function (textinputid, formid, type) {
+                    
+                    // Function to control actions/consequences of upload/delete buttons in seq/acq upload forms
+                    // Includes logic to enable/disable buttons if using them makes no sense
+                    var formActions = function (textinputid, formid, type) {
                         var nonzeroes = {filesAwaiting: 0, namelength: 0,};
                         var enabler = function () {
                             var vals = d3.values (nonzeroes);
-                            var blocked = vals.some (function(d) { return d === 0; });
-                            var buttons = $(formid+" button");
-                            console.log (formid, vals, blocked, buttons);
-                            buttons.button ("option", "disabled", blocked);
+                            
+                            var submitBlocked = vals.some (function(d) { return d === 0; });
+                            var buttons = $(formid+" button[type='submit']");
+                            buttons.button ("option", "disabled", submitBlocked);
+                            
+                            var resetBlocked = (nonzeroes.filesAwaiting === 0);
+                            var buttons = $(formid+" button[type='reset']");
+                            buttons.button ("option", "disabled", resetBlocked); 
                         };
-                        this.enabler = enabler;
-                        var success = true;
+                        this.buttonEnabler = enabler;
+                        var uploadSuccess = true;
                         var filesUploaded = [];
+                        var rowCountFunc = function () { d3.select(formid).selectAll("tr.template-upload").size(); };   // data.files.length;
                         
                         $(formid).on({
                             "fileuploadstart": function (e, data) {
                                 console.log ("started", e, data);
-                                success = true;
+                                uploadSuccess = true;
                             },
                             "fileuploadadded": function (e, data) {
-                                nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
+                                nonzeroes.filesAwaiting = rowCountFunc();
                                 enabler();
                             },
                             "fileuploadfailed": function (e, data) {                         
                                 console.log ("failed", data);
                                 //console.log ("failed", data.jqXHR.responseText);
                                 if (data.errorThrown === "abort") {
-                                    nonzeroes.filesAwaiting = d3.select(formid).selectAll("tr").size(); // data.files.length;
+                                    nonzeroes.filesAwaiting = rowCountFunc();
                                     enabler();
                                 }
-                                success = false;
+                                uploadSuccess = false;
                             },
                             "fileuploaddone": function (e, data) {
                                 console.log ("done", e, data);
                                 filesUploaded.push (data.files[0].name);
                             },
                             "fileuploadstopped": function (e, data) {
-                                console.log ("stopped", e, data, success);
-                                if (success) {
+                                console.log ("stopped", e, data, uploadSuccess);
+                                if (uploadSuccess) {
                                     var formData = {
                                         name: d3.select(textinputid).property("value"),
                                         filenames: filesUploaded,
@@ -498,9 +508,18 @@
                                         data: formData,
                                         dataType: "json",
                                         encode: true,
+                                        success: function (response, textStatus, jqXhr) {
+                                            console.log ("db insert success", response, textStatus);
+                                            dispatchObj.newEntryUploaded (type, response.newRow);    // alert new row has been added to db
+                                        },
+                                        error : function (jqXhr, textStatus, errorThrown) {
+                                            console.log ("db insert error", textStatus, errorThrown);    
+                                        },
                                     });
                                     filesUploaded.length = 0;
                                 }
+                                nonzeroes.filesAwaiting = rowCountFunc();
+                                enabler();
                             },
                         });
                         d3.select(textinputid).on("input", function () {
@@ -511,9 +530,27 @@
                         return this;
                     };
                     
-                    var seqEnableSubmit = new enableSubmit ("#newseqID", "#seqfileupload", "seq");
-                    var acqEnableSubmit = new enableSubmit ("#newacqID", "#acqfileupload", "acq");
-                    [seqEnableSubmit, acqEnableSubmit].forEach (function(sub) { sub.enabler(); });
+                    // if new row added, then add it to the correct table of previous results
+                    dispatchObj.on ("newEntryUploaded", function (type, newRow) {
+                        var tableId = type+"PreviousTable";
+                        var dataTable = $("#"+tableId).DataTable();
+                        newRow.selected = "<input type='checkbox' checked>";    // add a ready selected checkbox as a html string
+                        var newRowNode = dataTable.row
+                            .add(d3.values(newRow)) // push the newrow as new table row data
+                            .draw()                 // redraw the table
+                            .node()                 // return the tr dom node for further manipulation
+                        ;
+                        d3.select(newRowNode).select("input[type=checkbox]")
+                            .datum(newRow)  // set the row data on the checkbox as a d3 datum
+                            .on ("click", prevTableClickFuncs[tableId])    // so that calling this function works on click
+                        ;   
+                        prevTableClickFuncs[tableId] ();   // and we call the same func here as the checkbox is set pre-selected
+                    });
+                    
+                    // Make the two file upload forms
+                    var seqFormActions = new formActions ("#newseqID", "#seqfileupload", "seq");
+                    var acqFormActions = new formActions ("#newacqID", "#acqfileupload", "acq");
+                    [seqFormActions, acqFormActions].forEach (function(formAct) { formAct.buttonEnabler(); });
                 };
                 
                 oReq.open("get", "php/populate.php", true);     // true == asynchronous call
@@ -543,13 +580,13 @@
             </td>
             <td>
                 {% if (!o.files.error && !i && !o.options.autoUpload) { %}
-                <button class="btn-primary start">
+                <button class="btn-primary start hiddenFromUser">
                     <span>Start</span>
                 </button>
                 {% } %}
                 {% if (!i) { %}
                 <button class="btn-warning cancel">
-                    <span>Cancel</span>
+                    <span>Remove</span>
                 </button>
                 {% } %}
             </td>

@@ -51,47 +51,33 @@ ChromePhp::log(json_encode($allGood));
 
 
 if ($allGood) {
-    // Make date-time stamp
-    $XITIME = "-H_i_s-d_M_Y";
-    $date = new DateTime();
-    $dateStr = $date->format($XITIME);
-    ChromePhp::log(json_encode($dateStr));
-    
+
     $filenames = $_POST["filenames"];
-    $tstampname = $_POST["name"].$dateStr;
+    $tstampname = $_POST["name"].$_SESSION["uploadTimeStamp"];
     
     //open connection
     $dbconn = pg_connect($connectionString)
             or die('Could not connect: ' . pg_last_error());
 
     // little bobby tables - https://xkcd.com/327/ 
-    $returnID = "";
-
+    $returnRow = "";
     
     try {
+        $baseDir = $_SESSION["baseDir"];
         pg_query("BEGIN") or die("Could not start transaction\n");
-        
-        $query = "SELECT setting FROM base_setting WHERE name='base_directory_path';";
-        $result = pg_query($query) or die('Query failed: ' . pg_last_error());
-        $baseDir = pg_fetch_row($result)[0];
         
         if ($_POST["type"] == "acq") {
             $folder = $baseDir."xi/users/".$username."/".$tstampname;
             $acqAdd = pg_prepare($dbconn, "acqAdd",
         "INSERT INTO acquisition (uploadedby, name, upload_date) VALUES ($1, $2, NOW())");
             $result = pg_execute($dbconn, "acqAdd", [$userID, $tstampname]);
-            if ($result) {
-                ChromePhp::log(json_encode("good result returned"));
-            } else {
-                ChromePhp::log(json_encode("bad result returned"));
-            }
 
-
-            $acqIDGet = pg_prepare($dbconn, "acqIDGet", "SELECT id from acquisition WHERE uploadedby = $1 AND name = $2");
+            $acqIDGet = pg_prepare($dbconn, "acqIDGet", "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = $1 AND name = $2");
             $result =  pg_execute($dbconn, "acqIDGet", [$userID, $tstampname]);
-            $acqID = pg_fetch_row($result)[0];
-             ChromePhp::log(json_encode($acqID));
-
+            $returnRow = pg_fetch_assoc ($result); // get the newly added row, need it to add runs here and to return to client ui
+            $acqID = $returnRow["id"];
+            ChromePhp::log(json_encode($returnRow));
+            
              $runAdd = pg_prepare($dbconn, "runAdd",
         "INSERT INTO run (acq_id, run_id, name, file_path) VALUES ($1, $2, $3, $4)");
             foreach ($filenames as $index => $val) {
@@ -102,28 +88,30 @@ if ($allGood) {
             $returnID = $acqID;
         } 
         else if ($_POST["type"] == "seq") {
+            $folder = "xi/sequenceDB/".$tstampname;
             $seqAdd = pg_prepare($dbconn, "seqAdd",
         "INSERT INTO sequence_file (uploadedby, name, file_name, file_path, upload_date) VALUES ($1, $2, $3, $4, NOW())");
-             //$result2 = pg_prepare($dbconn, "seqQ", "SELECT * FROM sequence_file WHERE uploadedby = $1");
-             $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], "xi/sequenceDB/".$tstampname]);
-             //$result3 = pg_execute($dbconn, "seqQ", [$userID]);
-            $res = pg_result_status ($result, PGSQL_STATUS_STRING);
-             ChromePhp::log(json_encode(pg_fetch_all($result)));
-             ChromePhp::log(json_encode($res));
+             $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], $folder]);
+            
+            $seqIDGet = pg_prepare($dbconn, "seqIDGet", "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = $1 AND name = $2");
+            $result = pg_execute($dbconn, "seqIDGet", [$userID, $tstampname]);
+            $returnRow = pg_fetch_assoc ($result);  // get the newly added row, need it to return to client ui
+            ChromePhp::log(json_encode($returnRow));
         } 
         
          pg_query("COMMIT");
-         echo (json_encode("woo!"));
+         $_SESSION["uploadTimeStamp"] = null;
+         echo (json_encode(array ("status"=>"success", "newRow"=>$returnRow)));
     } catch (Exception $e) {
          pg_query("ROLLBACK");
-         echo (json_encode("fail"));
+         echo (json_encode(array ("status"=>"fail", "error"=>$e)));
     }
 
     //close connection
     pg_close($dbconn);
 }
 else {
-    echo (json_encode("fail"));
+    echo (json_encode(array ("status"=>"fail", "error"=>"missing fields")));
 }
 
 ?>
