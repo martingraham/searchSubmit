@@ -6,7 +6,7 @@ if (!$_SESSION['session_name']) {
 
 $pageName = "New Search";
 
-include('../../connectionString.php');
+include('../../connectionStringSafe.php');
 
 //open connection
 $dbconn = pg_connect($connectionString)
