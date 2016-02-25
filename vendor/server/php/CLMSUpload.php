@@ -21,10 +21,9 @@ ChromePhp::log(json_encode($_POST));
 ChromePhp::log(json_encode($_SESSION));
 
 // make a timestamp in the session to use in filepaths and name entries (so db php routines can use it) 
-if ($_SESSION["uploadTimeStamp"] == null) {
+if (! array_key_exists ("uploadTimeStamp", $_SESSION) || $_SESSION["uploadTimeStamp"] == null) {
     $date = new DateTime();
-    $dateStr = $date->format("-H_i_s-d_M_Y");
-    $_SESSION["uploadTimeStamp"] = $dateStr;
+    $_SESSION["uploadTimeStamp"] = $date->format("-H_i_s-d_M_Y");
 }
 ChromePhp::log(json_encode($_SESSION["uploadTimeStamp"]));
 

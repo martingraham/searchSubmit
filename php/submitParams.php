@@ -37,15 +37,6 @@ $searchLinkTableMap = array (
     "seqPreviousTable" => array ("table" => "search_sequencedb", "sqlname" => "seqdb_id", "required" => true, "validate" => FILTER_VALIDATE_INT)
 );
 
-$preparedStatementTexts = array (
-    "paramSet" => "INSERT INTO parameter-set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, upload_date, notes)"
-        ."VALUES (%1, %2, %3, %4, %5, %6, %7, %8, %9, %10)",
-    "paramFixedModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
-    "paramVarModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
-    "paramVarIonsSelect" => "INSERT INTO chosen_ions (paramset_id, ion_id) VALUES ($1, $2)",
-    "paramLossesSelect" => "INSERT INTO chosen_losses (paramset_id, loss_id) VALUES ($1, $2)",
-    "acqPreviousTable" => "SELECT name FROM acquisition WHERE id IN ($1)",
-);
 
 $allUserFieldsMap = array_merge ($paramFieldNameMap, $paramLinkTableMap, $searchLinkTableMap);
 
@@ -56,7 +47,7 @@ $allGood = true;
 foreach ($allUserFieldsMap as $key => $value) {
     $arrval = $_POST[$key];
     $count = count($arrval);
-    if (($count == 0 || ($count == 1 && strlen($arrval[0]) == 0)) && $value["required"] == true) {
+    if ($value["required"] == true && ($count == 0 || ($count == 1 && strlen($arrval[0]) == 0))) {
         $allGood = false;
     }
     
@@ -82,8 +73,23 @@ ChromePhp::log(json_encode($allGood));
 
 if (true /*$allGood*/) {
     
-    $date = new DateTime();
-    $timeStamp = $date->format("Y-m-d H:i:s.u");
+    // make a timestamp in the session to use in filepaths and name entries (so db php routines can use it) 
+    if (! array_key_exists ("searchTimeStamp", $_SESSION) || $_SESSION["searchTimeStamp"] == null) {
+        $date = new DateTime();
+        $_SESSION["searchTimeStamp"] = $date->format("-H_i_s-d_M_Y");
+    }
+    $timeStamp = $_SESSION["searchTimeStamp"];
+    
+    $preparedStatementTexts = array (
+        "paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, upload_date, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+        "paramFixedModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
+        "paramVarModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
+        "paramIonsSelect" => "INSERT INTO chosen_ions (paramset_id, ion_id) VALUES ($1, $2)",
+        "paramLossesSelect" => "INSERT INTO chosen_losses (paramset_id, loss_id) VALUES ($1, $2)",
+        "acqPreviousTable" => "SELECT name FROM acquisition WHERE id = ANY ($1::int[])",
+        "newSearch" => "INSERT INTO search (paramset_id, name, submit_date, notes) VALUES ($1, $2, $3, $4) RETURNING id"
+    );
+
     
     include('../../connectionStringSafe.php');
     //open connection
@@ -91,33 +97,32 @@ if (true /*$allGood*/) {
     
     try {
         pg_query("BEGIN") or die("Could not start transaction\n");
-
-        
+        $returnRow = "";
         
         // little bobby tables - https://xkcd.com/327/
         $paramid = 1234567890;
-        var $acqIds = join(',',$_POST["acqPreviousTable"]);
+        // Get names of acquisitions (via ids) to make parameter name
+        $acqIds = "{".join(',',$_POST["acqPreviousTable"])."}";
         ChromePhp::log(json_encode($acqIds));
         $getAcqNames = pg_prepare($dbconn, "getAcqNames", $preparedStatementTexts["acqPreviousTable"]);
-        $result = pg_execute($dbconn, "getAcqNames", [$acqIds] );
-        $returnAll = pg_fetch_all ($result); // get the newly added row, need it to add runs here and to return to client ui
-        ChromePhp::log(json_encode($returnAll));
-        $allAcqNames = array_map(function($row) { return $row.name; }, $returnAll);
-        ChromePhp::log(json_encode($allAcqNames));
-        $paramName = join('-',$allAcqNames);
+        $result = pg_execute($dbconn, "getAcqNames", array($acqIds));
+        $returnAll = pg_fetch_all ($result); // get associated acquisition names to make name for parameter
+        $allAcqNames = array_map(function($row) { return $row["name"]; }, $returnAll);
+        $paramName = join('-',$allAcqNames).$timeStamp;
         ChromePhp::log(json_encode($paramName));
         
-        /*
+        // Add parameter_set values to db
         $result = pg_prepare($dbconn, "paramsAdd", $preparedStatementTexts["paramSet"]);
-        $result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], , $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],
+        $result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], $paramName, $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],
                                                    $_POST["paramTolerance2Value"], $_POST["paramToleranceUnits"], $_POST["paramTolerance2Units"], 
                                                     $timeStamp, $_POST["paramNotes"]]);
         
         $paramIDGet = pg_prepare($dbconn, "paramIDGet", "SELECT id, name from parameter_set where uploadedby = $1 AND name = $2 AND upload_date = $3");
-        $result =  pg_execute($dbconn, "paramIDGet", [$userID, $name, $timeStamp]);
+        $result =  pg_execute($dbconn, "paramIDGet", [$userID, $paramName, $timeStamp]);
         $returnRow = pg_fetch_assoc ($result); // get the newly added row, need it to add runs here and to return to client ui
-        $paramid= $returnRow["id"];
-        */
+        $paramid = $returnRow["id"];
+        
+        // Add link tables to connect parameter_set to ions/mods/losses/crosslinkers
         foreach ($paramLinkTableMap as $key => $value) {
             $arrval = $_POST[$key];
             $pname = $key."add";
@@ -131,10 +136,19 @@ if (true /*$allGood*/) {
                     }
                 } 
                 ChromePhp::log(json_encode($arr));
-                //$result = pg_execute($dbconn, $pname, $arr);
+                $result = pg_execute($dbconn, $pname, $arr);
             }
         }
+        
+        // Add search to db
+        $searchName = $paramName;   // They appear to be the same construct
+        $searchInsert = pg_prepare ($dbconn, "searchInsert", $preparedStatementTexts["newSearch"]);
+        $result = pg_execute ($dbconn, "searchInsert", [$paramid, $searchName, $timeStamp, $_POST["paramNotes"]]);
+        
+        // TODO: search_acquisition and search_sequencedb link tables
+        
         pg_query("COMMIT");
+        $_SESSION["searchTimeStamp"] = null;
         echo (json_encode(array ("status"=>"success", "newRow"=>$returnRow)));
     } catch (Exception $e) {
         pg_query("ROLLBACK");

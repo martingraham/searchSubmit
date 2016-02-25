@@ -69,12 +69,10 @@ if ($allGood) {
         if ($_POST["type"] == "acq") {
             $folder = $baseDir."xi/users/".$username."/".$tstampname;
             $acqAdd = pg_prepare($dbconn, "acqAdd",
-        "INSERT INTO acquisition (uploadedby, name, upload_date) VALUES ($1, $2, NOW())");
+        "INSERT INTO acquisition (uploadedby, name, upload_date) VALUES ($1, $2, NOW()) RETURNING id, name AS NAME, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date");
             $result = pg_execute($dbconn, "acqAdd", [$userID, $tstampname]);
-
-            $acqIDGet = pg_prepare($dbconn, "acqIDGet", "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = $1 AND name = $2");
-            $result =  pg_execute($dbconn, "acqIDGet", [$userID, $tstampname]);
-            $returnRow = pg_fetch_assoc ($result); // get the newly added row, need it to add runs here and to return to client ui
+            $returnRow = pg_fetch_assoc ($result); // return the inserted row (or selected parts thereof)
+            $returnRow["User"] = $username; // Add the username (will be username as this user added the row)
             $acqID = $returnRow["id"];
             ChromePhp::log(json_encode($returnRow));
             
@@ -90,12 +88,10 @@ if ($allGood) {
         else if ($_POST["type"] == "seq") {
             $folder = "xi/sequenceDB/".$tstampname;
             $seqAdd = pg_prepare($dbconn, "seqAdd",
-        "INSERT INTO sequence_file (uploadedby, name, file_name, file_path, upload_date) VALUES ($1, $2, $3, $4, NOW())");
-             $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], $folder]);
-            
-            $seqIDGet = pg_prepare($dbconn, "seqIDGet", "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = $1 AND name = $2");
-            $result = pg_execute($dbconn, "seqIDGet", [$userID, $tstampname]);
+        "INSERT INTO sequence_file (uploadedby, name, file_name, file_path, upload_date) VALUES ($1, $2, $3, $4, NOW()) RETURNING id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date");
+            $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], $folder]);
             $returnRow = pg_fetch_assoc ($result);  // get the newly added row, need it to return to client ui
+            $returnRow["User"] = $username; // Add the username (will be username as this user added the row)
             ChromePhp::log(json_encode($returnRow));
         } 
         
