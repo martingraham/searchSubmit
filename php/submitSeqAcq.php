@@ -6,7 +6,7 @@ if (!$_SESSION['session_name']) {
 
 //$pageName = "New Search";
 include('../../connectionStringSafe.php');
-include './ChromePhp.php';
+include('./../vendor/server/php/ChromePhp.php');
 ChromePhp::log(json_encode("data posted"));
 ChromePhp::log(json_encode($_POST));
 

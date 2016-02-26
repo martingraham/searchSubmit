@@ -553,8 +553,9 @@
                             .draw()                 // redraw the table
                             .node()                 // return the tr dom node for further manipulation
                         ;
-                        d3.select(newRowNode).select("input[type=checkbox]")
-                            .datum(newRow)  // set the row data on the checkbox as a d3 datum
+                        d3.select(newRowNode)
+                            .datum(newRow)  // set the row data on the new tr dom node as a d3 datum
+                            .select("input[type=checkbox]")
                             .on ("click", prevTableClickFuncs[tableId])    // so that calling this function works on click
                         ;   
                         prevTableClickFuncs[tableId] ();   // and we call the same func here as the checkbox is set pre-selected

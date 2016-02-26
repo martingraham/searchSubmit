@@ -15,7 +15,7 @@ if (!$_SESSION['session_name']) {
     header("location:login.html");
 }
  
-include '../../../php/ChromePhp.php';
+include './ChromePhp.php';
 ChromePhp::log('Hello console!');
 ChromePhp::log(json_encode($_POST));
 ChromePhp::log(json_encode($_SESSION));
