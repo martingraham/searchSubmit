@@ -20,7 +20,9 @@ $paramFieldNameMap = array (
     "paramTolerance2Value" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
     "paramTolerance2Units" => array ("required" => true),
     "paramEnzymeSelect" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
-    "paramNotes" => array ("required" => false)
+    "paramNotes" => array ("required" => false),
+    "acqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
+    "seqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT)
 );
 
 $paramLinkTableMap = array (
@@ -32,13 +34,7 @@ $paramLinkTableMap = array (
 );
 
 
-$searchLinkTableMap = array (
-    "acqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
-    "seqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT)
-);
-
-
-$allUserFieldsMap = array_merge ($paramFieldNameMap, $paramLinkTableMap, $searchLinkTableMap);
+$allUserFieldsMap = array_merge ($paramFieldNameMap, $paramLinkTableMap);
 
 
 // Check everything necessary is in the bag
@@ -73,14 +69,11 @@ ChromePhp::log(json_encode($allGood));
 
 if (true /*$allGood*/) {
     
-    // make a timestamp in the session to use in filepaths and name entries (so db php routines can use it) 
-    if (! array_key_exists ("searchTimeStamp", $_SESSION) || $_SESSION["searchTimeStamp"] == null) {
-        $date = new DateTime();
-        $_SESSION["searchTimeStamp"] = $date->format("H_i_s-d_M_Y");
-    }
+    // make timestamps to use in name fields and in timestamp fields (different format required)
+    $date = new DateTime();
     $SQLValidTimeStamp = $date->format("Y-m-d H:i:s");
     ChromePhp::log(json_encode($SQLValidTimeStamp));
-    $timeStamp = $_SESSION["searchTimeStamp"];
+    $timeStamp = $date->format("H_i_s-d_M_Y");
     
     $preparedStatementTexts = array (
         "paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, upload_date, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
@@ -103,10 +96,9 @@ if (true /*$allGood*/) {
     
     try {
         pg_query("BEGIN") or die("Could not start transaction\n");
-        $returnRow = "";
         
         // little bobby tables - https://xkcd.com/327/
-        $paramid = 1234567890;
+
         // Get names of acquisitions (via ids) to make parameter name
         $acqIds = "{".join(',',$_POST["acqPreviousTable"])."}"; // re-use this later to get run data too
         ChromePhp::log(json_encode($acqIds));
@@ -155,8 +147,8 @@ if (true /*$allGood*/) {
         $searchName = $paramName;   // They appear to be the same construct
         $searchInsert = pg_prepare ($dbconn, "searchInsert", $preparedStatementTexts["newSearch"]);
         $result = pg_execute ($dbconn, "searchInsert", [$paramid, $searchName, $userID, $SQLValidTimeStamp, $_POST["paramNotes"]]);
-        $returnRow = pg_fetch_assoc ($result); // get the newly added search id
-        $searchid = $returnRow["id"];
+        $searchRow = pg_fetch_assoc ($result); // get the newly added search id
+        $searchid = $searchRow["id"];
         
         // Add search-to-sequence link table rows
         $searchSeqLink = pg_prepare ($dbconn, "searchSeqLink", $preparedStatementTexts["newSearchSeqLink"]);
@@ -178,7 +170,7 @@ if (true /*$allGood*/) {
         
         pg_query("COMMIT");
         $_SESSION["searchTimeStamp"] = null;
-        echo (json_encode(array ("status"=>"success", "newRow"=>$returnRow)));
+        echo (json_encode(array ("status"=>"success", "newSearch"=>$searchRow)));
     } catch (Exception $e) {
         pg_query("ROLLBACK");
         echo (json_encode(array ("status"=>"fail", "error"=>$e)));

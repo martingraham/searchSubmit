@@ -6,7 +6,6 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
         <link rel="stylesheet" href="vendor/css/jquery-ui.css" />
-        <!-- <link rel="stylesheet" href="vendor/css/datatables.css" /> -->
         <link rel="stylesheet" href="vendor/css/dataTables.jqueryui.css" />
         <link rel="stylesheet" href="vendor/css/jquery.fileupload.css" />
         <link rel="stylesheet" href="vendor/css/jquery.fileupload-ui.css" />
@@ -18,16 +17,11 @@
         <script src="vendor/js/jquery-ui.js"></script>
         <script src="vendor/js/d3.js"></script>
         <script src="vendor/js/jquery.dataTables.js"></script>
-        <!-- <script src="vendor/js/dataTables.jqueryui.js"></script> -->
         <script src="vendor/js/multiple-select.js"></script>
 
         <!--TODO - sort out these scripts-->
         <!-- The Templates plugin is included to render the upload/download listings -->
         <script src="vendor/js/tmpl.js"></script>
-        <!-- Bootstrap JS is not required, but included for the responsive demo navigation -->
-        <!-- <script src="http://blueimp.github.io/cdn/js2/bootstrap.min.js"></script>-->
-        <!-- blueimp Gallery script -->
-        <!--<script src="http://blueimp.github.io/Gallery/js2/blueimp-gallery.min.js"></script> -->
         <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
         <script src="vendor/js/jquery.iframe-transport.js"></script>
         <!-- The basic File Upload plugin -->
@@ -38,9 +32,8 @@
         <script src="vendor/js/jquery.fileupload-validate.js"></script>
         <!-- The File Upload user interface plugin -->
         <script src="vendor/js/jquery.fileupload-ui.js"></script>
-         
         <script src="vendor/js/jquery.fileupload-jquery-ui.js"></script>
-        <!-- The main application script -->
+        <!-- blueimp application script, pokes some controls into life -->
         <script src="vendor/js/main.js"></script>
 
      </head>
@@ -58,7 +51,7 @@
                         <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
                         <div class="row fileupload-buttonbar">
                             <div class="fileupload-buttons">
-                                <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="Set {%=o.singleLabel%} name here..."></input>
+                                <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="Need {%=o.singleLabel%} Name"></input>
                                 <!-- The fileinput-button span is used to style the file input field as button -->
                                 <span class="fileinput-button">
                                     <span>Add files...</span>
@@ -119,24 +112,19 @@
                 </div>
 
 
-            </div> <!-- SEARCH PARAMS GROUP -->
+            </div>
             <div class="row">
                 <div class="col-2">
                     <button type="submit" id="startProcessing">Start Processing</button>
-                    <!-- SUCCESSFUL UPLOAD ICON-->
-                    <!--    <div class="control-group success">
-                        <i class="input-icon fui-check-inverted"></i>
-                    </div>  CONTROL GROUP SUCCESS-->
                 </div>
-                <div class="col-4" id="todo">
-                </div>
+                <div class="col-4" id="todo"></div>
                 <div class="col-6 paramSetting">
-                    <P>Search Notes</P>
-                    <textarea class="formPart" wrap="soft" maxlength="10000" cols="50" rows="4" id="paramNotes" name="paramNotes" value="" placeholder="Click here to start typing..."></textarea>
+                    <p>Search Notes</p>
+                    <textarea class="formPart" wrap="soft" maxlength="10000" cols="50" rows="4" id="paramNotes" name="paramNotes" value="" placeholder="Click here to add notes..."></textarea>
                 </div>
             </div>
             </form>
-        </div> <!-- MAIN BODY -->
+        </div>
 
         <script>
             function canDoImmediately () {
@@ -234,7 +222,7 @@
                     var data = JSON.parse (result);
                     console.log ("data", data);
                     
-                    var dispatchObj = d3.dispatch("formInputChanged", "newEntryUploaded");
+                    var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded");
                     
                     // Make combobox and multiple selection elements
                     // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
@@ -294,8 +282,14 @@
                     
                     
                     
-                    // Make previous tables
-                    var prevTableClickFuncs = {}; // so we can keep thse for later
+                    // Make previous acquisition and sequence tables
+                    var prevTableClickFuncs = {}; // so we can keep these for later
+                    // Routine for sorting datatable column of checkboxes via dom element values
+                    $.fn.dataTable.ext.order['dom-checkbox'] = function  ( settings, col ) {
+                        return this.api().column(col, {order:'index'}).nodes().map (function (td, i) {
+                            return $('input', td).prop('checked') ? '1' : '0';
+                        });
+                    }
                     var previousSettings = [
                         {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected",},
                         {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected",},
@@ -319,13 +313,15 @@
 
                         newRows.append ("td").append("input")
                             .attr ("type", "checkbox")
-                            //.attr ("id", function(d) { return d.name; })
                         ;
 
                         var table = $("#"+baseId).dataTable ({
                             "paging": true,
                             "jQueryUI": true,
                             "ordering": true,
+                            "columnDefs": [
+                                {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
+                            ]
                         });
                         
                         // this stuffs a hidden input field in the main parameter search form
@@ -340,14 +336,18 @@
                         ;
                         
                         // on a selection in the table, we then smuggle the current selection set of ids into the hidden form
-                        // where they can be picked up on the paramter form submit
+                        // where they can be picked up on the parameter form submit, and show the current selection to the user
                         prevTableClickFuncs[baseId] = function () {
-                            var curSel = sel.select("table").selectAll("input:checked");
-                            var ids = curSel.data().map (function(d) { return d.id; });
-                            d3.select("#"+baseId+"Hidden").attr("value", ids);
+                            var dtCells = $("#"+baseId).DataTable().rows().nodes(); // loads of tr dom nodes
+                            var checkedCells = $(dtCells).has("input:checked"); // just the ones with a ticked checkbox
+                            var checkedData = d3.selectAll(checkedCells).data();
+                            
+                            var ids = checkedData.map (function(d) { return d.id; });
+                            d3.select("#"+baseId+"Hidden").attr("value", ids);  // Put the ids in the hidden form element
 
-                            var names = curSel.data().map (function(d) { return d.name; });
-                            d3.select(psetting.selectSummaryid).text (names.length ? "Selected "+names.join(", ") : null);
+                            var names = checkedData.map (function(d) { return d.name; });
+                            d3.select(psetting.selectSummaryid).text (names.length ? "Selected "+names.join(", ") : null);  // Put names in label
+                            
                             dispatchObj.formInputChanged();
                         }; 
 
@@ -358,13 +358,14 @@
   
 
                     
-                    // Make checkbox/radio choice controls
+                    // Make checkbox/radio choice controls - not currently used
                     var buttonGroups = [
                         //{domid: "#paramIons", choices: data.ions, type: "radio", nameFunc: function(d) { return d.name; },},
                         //{domid: "#paramLosses", choices: data.losses, type: "radio", nameFunc: function(d) { return d.name; },},
                     ];
                     buttonGroups.forEach (function (buttonGroup) {
                         var elem = d3.select (buttonGroup.domid);
+                        elem.attr ("class", "formPart");
                         var baseId = buttonGroup.domid.slice(1)+"Choice";
                         var choiceJoin = elem.selectAll("input").data(buttonGroup.choices);
                         choiceJoin.enter()
@@ -391,6 +392,20 @@
                         .attr ("class", function(d) { return d; })
                     ;
                     
+                    var happyToDo = function (happy) {
+                        d3.select("#todo span.ui-icon")
+                            .classed ("ui-icon-notice", !happy)
+                            .classed ("ui-icon-check", happy)
+                        ;
+                        d3.select("#todo")
+                            .classed ("paramSubmitReady", happy)
+                        ;
+                    }
+                    
+                    var toDoMessage = function (msg) {
+                        d3.select("#todo span.notice").html(msg);
+                    };
+                    
                     dispatchObj.on ("formInputChanged", function () {
                         var todoList = d3.set();
                         d3.select("#parameterForm").selectAll(".formPart[required]").each (function() {
@@ -399,19 +414,8 @@
                             }
                         });
                         $("#startProcessing").button("option", "disabled", !todoList.empty());
-                        d3.select("#todo")
-                            .classed ("paramSubmitReady", todoList.empty())
-                        ;
-                        d3.select("#todo")
-                            .selectAll("span.ui-icon")
-                            .classed ("ui-icon-notice", !todoList.empty())
-                            .classed ("ui-icon-check", todoList.empty())
-                        ;
-                        d3.select("#todo")
-                            .selectAll("span.notice")
-                            .html(function(d) { return todoList.empty() ? "Ready to Process" : "Values are required for:<br>"+todoList.values(); } )
-                        ;
-                        
+                        happyToDo (todoList.empty());
+                        toDoMessage (todoList.empty() ? "Ready to Process" : "Values are required for:<br>"+todoList.values());
                     });
                     dispatchObj.formInputChanged();
 
@@ -422,6 +426,8 @@
                     $("#parameterForm").submit(function (event) {
                         event.preventDefault();
                         
+                        $("#startProcessing").button("option", "disabled", true);   // so user can't press again
+                        toDoMessage ("Processing");
                         var formData = {};
                         d3.select("#parameterForm").selectAll(".formPart").each (function() {
                             if (this.id) {
@@ -441,10 +447,17 @@
                             data: formData,
                             dataType: "json",
                             encode: true,
-                        })
-                        .done (function (data) {
-                            console.log ("params submitted");
-                        })
+                            success: function (response, textStatus, jqXhr) {
+                                console.log ("db params insert success", response, textStatus);
+                                toDoMessage ("Success, Search "+response.newSearch.id+" added.");
+                            },
+                            error: function (jqXhr, textStatus, errorThrown) {
+                                console.log ("db params insert error", textStatus, errorThrown);   
+                                toDoMessage ("Error, "+response.newSearch.error+".");
+                                happyToDo (false);
+                                $("#startProcessing").button("option", "disabled", false);
+                            },
+                        });
                     });
                     
                     
@@ -470,7 +483,7 @@
                         this.buttonEnabler = enabler;
                         var uploadSuccess = true;
                         var filesUploaded = [];
-                        var rowCountFunc = function () { d3.select(formid).selectAll("tr.template-upload").size(); };   // data.files.length;
+                        var rowCountFunc = function () { return d3.select(formid).selectAll("tr.template-upload").size(); };   // data.files.length;
                         
                         $(formid).on({
                             "fileuploadstart": function (e, data) {
@@ -509,11 +522,11 @@
                                         dataType: "json",
                                         encode: true,
                                         success: function (response, textStatus, jqXhr) {
-                                            console.log ("db insert success", response, textStatus);
+                                            console.log ("db acq/seq insert success", response, textStatus);
                                             dispatchObj.newEntryUploaded (type, response.newRow);    // alert new row has been added to db
                                         },
                                         error : function (jqXhr, textStatus, errorThrown) {
-                                            console.log ("db insert error", textStatus, errorThrown);    
+                                            console.log ("db acq/seq insert error", textStatus, errorThrown);    
                                         },
                                     });
                                     filesUploaded.length = 0;
@@ -608,14 +621,6 @@
             <td>
                 <span class="size">{%=o.formatFileSize(file.size)%}</span>
             </td>
-            <!--
-            <td>
-                <button class="btn-danger delete" data-type="{%=file.delete_type%}" data-url="{%=file.delete_url%}"{% if (file.delete_with_credentials) { %} data-xhr-fields='{"withCredentials":true}'{% } %}>
-                    <span>Delete</span>
-                </button>
-                <input type="checkbox" name="delete" value="1" class="toggle">
-            </td>
-            -->
         </tr>
         {% } %}
     </script>
