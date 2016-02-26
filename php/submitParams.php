@@ -4,8 +4,6 @@ if (!$_SESSION['session_name']) {
     header("location:login.html");
 }
 
-//$pageName = "New Search";
-
 include '../vendor/server/php/ChromePhp.php';
 ChromePhp::log(json_encode($_POST));
 
@@ -27,10 +25,10 @@ $paramFieldNameMap = array (
 
 $paramLinkTableMap = array (
     "paramCrossLinkerSelect" => array ("required" => true),
-    "paramFixedModsSelect" => array ("required" => true, "defaults" => array ("fixed" => "true"), "validate" => FILTER_VALIDATE_INT),
-    "paramVarModsSelect" => array ("required" => true, "defaults" => array ("fixed" => "false"), "validate" => FILTER_VALIDATE_INT),
+    "paramFixedModsSelect" => array ("required" => false, "defaults" => array ("fixed" => "true"), "validate" => FILTER_VALIDATE_INT),
+    "paramVarModsSelect" => array ("required" => false, "defaults" => array ("fixed" => "false"), "validate" => FILTER_VALIDATE_INT),
     "paramIonsSelect" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
-    "paramLossesSelect" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
+    "paramLossesSelect" => array ("required" => false, "validate" => FILTER_VALIDATE_INT),
 );
 
 
@@ -41,33 +39,47 @@ $allUserFieldsMap = array_merge ($paramFieldNameMap, $paramLinkTableMap);
 $allGood = true;
 
 foreach ($allUserFieldsMap as $key => $value) {
-    $arrval = $_POST[$key];
-    $count = count($arrval);
-    if ($value["required"] == true && ($count == 0 || ($count == 1 && strlen($arrval[0]) == 0))) {
-        $allGood = false;
-    }
-    
-    else if (array_key_exists ("validate", $value)) {
-        $t = is_array ($arrval);
-        if (!$t) {
-            $arrval = array($arrval);   // single item array
+    // if no post value for expected variable give it a blank string
+    if (!isset($_POST[$key])) {
+        ChromePhp::log(json_encode("missing ".$key));
+        if (array_key_exists ($key, $paramLinkTableMap)) {
+            $_POST[$key] = [];
+        } else {
+            $_POST[$key] = null;
         }
-        foreach ($arrval as $index => $val) {
-            $valid = filter_var ($val, $value["validate"]);
-            ChromePhp::log($valid);
-            if ($valid === false) {
-                $allGood = false;
-            }
-        }  
+        
+        if ($value["required"]) {
+            $allGood = false;
+        }
     }
+    else {
+        $arrval = $_POST[$key];
+        $count = count($arrval);
+        if ($value["required"] == true && ($count == 0 || ($count == 1 && strlen($arrval[0]) == 0))) {
+            $allGood = false;
+        }
 
+        else if (array_key_exists ("validate", $value)) {
+            $t = is_array ($arrval);
+            if (!$t) {
+                $arrval = array($arrval);   // single item array
+            }
+            foreach ($arrval as $index => $val) {
+                $valid = filter_var ($val, $value["validate"]);
+                ChromePhp::log(json_encode(array($val, $valid)));
+                if ($valid === false) {
+                    $allGood = false;
+                }
+            }  
+        }
+    }
 }
 
 
 ChromePhp::log(json_encode($allGood));
 
 
-if (true /*$allGood*/) {
+if ($allGood) {
     
     // make timestamps to use in name fields and in timestamp fields (different format required)
     $date = new DateTime();
@@ -76,14 +88,15 @@ if (true /*$allGood*/) {
     $timeStamp = $date->format("H_i_s-d_M_Y");
     
     $preparedStatementTexts = array (
-        "paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, upload_date, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+        "paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, upload_date, notes, top_alpha_matches, template, synthetic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, '10', FALSE, FALSE)",
         "paramFixedModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
         "paramVarModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
         "paramIonsSelect" => "INSERT INTO chosen_ions (paramset_id, ion_id) VALUES ($1, $2)",
         "paramLossesSelect" => "INSERT INTO chosen_losses (paramset_id, loss_id) VALUES ($1, $2)",
         "paramCrossLinkerSelect" => "INSERT INTO chosen_crosslinker (paramset_id, crosslinker_id) VALUES ($1, $2)",
         "acqPreviousTable" => "SELECT name FROM acquisition WHERE id = ANY ($1::int[])",
-        "newSearch" => "INSERT INTO search (paramset_id, name, uploadedby, submit_date, notes) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+        "getUserGroups" => "SELECT group_id FROM user_in_group WHERE user_id = $1",
+        "newSearch" => "INSERT INTO search (paramset_id, name, uploadedby, submit_date, notes, status, completed, is_executing) VALUES ($1, $2, $3, $4, $5, 'queueing', FALSE, FALSE) RETURNING id",
         "newSearchSeqLink" => "INSERT INTO search_sequencedb (search_id, seqdb_id) VALUES($1, $2)",
         "getRuns" => "SELECT acq_id, run_id FROM run WHERE acq_id = ANY($1::int[])",
         "newSearchAcqLink" => "INSERT INTO search_acquisition (search_id, acq_id, run_id) VALUES($1, $2, $3)"
@@ -122,11 +135,14 @@ if (true /*$allGood*/) {
         
         // Add link tables to connect parameter_set to ions/mods/losses/crosslinkers
         foreach ($paramLinkTableMap as $key => $value) {
+            
             $arrval = $_POST[$key];
+            ChromePhp::log(json_encode($arrval));
             $t = is_array ($arrval);
             if (!$t) {
                 $arrval = array($arrval);   // single item array
             }
+            ChromePhp::log(json_encode($arrval));
             
             $pname = $key."add";
             $result = pg_prepare ($dbconn, $pname, $preparedStatementTexts[$key]);
@@ -142,6 +158,12 @@ if (true /*$allGood*/) {
                 $result = pg_execute($dbconn, $pname, $arr);
             }
         }
+        
+        $getUserGroups = pg_prepare ($dbconn, "getUserGroups", $preparedStatementTexts["getUserGroups"]);
+        $result = pg_execute ($dbconn, "getUserGroups", [$userID]);
+        $groupids = pg_fetch_all ($result); // get user groups for this user
+        ChromePhp::log(json_encode($groupids));
+        // TODO: set visible_group to id in first returned row
         
         // Add search to db
         $searchName = $paramName;   // They appear to be the same construct
@@ -181,7 +203,7 @@ if (true /*$allGood*/) {
 }
 
 else {
-    echo (json_encode(array ("status"=>"fail", "error"=>"missing fields")));
+    echo (json_encode(array ("status"=>"fail", "error"=>"missing or invalid fields")));
 }
 
 ?>

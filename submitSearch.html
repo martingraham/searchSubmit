@@ -51,7 +51,7 @@
                         <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
                         <div class="row fileupload-buttonbar">
                             <div class="fileupload-buttons">
-                                <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="Need {%=o.singleLabel%} Name"></input>
+                                <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="Set {%=o.singleLabel%} Name"></input>
                                 <!-- The fileinput-button span is used to style the file input field as button -->
                                 <span class="fileinput-button">
                                     <span>Add files...</span>
@@ -83,6 +83,7 @@
         </script>
          
         <div>
+            <h1>Search Form</h1>
             <div class="paramSetting" id="acquire"></div>
             <div class="paramSetting" id="sequence"></div>
 
@@ -230,10 +231,10 @@
                     var populateOptionLists = [
                         {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker",},
                         {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
-                        {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Mods", required: true, multiple: true, filter: true, placeHolder: "Select Modifications",},
-                        {data: data.modifications, domid: "#paramVarMods", niceLabel: "Var Mods", required: true, multiple: true, filter: true, placeHolder: "Select Modifications",},
+                        {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Mods", required: false, multiple: true, filter: true, placeHolder: "Select Modifications",},
+                        {data: data.modifications, domid: "#paramVarMods", niceLabel: "Var Mods", required: false, multiple: true, filter: true, placeHolder: "Select Modifications",},
                         {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion",},
-                        {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Loss",},
+                        {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select At Least One Loss",},
                     ];
                     populateOptionLists.forEach (function (poplist) {
                         var elem = d3.select(poplist.domid);
@@ -328,7 +329,7 @@
                         d3.select("#parameterForm").append("input")
                             .attr ("class", "formPart")
                             .attr ("type", "hidden")
-                            .attr ("name", baseId+"[]") // add [] because value can/will be an array
+                            .attr ("name", baseId+"[]") // add [] for php because passed value can/will be an array (tho for a hidden input the array is stringified in the value attr first and we need to split it before submission)
                             .attr ("id", baseId+"Hidden")
                             .attr ("data-label", psetting.niceLabel)   
                             .attr ("value", "")
@@ -342,8 +343,8 @@
                             var checkedCells = $(dtCells).has("input:checked"); // just the ones with a ticked checkbox
                             var checkedData = d3.selectAll(checkedCells).data();
                             
-                            var ids = checkedData.map (function(d) { return d.id; });
-                            d3.select("#"+baseId+"Hidden").attr("value", ids);  // Put the ids in the hidden form element
+                            var ids = checkedData.map (function(d) { return +d.id; });
+                            d3.select("#"+baseId+"Hidden").property("value", "["+ids.join(",")+"]");  // Put the ids in the hidden form element
 
                             var names = checkedData.map (function(d) { return d.name; });
                             d3.select(psetting.selectSummaryid).text (names.length ? "Selected "+names.join(", ") : null);  // Put names in label
@@ -435,6 +436,9 @@
                                 // If one of the multiple select widgets, must get multiple values like this
                                 if (this.type === "select-multiple") {
                                     val = $("#"+this.id).multipleSelect("getSelects");
+                                }   // if a string begin with '[' then is an array string we need to split
+                                else if (val.charAt(0) === '[') {
+                                    val = val.slice(1, -1).split(",");
                                 }
                                 formData[this.name] = val;
                             }
@@ -449,11 +453,17 @@
                             encode: true,
                             success: function (response, textStatus, jqXhr) {
                                 console.log ("db params insert success", response, textStatus);
-                                toDoMessage ("Success, Search "+response.newSearch.id+" added.");
+                                if (response.status == "success") {
+                                    toDoMessage ("Success, Search "+response.newSearch.id+" added.");
+                                } else {
+                                    toDoMessage ("Error, "+response.error+".");
+                                    happyToDo (false);
+                                    $("#startProcessing").button("option", "disabled", false);
+                                }
                             },
                             error: function (jqXhr, textStatus, errorThrown) {
                                 console.log ("db params insert error", textStatus, errorThrown);   
-                                toDoMessage ("Error, "+response.newSearch.error+".");
+                                toDoMessage ("Error, "+errorThrown+".");
                                 happyToDo (false);
                                 $("#startProcessing").button("option", "disabled", false);
                             },

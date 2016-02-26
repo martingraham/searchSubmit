@@ -16,7 +16,6 @@ if (!$_SESSION['session_name']) {
 }
  
 include './ChromePhp.php';
-ChromePhp::log('Hello console!');
 ChromePhp::log(json_encode($_POST));
 ChromePhp::log(json_encode($_SESSION));
 
@@ -68,4 +67,4 @@ error_reporting(E_ALL | E_STRICT);
 require('UploadHandler.php');
 $upload_handler = new UploadHandler ($options);
 
-
+?>

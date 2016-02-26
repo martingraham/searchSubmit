@@ -4,7 +4,6 @@ if (!$_SESSION['session_name']) {
     header("location:login.html");
 }
 
-//$pageName = "New Search";
 include('../../connectionStringSafe.php');
 include('./../vendor/server/php/ChromePhp.php');
 ChromePhp::log(json_encode("data posted"));
@@ -63,11 +62,11 @@ if ($allGood) {
     $returnRow = "";
     
     try {
-        $baseDir = $_SESSION["baseDir"];
+        //$baseDir = $_SESSION["baseDir"];
         pg_query("BEGIN") or die("Could not start transaction\n");
         
         if ($_POST["type"] == "acq") {
-            $folder = $baseDir."xi/users/".$username."/".$tstampname;
+            $folder = "xi/users/".$username."/".$tstampname;
             $acqAdd = pg_prepare($dbconn, "acqAdd",
         "INSERT INTO acquisition (uploadedby, name, upload_date) VALUES ($1, $2, NOW()) RETURNING id, name AS NAME, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date");
             $result = pg_execute($dbconn, "acqAdd", [$userID, $tstampname]);
