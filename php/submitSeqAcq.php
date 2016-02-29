@@ -30,8 +30,7 @@ foreach ($paramFieldNameMap as $key => $value) {
     }
     
     else if (array_key_exists ("validate", $value)) {
-        $t = is_array ($arrval);
-        if (!$t) {
+        if (!is_array ($arrval)) {
             $arrval = array($arrval);   // single item array
         }
         foreach ($arrval as $index => $val) {
@@ -59,8 +58,6 @@ if ($allGood) {
             or die('Could not connect: ' . pg_last_error());
 
     // little bobby tables - https://xkcd.com/327/ 
-    $returnRow = "";
-    
     try {
         //$baseDir = $_SESSION["baseDir"];
         pg_query("BEGIN") or die("Could not start transaction\n");
