@@ -89,15 +89,17 @@ CLMSUI.buildSubmitSearch = function () {
 
         // http://stackoverflow.com/questions/23740548/how-to-pass-variables-and-data-from-php-to-javascript
         var oReq = new XMLHttpRequest(); //New request object
-        oReq.onload = function() {
+        oReq.onload = function(e) {
             //This is where you handle what to do with the response.
             //The actual data is found on this.responseText
             var result = this.responseText;
             //console.log ("result", result);
             var data = JSON.parse (result);
             console.log ("data", data);
-
-            if (data.error) {
+            if (data.redirect) {
+                window.location.replace (data.redirect);    // redirect if server php passes this field (should be to login page)    
+            }
+            else if (data.error) {
                 alert ("Tell Colin: "+data.error);
             }
             else {
@@ -226,7 +228,7 @@ CLMSUI.buildSubmitSearch = function () {
                         d3.select("#"+baseId+"Hidden").property("value", "["+ids.join(",")+"]");  // Put the ids in the hidden form element
 
                         var names = checkedData.map (function(d) { return d.name; });
-                        d3.select(psetting.selectSummaryid).text (names.length ? "Selected "+names.join(", ") : null);  // Put names in label
+                        d3.select(psetting.selectSummaryid).text (names.length ? "Selected "+names.length+": "+names.join(", ") : null);  // Put names in label
 
                         dispatchObj.formInputChanged();
                     }; 
@@ -332,7 +334,10 @@ CLMSUI.buildSubmitSearch = function () {
                         encode: true,
                         success: function (response, textStatus, jqXhr) {
                             console.log ("db params insert success", response, textStatus);
-                            if (response.status == "success") {
+                            if (response.redirect) {
+                                window.location.replace (response.redirect);    // redirect if server php passes this field    
+                            }
+                            else if (response.status == "success") {
                                 toDoMessage ("Success, Search ID "+response.newSearch.id+" added. Refresh page to add new search.");
                             } else {
                                 toDoMessage ("Error, "+response.error+".");
@@ -362,6 +367,7 @@ CLMSUI.buildSubmitSearch = function () {
                         var vals = d3.values (nonzeroes);
 
                         var submitBlocked = vals.some (function(d) { return d === 0; });
+                        console.log (vals, "submitBlocked", submitBlocked, formid, $(formid+" button[type='submit']"));
                         var buttons = $(formid+" button[type='submit']");
                         buttons.button ("option", "disabled", submitBlocked);
 
@@ -381,11 +387,18 @@ CLMSUI.buildSubmitSearch = function () {
                         },
                         "fileuploadadded": function (e, data) {
                             nonzeroes.filesAwaiting = rowCountFunc();
+                            console.log ("table rows awaiting, ", rowCountFunc());
                             enabler();
                         },
-                        "fileuploadfailed": function (e, data) {                         
-                            console.log ("failed", data);
-                            //console.log ("failed", data.jqXHR.responseText);
+                        "fileuploadfail": function (e, data) {  // called before template rendered   
+                            if (data.errorThrown && data.errorThrown.name == "SyntaxError") {
+                                // This usually means a html-encoded php error that jquery has tried to json decode
+                                data.files[0].error = "from Server, "+$(data.jqXHR.responseText).text().slice(0,40)+"...";
+                            }
+                            uploadSuccess = false;
+                        },
+                        "fileuploadfailed": function (e, data) {    // called after template rendered                         
+                            console.log ("failed", e, data);
                             if (data.errorThrown === "abort") {
                                 nonzeroes.filesAwaiting = rowCountFunc();
                                 enabler();
@@ -411,8 +424,12 @@ CLMSUI.buildSubmitSearch = function () {
                                     dataType: "json",
                                     encode: true,
                                     success: function (response, textStatus, jqXhr) {
-                                        console.log ("db acq/seq insert success", response, textStatus);
-                                        dispatchObj.newEntryUploaded (type, response.newRow);    // alert new row has been added to db
+                                        if (response.redirect) {
+                                            window.location.replace (response.redirect);    // redirect if server php passes this field    
+                                        } else {
+                                            console.log ("db acq/seq insert success", response, textStatus);
+                                            dispatchObj.newEntryUploaded (type, response.newRow);    // alert new row has been added to db
+                                        }
                                     },
                                     error : function (jqXhr, textStatus, errorThrown) {
                                         console.log ("db acq/seq insert error", textStatus, errorThrown);    

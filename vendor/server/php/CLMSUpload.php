@@ -28,6 +28,8 @@ ChromePhp::log(json_encode($_SESSION["uploadTimeStamp"]));
 
 $baseDir = $_SESSION["baseDir"];
 
+
+
 // from http://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
 
 function normalizeString ($str = '')
@@ -65,6 +67,11 @@ ChromePhp::log($options);
 
 error_reporting(E_ALL | E_STRICT);
 require('UploadHandler.php');
-$upload_handler = new UploadHandler ($options);
+try {
+    $upload_handler = new UploadHandler ($options);
+}
+catch (Exception $e) {
+    ChromePhp::log(json_encode($e));
+}
 
 ?>

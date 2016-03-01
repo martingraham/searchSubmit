@@ -1268,6 +1268,7 @@ class UploadHandler
             }
             $this->body($json);
         }
+
         return $content;
     }
 
