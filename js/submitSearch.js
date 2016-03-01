@@ -85,17 +85,23 @@ CLMSUI.buildSubmitSearch = function () {
         $("#startProcessing").button();       
     };
 
-    $(document).ready( function () {
-
+    $(document).ready (function () {
+        
+        $.ajax ({
+            type: "GET",
+            url: "./php/populate.php",
+            dataType: "json",
+            encode: true,
+            success: gotChoicesResponse,
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log ("db get error", textStatus, errorThrown);    
+            },
+        });
+        
         // http://stackoverflow.com/questions/23740548/how-to-pass-variables-and-data-from-php-to-javascript
-        var oReq = new XMLHttpRequest(); //New request object
-        oReq.onload = function(e) {
-            //This is where you handle what to do with the response.
-            //The actual data is found on this.responseText
-            var result = this.responseText;
-            //console.log ("result", result);
-            var data = JSON.parse (result);
-            console.log ("data", data);
+        function gotChoicesResponse (data, textStatus, jqXhr) {
+            console.log ("got", data, textStatus, jqXhr);
+
             if (data.redirect) {
                 window.location.replace (data.redirect);    // redirect if server php passes this field (should be to login page)    
             }
@@ -473,9 +479,6 @@ CLMSUI.buildSubmitSearch = function () {
                 [seqFormActions, acqFormActions].forEach (function(formAct) { formAct.buttonEnabler(); });
             }
         };
-
-        oReq.open("get", "php/populate.php", true);     // true == asynchronous call
-        oReq.send();
     });
 
     canDoImmediately();
