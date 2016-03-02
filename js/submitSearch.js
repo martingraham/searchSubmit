@@ -118,7 +118,7 @@ CLMSUI.buildSubmitSearch = function () {
                     {data: data.xlinkers, defaultField: "is_default", domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker",},
                     {data: data.enzymes, defaultField: "is_default", domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
                     {data: data.modifications, defaultField: "is_default_fixed", domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications",},
-                    {data: data.modifications, defaultField: "is_default_var", domid: "#paramVarMods", niceLabel: "Var Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications",},
+                    {data: data.modifications, defaultField: "is_default_var", domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications",},
                     {data: data.ions, defaultField: "is_default", domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion",},
                     {data: data.losses, defaultField: "is_default", domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses",},
                 ];
@@ -331,6 +331,8 @@ CLMSUI.buildSubmitSearch = function () {
                         }
                     });
                     console.log ("formData", formData);
+                    
+                    d3.select("body").style("cursor", "wait");
 
                     $.ajax ({
                         type: "POST",
@@ -344,7 +346,8 @@ CLMSUI.buildSubmitSearch = function () {
                                 window.location.replace (response.redirect);    // redirect if server php passes this field    
                             }
                             else if (response.status == "success") {
-                                toDoMessage ("Success, Search ID "+response.newSearch.id+" added. Refresh page to add new search.");
+                                toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
+                                window.location.assign ("../searches/history.php");
                             } else {
                                 toDoMessage ("Error, "+response.error+".");
                                 happyToDo (false);
@@ -356,6 +359,9 @@ CLMSUI.buildSubmitSearch = function () {
                             toDoMessage ("Error, "+errorThrown+".");
                             happyToDo (false);
                             $("#startProcessing").button("option", "disabled", false);
+                        },
+                        complete: function () {
+                            d3.select("body").style("cursor", null);
                         },
                     });
                 });
