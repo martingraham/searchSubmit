@@ -12,13 +12,15 @@ else {
         //open connection
         $dbconn = pg_connect($connectionString);
 
-        // Get previous acquisitions from DB
-        $query = "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";
-        $previousAcqui = resultsAsArray(pg_query($query));
+        // Get previous acquisitions from DB - use prepared statement in case somehow $SESSION["user_id"] is dodgy
+        $getAcqs = pg_prepare($dbconn, "getAcqs", "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = $1 ORDER BY upload_date DESC");
+        $result = pg_execute($dbconn, "getAcqs", array($_SESSION['user_id']));
+        $previousAcqui = resultsAsArray ($result);
 
-        // Get previous acquisitions from DB
-        $query = "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = " . $_SESSION['user_id'] . " ORDER BY upload_date DESC;";
-        $previousSeq = resultsAsArray(pg_query($query));
+        // Get previous sequences from DB - etc etc
+        $getSeqs = pg_prepare($dbconn, "getSeqs", "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = $1 ORDER BY upload_date DESC");
+        $result = pg_execute($dbconn, "getSeqs", array($_SESSION['user_id']));
+        $previousSeq = resultsAsArray($result);
 
         // Get crosslinkers from DB
         $query = "SELECT id, name, is_default from crosslinker WHERE name NOT LIKE '#%' ORDER by name;";
@@ -60,9 +62,8 @@ else {
     }
 }
 
-// Printing results in HTML, assuming id and name field in result set
+// Turn result set into array of objects
 function resultsAsArray($result) {
-    //echo "<p>".$result."</p>";
     $arr = array();
     while ($line = pg_fetch_array($result, null, PGSQL_ASSOC)) {
         $arr[] = $line;

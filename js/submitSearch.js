@@ -83,7 +83,7 @@ CLMSUI.buildSubmitSearch = function () {
 
         // Make buttons
         $("#startProcessing").button();       
-    };
+    }
 
     $(document).ready (function () {
         
@@ -106,7 +106,7 @@ CLMSUI.buildSubmitSearch = function () {
                 window.location.replace (data.redirect);    // redirect if server php passes this field (should be to login page)    
             }
             else if (data.error) {
-                alert ("Tell Colin: "+data.error);
+                alert ("Error: "+data.error);
             }
             else {
                 var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded");
@@ -173,11 +173,11 @@ CLMSUI.buildSubmitSearch = function () {
                 // Make previous acquisition and sequence tables
                 var prevTableClickFuncs = {}; // so we can keep these for later
                 // Routine for sorting datatable column of checkboxes via dom element values
-                $.fn.dataTable.ext.order['dom-checkbox'] = function  ( settings, col ) {
+                $.fn.dataTable.ext.order['dom-checkbox'] = function ( settings, col ) {
                     return this.api().column(col, {order:'index'}).nodes().map (function (td, i) {
                         return $('input', td).prop('checked') ? '1' : '0';
                     });
-                }
+                };
                 var previousSettings = [
                     {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected",},
                     {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected",},
@@ -197,7 +197,7 @@ CLMSUI.buildSubmitSearch = function () {
                     var newRows = rowJoin.enter().append("tr");
 
                     var cellJoin = newRows.selectAll("td").data (function(d) { return d3.values(d); });
-                    cellJoin.enter().append("td").text(function(d) { return d; })
+                    cellJoin.enter().append("td").text(function(d) { return d; });
 
                     newRows.append ("td").append("input")
                         .attr ("type", "checkbox")
