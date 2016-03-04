@@ -78,12 +78,12 @@ else {
 
         // make timestamps to use in name fields and in timestamp fields (different format required)
         $date = new DateTime();
-        $SQLValidTimeStamp = $date->format("Y-m-d H:i:s");
+        //$SQLValidTimeStamp = $date->format("Y-m-d H:i:s");
         //ChromePhp::log(json_encode($SQLValidTimeStamp));
         $timeStamp = $date->format("H_i_s-d_M_Y");
 
         $preparedStatementTexts = array (
-            "paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, upload_date, customsettings, top_alpha_matches, template, synthetic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, '10', FALSE, FALSE)",
+            "paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, customsettings, top_alpha_matches, template, synthetic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, '10', FALSE, FALSE) RETURNING id",
             "paramFixedModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
             "paramVarModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
             "paramIonsSelect" => "INSERT INTO chosen_ions (paramset_id, ion_id) VALUES ($1, $2)",
@@ -91,7 +91,7 @@ else {
             "paramCrossLinkerSelect" => "INSERT INTO chosen_crosslinker (paramset_id, crosslinker_id) VALUES ($1, $2)",
             "acqPreviousTable" => "SELECT name FROM acquisition WHERE id = ANY ($1::int[])",
             "getUserGroups" => "SELECT group_id FROM user_in_group WHERE user_id = $1",
-            "newSearch" => "INSERT INTO search (paramset_id, visible_group, name, uploadedby, submit_date, notes, status, completed, is_executing) VALUES ($1, $2, $3, $4, $5, $6, 'queueing', FALSE, FALSE) RETURNING id",
+            "newSearch" => "INSERT INTO search (paramset_id, visible_group, name, uploadedby, notes, status, completed, is_executing) VALUES ($1, $2, $3, $4, $5, 'queueing', FALSE, FALSE) RETURNING id",
             "newSearchSeqLink" => "INSERT INTO search_sequencedb (search_id, seqdb_id) VALUES($1, $2)",
             "getRuns" => "SELECT acq_id, run_id FROM run WHERE acq_id = ANY($1::int[])",
             "newSearchAcqLink" => "INSERT INTO search_acquisition (search_id, acq_id, run_id) VALUES($1, $2, $3)"
@@ -119,11 +119,9 @@ else {
 
             // Add parameter_set values to db
             $result = pg_prepare($dbconn, "paramsAdd", $preparedStatementTexts["paramSet"]);
-            $result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], $paramName, $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],$_POST["paramTolerance2Value"], $_POST["paramToleranceUnits"], $_POST["paramTolerance2Units"],       $SQLValidTimeStamp, $_POST["paramCustom"]]);
-            $paramIDGet = pg_prepare($dbconn, "paramIDGet", "SELECT id, name from parameter_set where uploadedby = $1 AND name = $2 AND upload_date = $3");
-            $result =  pg_execute($dbconn, "paramIDGet", [$userID, $paramName, $SQLValidTimeStamp]);
-            $paramIdRow = pg_fetch_assoc ($result); // get the newly added row, need it to add runs here and to return to client ui
-            $paramid = $paramIdRow["id"];
+            $result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], $paramName, $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],$_POST["paramTolerance2Value"], $_POST["paramToleranceUnits"], $_POST["paramTolerance2Units"],       $_POST["paramCustom"]]);
+            $paramIDRow = pg_fetch_assoc ($result); // get the newly added parameter id
+            $paramid = $paramIDRow["id"];
 
             // Add link tables to connect parameter_set to ions/mods/losses/crosslinkers
             foreach ($paramLinkTableMap as $key => $value) {
@@ -156,7 +154,7 @@ else {
             // Add search to db
             $searchName = $paramName;   // They appear to be the same construct
             $searchInsert = pg_prepare ($dbconn, "searchInsert", $preparedStatementTexts["newSearch"]);
-            $result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $SQLValidTimeStamp, $_POST["paramNotes"]]);
+            $result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $_POST["paramNotes"]]);
             $searchRow = pg_fetch_assoc ($result); // get the newly added search id
             $searchid = $searchRow["id"];
 
