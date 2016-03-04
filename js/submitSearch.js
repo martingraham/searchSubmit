@@ -71,13 +71,26 @@ CLMSUI.buildSubmitSearch = function () {
 
 
         // Make accordions
-        var accordions = ["#acqAccordion", "#seqAccordion"];
-        accordions.forEach (function (accordion) {
-            $(accordion).accordion ({
+        var accordionSettings = [
+            {id: "#acqAccordion", scrollTo: false}, 
+            {id: "#seqAccordion", scrollTo: false}, 
+            {id: "#customAccordion", scrollTo: true}, 
+        ];
+        var scrollVisible = [false, false, true];
+        accordionSettings.forEach (function (accordionSet,i) {
+            $(accordionSet.id).accordion ({
                 collapsible: true,
                 active: false,
                 heightStyle: "content",
+                activate: function () {
+                    if (accordionSet.scrollTo) {
+                        $('html, body').animate ({
+                            scrollTop: $(accordionSet.id).offset().top,
+                        }, 1200);
+                    }
+                },
             });
+
         });
 
 

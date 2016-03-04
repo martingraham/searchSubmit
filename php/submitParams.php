@@ -5,8 +5,8 @@ if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) 
     echo (json_encode (array ("redirect" => "./login.html")));
 }
 else {
-    include '../vendor/server/php/ChromePhp.php';
-    ChromePhp::log(json_encode($_POST));
+    //include '../vendor/server/php/ChromePhp.php';
+    //ChromePhp::log(json_encode($_POST));
 
     $userID = $_SESSION['user_id'];
     $username = $_SESSION['session_name'];
@@ -19,6 +19,7 @@ else {
         "paramTolerance2Units" => array ("required" => true),
         "paramEnzymeSelect" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
         "paramNotes" => array ("required" => false),
+        "paramCustom" => array ("required" => false),
         "acqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
         "seqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT)
     );
@@ -82,7 +83,7 @@ else {
         $timeStamp = $date->format("H_i_s-d_M_Y");
 
         $preparedStatementTexts = array (
-            "paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, upload_date, notes, top_alpha_matches, template, synthetic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, '10', FALSE, FALSE)",
+            "paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, upload_date, customsettings, top_alpha_matches, template, synthetic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, '10', FALSE, FALSE)",
             "paramFixedModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
             "paramVarModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
             "paramIonsSelect" => "INSERT INTO chosen_ions (paramset_id, ion_id) VALUES ($1, $2)",
@@ -118,9 +119,7 @@ else {
 
             // Add parameter_set values to db
             $result = pg_prepare($dbconn, "paramsAdd", $preparedStatementTexts["paramSet"]);
-            $result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], $paramName, $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],
-                                                       $_POST["paramTolerance2Value"], $_POST["paramToleranceUnits"], $_POST["paramTolerance2Units"], 
-                                                        $SQLValidTimeStamp, $_POST["paramNotes"]]);
+            $result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], $paramName, $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],$_POST["paramTolerance2Value"], $_POST["paramToleranceUnits"], $_POST["paramTolerance2Units"],       $SQLValidTimeStamp, $_POST["paramCustom"]]);
             $paramIDGet = pg_prepare($dbconn, "paramIDGet", "SELECT id, name from parameter_set where uploadedby = $1 AND name = $2 AND upload_date = $3");
             $result =  pg_execute($dbconn, "paramIDGet", [$userID, $paramName, $SQLValidTimeStamp]);
             $paramIdRow = pg_fetch_assoc ($result); // get the newly added row, need it to add runs here and to return to client ui
