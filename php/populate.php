@@ -6,7 +6,7 @@ if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) 
 }
 else {
 
-    include('../../connectionStringSafe.php');
+    include('../../connectionString.php');
 
     try {
         //open connection
@@ -23,7 +23,8 @@ else {
         $previousSeq = resultsAsArray($result);
 
         // Get crosslinkers from DB
-        $query = "SELECT id, name, is_default from crosslinker WHERE name NOT LIKE '#%' ORDER by name;";
+        //$query = "SELECT id, name, is_default from crosslinker WHERE name NOT LIKE '#%' ORDER by name;";
+        $query = "SELECT id, name, is_default from crosslinker ORDER by name;";
         $xlinkers = resultsAsArray(pg_query($query));
 
         // Get enzymes from DB
@@ -31,15 +32,18 @@ else {
         $enzymes = resultsAsArray(pg_query($query));
 
         // Get modifications from DB
-        $query = "SELECT id, name, is_default_fixed, is_default_var from modification WHERE name NOT LIKE '#%' ORDER by name;";
+        //$query = "SELECT id, name, is_default_fixed, is_default_var from modification WHERE name NOT LIKE '#%' ORDER by name;";
+        $query = "SELECT id, name, is_default_fixed, is_default_var from modification ORDER by name;";
         $mods = resultsAsArray(pg_query($query));
 
         // Get ions from DB
-        $query = "SELECT id, name, is_default from ion WHERE name NOT LIKE '#%' ORDER by name;";
+        //$query = "SELECT id, name, is_default from ion WHERE name NOT LIKE '#%' ORDER by name;";
+        $query = "SELECT id, name, is_default from ion ORDER by name;";
         $ions = resultsAsArray(pg_query($query));
 
         // Get losses from DB
-        $query = "SELECT id, name, is_default from loss WHERE name NOT LIKE '#%' ORDER by name;";
+        //$query = "SELECT id, name, is_default from loss WHERE name NOT LIKE '#%' ORDER by name;";
+        $query = "SELECT id, name, is_default from loss ORDER by name;";
         $losses = resultsAsArray(pg_query($query));
 
         // Get basedir for file uploads
