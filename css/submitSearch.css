@@ -84,3 +84,11 @@
 .hiddenFromUser {
     display: none;
 }
+
+#backButton {
+    float: right;
+}
+
+#backButton span {
+    display: inline-block;
+}

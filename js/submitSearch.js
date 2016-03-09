@@ -95,7 +95,13 @@ CLMSUI.buildSubmitSearch = function () {
 
 
         // Make buttons
-        $("#startProcessing").button();       
+        var buttonIds = ["#startProcessing", "#backButton"];
+        buttonIds.forEach (function (buttonId) {
+             $(buttonId).button();       
+        });
+        
+        // Add action for back button
+        d3.select("#backButton").on("click", function() { window.history.back(); });
     }
 
     $(document).ready (function () {
