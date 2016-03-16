@@ -91,7 +91,7 @@ else {
             "paramCrossLinkerSelect" => "INSERT INTO chosen_crosslinker (paramset_id, crosslinker_id) VALUES ($1, $2)",
             "acqPreviousTable" => "SELECT name FROM acquisition WHERE id = ANY ($1::int[])",
             "getUserGroups" => "SELECT group_id FROM user_in_group WHERE user_id = $1",
-            "newSearch" => "INSERT INTO search (paramset_id, visible_group, name, uploadedby, notes, status, completed, is_executing) VALUES ($1, $2, $3, $4, $5, 'queueing', FALSE, FALSE) RETURNING id",
+            "newSearch" => "INSERT INTO search (paramset_id, visible_group, name, uploadedby, notes, status, completed, is_executing) VALUES ($1, $2, $3, $4, $5, 'queuing', FALSE, FALSE) RETURNING id",
             "newSearchSeqLink" => "INSERT INTO search_sequencedb (search_id, seqdb_id) VALUES($1, $2)",
             "getRuns" => "SELECT acq_id, run_id FROM run WHERE acq_id = ANY($1::int[])",
             "newSearchAcqLink" => "INSERT INTO search_acquisition (search_id, acq_id, run_id) VALUES($1, $2, $3)"
