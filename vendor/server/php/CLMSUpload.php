@@ -21,6 +21,7 @@ ChromePhp::log(json_encode($_SESSION));
 
 // make a timestamp in the session to use in filepaths and name entries (so db php routines can use it) 
 if (! array_key_exists ("uploadTimeStamp", $_SESSION) || $_SESSION["uploadTimeStamp"] == null) {
+    date_default_timezone_set ('Europe/Berlin');
     $date = new DateTime();
     $_SESSION["uploadTimeStamp"] = $date->format("-H_i_s-d_M_Y");
 }
