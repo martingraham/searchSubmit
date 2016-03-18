@@ -226,11 +226,12 @@ CLMSUI.buildSubmitSearch = function () {
                         "paging": true,
                         "jQueryUI": true,
                         "ordering": true,
-                        "order": [[ 0, "desc" ]],
+                        "order": [[ 0, "desc" ]],   // order by first column
                         "columnDefs": [
                             {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
                         ]
                     });
+    
 
                     // this stuffs a hidden input field in the main parameter search form
                     d3.select("#parameterForm").append("input")
@@ -259,9 +260,22 @@ CLMSUI.buildSubmitSearch = function () {
                         dispatchObj.formInputChanged();
                     }; 
 
-                    newRows.selectAll("input[type=checkbox]")
-                        .on ("click", prevTableClickFuncs[baseId])
-                    ;   
+                    newRows
+                        .on("click", function () {
+                            d3.select(this).selectAll("input[type=checkbox]")
+                                .property ("checked", function() {
+                                    return !(d3.select(this).property("checked"));  // toggle checkbox state on row click
+                                })
+                            ;
+                            prevTableClickFuncs[baseId]();
+                        })
+                        .selectAll("input[type=checkbox]")
+                            .on ("click", function() {
+                                d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
+                                prevTableClickFuncs[baseId]();
+                            }
+                        )
+                    ; 
                 });
 
 
