@@ -77,6 +77,7 @@ else {
     if ($allGood) {
 
         // make timestamps to use in name fields and in timestamp fields (different format required)
+        date_default_timezone_set ('Europe/Berlin');
         $date = new DateTime();
         //$SQLValidTimeStamp = $date->format("Y-m-d H:i:s");
         //ChromePhp::log(json_encode($SQLValidTimeStamp));
