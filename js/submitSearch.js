@@ -226,6 +226,7 @@ CLMSUI.buildSubmitSearch = function () {
                         "paging": true,
                         "jQueryUI": true,
                         "ordering": true,
+                        "order": [[ 0, "desc" ]],
                         "columnDefs": [
                             {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
                         ]

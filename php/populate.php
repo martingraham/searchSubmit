@@ -13,13 +13,17 @@ else {
         $dbconn = pg_connect($connectionString);
 
         // Get previous acquisitions from DB - use prepared statement in case somehow $SESSION["user_id"] is dodgy
-        $getAcqs = pg_prepare($dbconn, "getAcqs", "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = $1 ORDER BY upload_date DESC");
-        $result = pg_execute($dbconn, "getAcqs", array($_SESSION['user_id']));
+        //$getAcqs = pg_prepare($dbconn, "getAcqs", "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) where uploadedby = $1 ORDER BY upload_date DESC");
+        $getAcqs = pg_prepare($dbconn, "getAcqs", "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) ORDER BY acquisition.id DESC");
+        $result = pg_execute($dbconn, "getAcqs", array());
+        //$result = pg_execute($dbconn, "getAcqs", array($_SESSION['user_id']));
         $previousAcqui = resultsAsArray ($result);
 
         // Get previous sequences from DB - etc etc
-        $getSeqs = pg_prepare($dbconn, "getSeqs", "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = $1 ORDER BY upload_date DESC");
-        $result = pg_execute($dbconn, "getSeqs", array($_SESSION['user_id']));
+        //$getSeqs = pg_prepare($dbconn, "getSeqs", "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) where uploadedby = $1 ORDER BY upload_date DESC");
+        $getSeqs = pg_prepare($dbconn, "getSeqs", "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) ORDER BY upload_date DESC");
+        $result = pg_execute($dbconn, "getSeqs", array());
+        //$result = pg_execute($dbconn, "getSeqs", array($_SESSION['user_id']));
         $previousSeq = resultsAsArray($result);
 
         // Get crosslinkers from DB
