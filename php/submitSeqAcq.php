@@ -6,6 +6,7 @@ if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) 
 }
 else {
     include('../../connectionString.php');
+    include 'utils.php';
     /*
     include('./../vendor/server/php/ChromePhp.php');
     ChromePhp::log(json_encode("data posted"));
@@ -54,7 +55,8 @@ else {
     if ($allGood) {
 
         $filenames = $_POST["filenames"];
-        $tstampname = $_POST["name"].$_SESSION["uploadTimeStamp"];
+        $saneName = normalizeString ($_POST["name"]);   // sanitise user-supplied acq/seq name, same as in clmsupload.php
+        $tstampname = $saneName.$_SESSION["uploadTimeStamp"];
 
         //open connection
         $dbconn = pg_connect($connectionString)
@@ -62,6 +64,7 @@ else {
 
         // little bobby tables - https://xkcd.com/327/ 
         try {
+            
             //$baseDir = $_SESSION["baseDir"];
             pg_query("BEGIN") or die("Could not start transaction\n");
 

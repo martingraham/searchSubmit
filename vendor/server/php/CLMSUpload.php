@@ -16,6 +16,7 @@ if (!$_SESSION['session_name']) {
 }
  
 include './ChromePhp.php';
+include '../../../php/utils.php';
 //ChromePhp::log(json_encode($_POST));
 //ChromePhp::log(json_encode($_SESSION));
 
@@ -28,24 +29,6 @@ if (! array_key_exists ("uploadTimeStamp", $_SESSION) || $_SESSION["uploadTimeSt
 //ChromePhp::log(json_encode($_SESSION["uploadTimeStamp"]));
 
 $baseDir = $_SESSION["baseDir"];
-
-
-
-// from http://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
-
-function normalizeString ($str = '')
-{
-    $str = filter_var ($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
-    $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
-    $str = html_entity_decode( $str, ENT_QUOTES, "utf-8" );
-    $str = htmlentities($str, ENT_QUOTES, "utf-8");
-    $str = preg_replace("/(&)([a-z])([a-z]+;)/i", '$2', $str);
-    $str = str_replace(' ', '-', $str);
-    $str = rawurlencode($str);
-    $str = str_replace('%', '-', $str);
-    return $str;
-}
-
 
 // override php.ini settings so massive files can be uploaded - doesn't work
 //ini_set('post_max_size', '4G');
