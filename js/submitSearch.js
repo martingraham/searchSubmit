@@ -339,7 +339,7 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                     $("#startProcessing").button("option", "disabled", !todoList.empty());
                     happyToDo (todoList.empty());
-                    toDoMessage (todoList.empty() ? "Ready to Process" : "Values are required for:<br>"+todoList.values());
+                    toDoMessage (todoList.empty() ? "Ready to Process" : "Selections are required for:<br>"+todoList.values().join(", "));
                 });
                 dispatchObj.formInputChanged();
 
