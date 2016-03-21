@@ -117,6 +117,7 @@ CLMSUI.buildSubmitSearch = function () {
             },
         });
         
+        
         // http://stackoverflow.com/questions/23740548/how-to-pass-variables-and-data-from-php-to-javascript
         function gotChoicesResponse (data, textStatus, jqXhr) {
             console.log ("got", data, textStatus, jqXhr);
@@ -327,11 +328,12 @@ CLMSUI.buildSubmitSearch = function () {
                 var toDoMessage = function (msg) {
                     d3.select("#todo span.notice").html(msg);
                 };
-
+                
                 dispatchObj.on ("formInputChanged", function () {
                     var todoList = d3.set();
                     d3.select("#parameterForm").selectAll(".formPart[required]").each (function() {
-                        if (this.id && !this.value) {
+                        // form parts return arrays as strings so need to check for empty array as a string ("[]")
+                        if (this.id && (!this.value || this.value == "[]")) {
                             todoList.add (d3.select(this).attr("data-label") || d3.select(this).attr("name"));
                         }
                     });
