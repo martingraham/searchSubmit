@@ -47,9 +47,9 @@ function normalizeString ($str = '')
 }
 
 
-// override php.ini settings so massive files can be uploaded
-ini_set('post_max_size', '4G');
-ini_set('upload_max_filesize', '4G');
+// override php.ini settings so massive files can be uploaded - doesn't work
+//ini_set('post_max_size', '4G');
+//ini_set('upload_max_filesize', '4G');
 
 if (array_key_exists ("newacqID", $_POST)) {
     $userName = $_SESSION["session_name"];
