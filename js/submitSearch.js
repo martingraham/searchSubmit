@@ -135,11 +135,11 @@ CLMSUI.buildSubmitSearch = function () {
                 // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                 // Multiple Selects need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
                 var populateOptionLists = [
-                    {data: data.xlinkers, defaultField: "is_default", domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker",},
+                    {data: data.xlinkers, defaultField: "is_default", domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker"},
                     {data: data.enzymes, defaultField: "is_default", domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
                     {data: data.modifications, defaultField: "is_default_fixed", domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications",},
                     {data: data.modifications, defaultField: "is_default_var", domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications",},
-                    {data: data.ions, defaultField: "is_default", domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion",},
+                    {data: data.ions, defaultField: "is_default", domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion"},
                     {data: data.losses, defaultField: "is_default", domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses",},
                 ];
                 populateOptionLists.forEach (function (poplist) {
@@ -165,27 +165,45 @@ CLMSUI.buildSubmitSearch = function () {
                         .property ("selected", function(d) { return d[poplist.defaultField] === 1 || d[poplist.defaultField] === 't'; }) // pre-select
                     ;
 
-                    //if (poplist.multiple) {
-                        $("#"+baseId).multipleSelect({ 
-                            single: !poplist.multiple,
-                            filter: poplist.filter, 
-                            placeholder: poplist.placeHolder,
-                            multiple: true, // this is to show multiple options per row, not to do with multiple selections (that's single)
-                            width: 450,
-                            multipleWidth: 200,
-                            onClick: function (view) {
+                    $("#"+baseId).multipleSelect({ 
+                        single: !poplist.multiple,
+                        filter: poplist.filter, 
+                        selectAll: false,
+                        placeholder: poplist.placeHolder,
+                        multiple: true, // this is to show multiple options per row, not to do with multiple selections (that's single)
+                        //width: 450,
+                        multipleWidth: 200,
+                        onClick: function (view) {
+                            dispatchObj.formInputChanged();   
+                        },
+                    });
+                    elem.selectAll(".ms-choice")
+                        .classed("ui-widget", true)
+                        .classed("ui-state-default", true)
+                    ;
+                    // add tooltips to list items
+                    elem.select("ul").selectAll("li")
+                        .attr ("title", function() { return d3.select(this).text(); })
+                    ;
+                    // set widget to a relative rather than pixel width
+                    elem.selectAll(".ms-parent")
+                        .style ("width", poplist.multiple ? "100%" : "70%")
+                    ;
+                    
+                    // add a clear all option
+                    if (poplist.clearOption) {
+                        var options = d3.select(poplist.domid).select("ul");
+                        options.insert("li", ":first-child")
+                            .append("button")
+                            .attr ("id", baseId+"ClearAll")
+                            .text("Unselect All")
+                            .on("click", function() {
+                                $(selElem).multipleSelect("uncheckAll");
                                 dispatchObj.formInputChanged();   
-                            },
-                        });
-                        elem.selectAll(".ms-choice")
-                            .classed("ui-widget", true)
-                            .classed("ui-state-default", true)
+                            })
                         ;
-                    /*
-                    } else {
-                        $("#"+baseId).combobox();
+                        $("#"+baseId+"ClearAll").button();       
                     }
-                    */
                 });
 
 
