@@ -267,15 +267,17 @@ CLMSUI.buildSubmitSearch = function () {
                     // where they can be picked up on the parameter form submit, and show the current selection to the user
                     prevTableClickFuncs[baseId] = function () {
                         var dtCells = $("#"+baseId).DataTable().rows().nodes(); // loads of tr dom nodes
+                        $(dtCells).removeClass("selected");
                         var checkedCells = $(dtCells).has("input:checked"); // just the ones with a ticked checkbox
+                        checkedCells.addClass("selected");
                         var checkedData = d3.selectAll(checkedCells).data();
 
                         var ids = checkedData.map (function(d) { return +d.id; });
                         d3.select("#"+baseId+"Hidden").property("value", "["+ids.join(",")+"]");  // Put the ids in the hidden form element
 
-                        var names = checkedData.map (function(d) { return d.name; });
-                        d3.select(psetting.selectSummaryid).text (names.length ? "Selected "+names.length+": "+names.join(", ") : null);  // Put names in label
-
+                        var names = checkedData.map (function(d) { return d.name+" ("+d.id+")"; });
+                        d3.select(psetting.selectSummaryid).html (names.length ? names.length+" Selected: "+names.join("<br>") : null);  // Put names in label
+                        console.log ("change form");
                         dispatchObj.formInputChanged();
                     }; 
 

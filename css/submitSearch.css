@@ -19,7 +19,7 @@
     float: left;
     padding: 0.5em;
     /*border: 1px solid gray;*/
-    margin-right: 0;
+    padding-top: 0.2em;
 }
 
 .row {}
@@ -72,13 +72,17 @@
     display: inline-block;
 }
 
-#acquire > H3, #sequence > H3 {
-    display: inline;
+#acquire H3, #sequence H3 {
+    margin: 0;
+    word-wrap: break-word;
 }
 
-#acquire > span, #sequence > span {
-    margin-left: 2em;
-    color: #333;
+#acquire table td, #sequence table td {
+    white-space: nowrap;
+}
+
+.chosenFiles {
+    color: black;
 }
 
 .hiddenFromUser {

@@ -40,9 +40,12 @@
      </head>
      <body>
          <script id="template-acqseq-section" type="text/x-tmpl">
-            <h3>{%=o.pluralLabel%}</h3>
-            <span id="{%=o.partialId%}Selected"></span>
-
+         <div class="row">
+            <div class="col-2"><h3>{%=o.pluralLabel%}</h3></div>
+            <div class="col-10"><span id="{%=o.partialId%}Selected" class="chosenFiles"></span></div>
+        </div>
+        <div class="row">
+        <div class="col-12">
             <div id="{%=o.partialId%}Accordion">
                 <h3>Upload New {%=o.pluralLabel%}</h3>
 
@@ -81,13 +84,15 @@
                 <h3>Use Previous {%=o.pluralLabel%}</h3>
                 <div id="{%=o.partialId%}Previous"></div>
             </div>
+        </div>
+        </div>
         </script>
          
         <div>
             <button id="backButton"><span class="ui-icon ui-icon-arrowreturnthick-1-w"></span>Back</button>
             <h1>New Search Form</h1>
-            <div class="paramSetting" id="acquire"></div>
-            <div class="paramSetting" id="sequence"></div>
+            <div id="acquire"></div>
+            <div id="sequence"></div>
 
             <form id="parameterForm" name="login_form" method="post" action="php/submitParams.php">
             <div>
