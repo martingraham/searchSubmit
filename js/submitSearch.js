@@ -15,7 +15,7 @@ CLMSUI.buildSubmitSearch = function () {
 
         // Make number inputs
         var numberInputSettings = [
-            {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, default: 4,},
+            {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, default: 6,},
             {domid: "#paramTolerance2", niceLabel: "Ms2 Tolerance", min: 0, default: 20,},
             {domid: "#paramMissedCleavages", niceLabel: "Missed cleavages", min: 0, default: 4,},
         ];
@@ -383,7 +383,7 @@ CLMSUI.buildSubmitSearch = function () {
                             }
                             else if (response.status == "success") {
                                 toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
-                                window.location.assign ("../searches/history.php");
+                                window.location.assign ("../xi2/history.php");
                             } else {
                                 toDoMessage ("Error, "+response.error+".");
                                 happyToDo (false);
