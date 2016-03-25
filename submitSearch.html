@@ -94,7 +94,7 @@
          
         <script id="template-acqseq-section" type="text/x-tmpl">
              <div class="row">
-                <div class="col-2"><h3>{%=o.pluralLabel%}</h3></div>
+                <div class="col-2"><h3>Choose {%=o.pluralLabel%}</h3></div>
                 <div class="col-10"><span id="{%=o.partialId%}Selected" class="chosenFiles"></span></div>
             </div>
             <div class="row">
@@ -146,11 +146,13 @@
             <h1>New Search Form</h1>
             <div id="acquire"></div>
             <div id="sequence"></div>
-
-            <h3>Search Parameters</h3>
+        
+            <div class="row">   
+                <div class="col-12"><h3>Set Search Parameters</h3></div>
+            <div>
             
             <form id="parameterForm" name="login_form" method="post" action="php/submitParams.php">
-            <div>
+            <div class="lrmargin">
                 <div class="row">
                     <div class="col-12 paramSetting" id="paramSearchName"></div>
                 </div>

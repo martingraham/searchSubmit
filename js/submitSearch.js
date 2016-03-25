@@ -35,23 +35,33 @@ CLMSUI.buildSubmitSearch = function () {
                 id: tid,
                 name: tid,
                 placeholder: settings.placeholderText
-            });
+            })
+            .classed ("ui-widget ui-state-default ui-corner-all", true)
+            ;
         });
 
 
         // Make number inputs
         var numberInputSettings = [
-            {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, default: 6,},
-            {domid: "#paramTolerance2", niceLabel: "Ms2 Tolerance", min: 0, default: 20,},
-            {domid: "#paramMissedCleavages", niceLabel: "Missed cleavages", min: 0, default: 4,},
+            {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, default: 6, step: "any",},
+            {domid: "#paramTolerance2", niceLabel: "Ms2 Tolerance", min: 0, default: 20, step: "any",},
+            {domid: "#paramMissedCleavages", niceLabel: "Missed cleavages", min: 0, default: 4, step: 1,},
         ];
         numberInputSettings.forEach (function (settings) {
             var elem = d3.select(settings.domid);
             elem.append("p").text(settings.niceLabel);
             var iid = settings.domid.slice(1)+"Value";
             var inputElem = elem.append("input")
+                .attr ("type", "number")
+                .attr ("min", settings.min)
+                .attr ("step", settings.step)
                 .attr("name", iid)
                 .attr("id", iid)
+                .on ("input", function() { 
+                    if (!this.checkValidity()) {    // set to min if not a valid entry
+                        this.value = settings.min;
+                    } 
+                })
                 .classed("formPart", true)
             ;
 
@@ -59,6 +69,7 @@ CLMSUI.buildSubmitSearch = function () {
                 min: settings.min,
                 max: settings.max,
                 value: settings.default,
+                step: 1,
             });
 
             $("#"+iid).spinner("value", settings.default);
