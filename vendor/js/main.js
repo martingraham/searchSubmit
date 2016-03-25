@@ -13,7 +13,7 @@
 /*global $, window, navigator, blueimp */
 
 var submitter = submitter || {};
-submitter.upload = function () {
+submitter.upload = function (myOptions) {
     'use strict';
 
     // Initialize the jQuery File Upload widget:
@@ -22,9 +22,15 @@ submitter.upload = function () {
     //        //xhrFields: {withCredentials: true},
     //        url: ''
     //    });
+    
     $('.fileupload').each(function () {
+        var id = d3.select(this).attr("id");
+        var opts = myOptions[id];
+        var r = new RegExp ("(\.|\/)("+opts.fileTypes+")$");
         $(this).fileupload({
-            dropZone: $(this)
+            dropZone: $(this),
+            //acceptFileTypes: /(\.|\/)(zip)$/i,
+            processQueue: [{ action: 'validate', acceptFileTypes: r}]
         });
     });
 

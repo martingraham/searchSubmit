@@ -6,20 +6,20 @@ if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) 
 }
 else {
     //include '../vendor/server/php/ChromePhp.php';
-    //ChromePhp::log(json_encode($_POST));
 
     $userID = $_SESSION['user_id'];
     $username = $_SESSION['session_name'];
 
     $paramFieldNameMap = array (
         "paramMissedCleavagesValue" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
-        "paramToleranceValue" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
+        "paramToleranceValue" => array ("required" => true, "validate" => FILTER_VALIDATE_FLOAT),
         "paramToleranceUnits" => array ("required" => true),
-        "paramTolerance2Value" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
+        "paramTolerance2Value" => array ("required" => true, "validate" => FILTER_VALIDATE_FLOAT),
         "paramTolerance2Units" => array ("required" => true),
         "paramEnzymeSelect" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
-        "paramNotes" => array ("required" => false),
-        "paramCustom" => array ("required" => false),
+        "paramNotesValue" => array ("required" => false),
+        "paramCustomValue" => array ("required" => false),
+        "paramSearchNameValue" => array ("required" => false),
         "acqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
         "seqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT)
     );
@@ -120,7 +120,7 @@ else {
 
             // Add parameter_set values to db
             $result = pg_prepare($dbconn, "paramsAdd", $preparedStatementTexts["paramSet"]);
-            $result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], $paramName, $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],$_POST["paramTolerance2Value"], $_POST["paramToleranceUnits"], $_POST["paramTolerance2Units"],       $_POST["paramCustom"]]);
+            $result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], $paramName, $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],$_POST["paramTolerance2Value"], $_POST["paramToleranceUnits"], $_POST["paramTolerance2Units"],       $_POST["paramCustomValue"]]);
             $paramIDRow = pg_fetch_assoc ($result); // get the newly added parameter id
             $paramid = $paramIDRow["id"];
 
@@ -153,9 +153,10 @@ else {
             //ChromePhp::log(json_encode($userGroupId));
 
             // Add search to db
-            $searchName = $paramName;   // They appear to be the same construct
+            // Make search name timestamped list of acquisitions if not explicitly provided
+            $searchName = ($_POST["paramSearchNameValue"] ? $_POST["paramSearchNameValue"] : $paramName);
             $searchInsert = pg_prepare ($dbconn, "searchInsert", $preparedStatementTexts["newSearch"]);
-            $result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $_POST["paramNotes"]]);
+            $result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $_POST["paramNotesValue"]]);
             $searchRow = pg_fetch_assoc ($result); // get the newly added search id
             $searchid = $searchRow["id"];
 

@@ -2,14 +2,40 @@ var CLMSUI = CLMSUI || {};
 
 CLMSUI.buildSubmitSearch = function () {
     function canDoImmediately () {
-
         // Make acquisition and sequence divs via shared template
         var acqSeqTemplateData = [
-            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "partialId":"seq",}},
-            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "partialId":"acq",}},
+            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "partialId":"seq", "fileTypes":".fasta,.txt"}},
+            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip"}},
         ];
         acqSeqTemplateData.forEach (function (datum) {
             d3.select(datum.id).html (tmpl("template-acqseq-section", datum.fields));
+        });
+        
+        
+        // Make textboxes
+        // Those with labeltag h3 can be accordion'ed later
+        var textBoxData = [
+            {domid: "#paramNotes", niceLabel: "Search Notes", labelTag: "P", placeholderText: "Click here to add notes..."},
+            {domid: "#paramCustom", niceLabel: "Custom Settings", labelTag: "H3", placeholderText: "Click here to add custom settings..."},
+            {domid: "#paramSearchName", niceLabel: "New Search Name", labelTag: "P", placeholderText: "If left empty, search will use acquisition names", rows: 1, maxLength: 1000},
+        ];
+        textBoxData.forEach (function (settings) {
+            var elem = d3.select(settings.domid);
+            elem.append(settings.labelTag).text(settings.niceLabel);
+            if (settings.labelTag === "H3") {
+                elem = elem.append("div");
+            }
+            var tid = settings.domid.slice(1)+"Value";
+            elem.append("textarea").attr ({
+                class: "formPart",
+                wrap: "soft",
+                maxlength: settings.maxLength || 10000,
+                cols: 50,
+                rows: settings.rows || 4,
+                id: tid,
+                name: tid,
+                placeholder: settings.placeholderText
+            });
         });
 
 
@@ -74,7 +100,7 @@ CLMSUI.buildSubmitSearch = function () {
         var accordionSettings = [
             {id: "#acqAccordion", scrollTo: false}, 
             {id: "#seqAccordion", scrollTo: false}, 
-            {id: "#customAccordion", scrollTo: true}, 
+            {id: "#paramCustom", scrollTo: true}, 
         ];
         var scrollVisible = [false, false, true];
         accordionSettings.forEach (function (accordionSet,i) {
@@ -343,7 +369,7 @@ CLMSUI.buildSubmitSearch = function () {
                     d3.select("#todo")
                         .classed ("paramSubmitReady", happy)
                     ;
-                }
+                };
 
                 var toDoMessage = function (msg) {
                     d3.select("#todo span.notice").html(msg);
@@ -359,7 +385,7 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                     $("#startProcessing").button("option", "disabled", !todoList.empty());
                     happyToDo (todoList.empty());
-                    toDoMessage (todoList.empty() ? "Ready to Process" : "Selections are required for:<br>"+todoList.values().join(", "));
+                    toDoMessage (todoList.empty() ? "Ready to Submit" : "To enable Submit, selections are required for:<br>"+todoList.values().join(", "));
                 });
                 dispatchObj.formInputChanged();
 
@@ -381,7 +407,7 @@ CLMSUI.buildSubmitSearch = function () {
                                 val = $("#"+this.id).multipleSelect("getSelects");
                             }   // if a string begin with '[' then is an array string we need to split
                             else if (val.charAt(0) === '[') {
-                                val = val.slice(1, -1).split(",");
+                                val = val.slice(1, -1).split(",");  // split the bit between the square brackets
                             }
                             formData[this.name] = val;
                         }
@@ -424,7 +450,12 @@ CLMSUI.buildSubmitSearch = function () {
 
 
                 // initialize blueimp file uploader bits
-                $(submitter.upload);
+                console.log ("submitter", submitter);
+                uploadOptions = {
+                    "seqfileupload": {"fileTypes":"fasta|txt"},
+                    "acqfileupload": {"fileTypes":"mgf|msm|apl|zip"}
+                };
+                submitter.upload (uploadOptions);
 
 
                 // Function to control actions/consequences of upload/delete buttons in seq/acq upload forms
@@ -457,6 +488,10 @@ CLMSUI.buildSubmitSearch = function () {
                             nonzeroes.filesAwaiting = rowCountFunc();
                             console.log ("table rows awaiting, ", rowCountFunc());
                             enabler();
+                        },
+                        "fileuploadprocessfail": function (e, data) {
+                             console.log ("wibbly", e, data);
+                             data.abort();
                         },
                         "fileuploadfail": function (e, data) {  // called before template rendered   
                             if (data.errorThrown && data.errorThrown.name == "SyntaxError") {
@@ -540,7 +575,7 @@ CLMSUI.buildSubmitSearch = function () {
                 var acqFormActions = new formActions ("#newacqID", "#acqfileupload", "acq");
                 [seqFormActions, acqFormActions].forEach (function(formAct) { formAct.buttonEnabler(); });
             }
-        };
+        }
     });
 
     canDoImmediately();

@@ -97,3 +97,7 @@
     display: inline-block;
 }
 
+textarea, input[type=text] {
+    color: #222;
+}
+
