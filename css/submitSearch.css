@@ -70,7 +70,7 @@ P, H1, H3, span {
 }
 
 H1 { 
-    margin-top : 0; 
+    margin-top: 0; 
     margin-bottom: 0;
 }
 
@@ -82,6 +82,11 @@ H3 {
 
 #acquire table td, #sequence table td {
     white-space: nowrap;
+}
+
+#acquire p, #sequence p {
+    margin: 0;
+    margin-top: 0.55em;
 }
 
 .chosenFiles {
