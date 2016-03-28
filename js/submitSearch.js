@@ -68,11 +68,11 @@ CLMSUI.buildSubmitSearch = function () {
             var spinner = $("#"+iid).spinner({
                 min: settings.min,
                 max: settings.max,
-                value: settings.default,
+                //value: settings.default,
                 step: 1,
             });
 
-            $("#"+iid).spinner("value", settings.default);
+            //$("#"+iid).spinner("value", settings.default);
 
             elem.selectAll(".ui-spinner")
                 .style("vertical-align", "baseline")    // baseline is different to selectmenu, causing vertical offset
@@ -98,7 +98,7 @@ CLMSUI.buildSubmitSearch = function () {
             optionJoin.enter()
                 .append("option")
                 .text (function(d) { return d; })
-                .property ("selected", function(d) { return d === settings.default; })
+                //.property ("selected", function(d) { return d === settings.default; })
             ;
 
             $("#"+baseId).selectmenu();
@@ -132,9 +132,14 @@ CLMSUI.buildSubmitSearch = function () {
 
 
         // Make buttons
-        var buttonIds = ["#startProcessing", "#backButton"];
+        var buttonIds = ["#startProcessing", "#backButton", "#useGlobalDefaults", "#useLastSearchDefaults"];
         buttonIds.forEach (function (buttonId) {
-             $(buttonId).button();       
+             $(buttonId).button();  
+            var d3button = d3.select(buttonId);
+            if (!d3button.attr("type")) {
+                d3button.attr ("type", "button");
+            }
+            console.log ("button", buttonId, "type", d3button.attr("type"), d3button.property("type"));
         });
         
         // Add action for back button
@@ -199,7 +204,7 @@ CLMSUI.buildSubmitSearch = function () {
                     dataJoin.enter().append("option")
                         .attr("value", function(d) { return d.id; })
                         .text(function(d) { return d.name; })
-                        .property ("selected", function(d) { return d[poplist.defaultField] === 1 || d[poplist.defaultField] === 't'; }) // pre-select
+                        //.property ("selected", function(d) { return d[poplist.defaultField] === 1 || d[poplist.defaultField] === 't'; }) // pre-select
                     ;
 
                     $("#"+baseId).multipleSelect({ 
@@ -585,9 +590,101 @@ CLMSUI.buildSubmitSearch = function () {
                 var seqFormActions = new formActions ("#newseqID", "#seqfileupload", "seq");
                 var acqFormActions = new formActions ("#newacqID", "#acqfileupload", "acq");
                 [seqFormActions, acqFormActions].forEach (function(formAct) { formAct.buttonEnabler(); });
+                
+                
+                var defaultButtonMap = [
+                    {id: "#useLastSearchDefaults", php: "getLastDefaults.php"},
+                    {id: "#useGlobalDefaults", php: "getGlobalDefaults.php"},
+                ];
+                defaultButtonMap.forEach (function (defaultButton) {
+                    d3.select(defaultButton.id).on("click", function() {
+                        $.ajax ({
+                            type: "GET",
+                            url: "./php/"+defaultButton.php,
+                            dataType: "json",
+                            encode: true,
+                            success: function (data, textStatus, jqXhr) {
+                                console.log ("return", data, textStatus, jqXhr);
+                                if (!data.error) {
+                                    updateFieldsWithValues (data);
+                                    dispatchObj.formInputChanged();   
+                                }
+                            },
+                            error: function (jqXhr, textStatus, errorThrown) {
+                                console.log ("db get error", jqXhr, textStatus, errorThrown);    
+                            },
+                        });
+                    });
+                });
+                
+                $("#useGlobalDefaults").click();
             }
         }
     });
+
+    
+    function updateFieldsWithValues (data) {
+        console.log ("data", data);
+        var parts = d3.select("#parameterForm").selectAll(".formPart");
+        console.log ("parts", parts);
+        var numberParts = d3.select("#parameterForm").selectAll("input.formPart");
+        console.log ("nparts", numberParts);
+        
+        var numberInputMap = {
+            "ms_tol" : "#paramToleranceValue",
+            "ms2_tol" : "#paramTolerance2Value",
+            "missed_cleavages" : "#paramMissedCleavagesValue",
+        };
+        
+        d3.entries(numberInputMap).forEach (function (entry) {
+            var exists = d3.select(entry.value);
+            if (!exists.empty() && data[entry.key]) {
+                $(entry.value).spinner("value", data[entry.key]);
+                //exists.property("value", data[entry.key]);
+            }
+        });
+        
+        var jQueryUISelectMap = {
+            "ms_tol_unit" : "#paramToleranceUnits",
+            "ms2_tol_unit" : "#paramTolerance2Units",
+        };
+        
+        d3.entries(jQueryUISelectMap).forEach (function (entry) {
+            var exists = d3.select(entry.value);
+            if (!exists.empty() && data[entry.key]) {
+                $(entry.value)
+                    .val(data[entry.key])
+                    .selectmenu("refresh")
+                    .selectmenu({width: "auto"})
+                ;
+            }
+        });
+        
+        var multipleSelectMap = {
+            "crosslinkers" : "#paramCrossLinkerSelect",
+            "enzyme" : "#paramEnzymeSelect",
+            "ions" : "#paramIonsSelect",
+            "fixedMods" : "#paramFixedModsSelect",
+            "varMods" : "#paramVarModsSelect",
+            "losses" : "#paramLossesSelect"
+        };
+        
+        d3.entries(multipleSelectMap).forEach (function (entry) {
+            var exists = d3.select(entry.value);
+            var mdata = data[entry.key];
+            if (mdata instanceof Array) {
+                mdata = mdata.map (function (entry) { return d3.values(entry)[0]; });
+            } else {
+                mdata = [mdata];
+            }
+            console.log ("entry", entry, mdata);
+            
+            if (!exists.empty() && mdata) {
+                $(entry.value).multipleSelect("setSelects", mdata);
+            }
+        });
+        
+    }
 
     canDoImmediately();
 };

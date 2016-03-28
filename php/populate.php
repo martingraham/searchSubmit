@@ -6,7 +6,8 @@ if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) 
 }
 else {
 
-    include('../../connectionString.php');
+    include('../../connectionStringSafe.php');
+    include('utils.php');
 
     try {
         //open connection
@@ -68,19 +69,6 @@ else {
     catch (Exception $e) {
         echo (json_encode (array ("error" => $e->getMessage())));
     }
-}
-
-// Turn result set into array of objects
-function resultsAsArray($result) {
-    $arr = array();
-    while ($line = pg_fetch_array($result, null, PGSQL_ASSOC)) {
-        $arr[] = $line;
-    }
-
-    // free resultset
-    pg_free_result ($result);
-
-    return $arr;
 }
 
 ?>

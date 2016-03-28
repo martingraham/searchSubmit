@@ -99,7 +99,7 @@ else {
         );
 
 
-        include('../../connectionString.php');
+        include('../../connectionStringSafe.php');
         //open connection
         $dbconn = pg_connect($connectionString) or die('Could not connect: ' . pg_last_error());
 

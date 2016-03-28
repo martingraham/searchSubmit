@@ -5,7 +5,7 @@ if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) 
     echo (json_encode (array ("redirect" => "./login.html")));
 }
 else {
-    include('../../connectionString.php');
+    include('../../connectionStringSafe.php');
     include 'utils.php';
     /*
     include('./../vendor/server/php/ChromePhp.php');
