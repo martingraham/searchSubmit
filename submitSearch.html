@@ -149,12 +149,14 @@
         
             <div class="row">   
                 <div class="col-12"><h3>Set Search Parameters</h3></div>
-            <div>
+            </div>
             
             <form id="parameterForm" name="login_form" method="post" action="php/submitParams.php">
             <div class="lrmargin">
                 <div class="row">
-                    <div class="col-12 paramSetting" id="paramSearchName"></div>
+                    <div class="col-8 paramSetting" id="paramSearchName"></div>
+                    <div class="col-2 paramSetting"><button id="useGlobalDefaults">Use Global Defaults</button></div>
+                    <div class="col-2 paramSetting"><button id="useLastSearchDefaults">Use Last Search Defaults</button></div>
                 </div>
                 
                 <div class="row">
@@ -180,7 +182,7 @@
 
                 <div class="row">
                     <div class="col-2">
-                        <button type="submit" id="startProcessing">Submit New Search</button>
+                        <button id="startProcessing">Submit New Search</button>
                     </div>
                     <div class="col-4" id="todo"></div>
                     <div class="col-6 paramSetting" id="paramNotes"></div>
