@@ -43,9 +43,9 @@ CLMSUI.buildSubmitSearch = function () {
 
         // Make number inputs
         var numberInputSettings = [
-            {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, default: 6, step: "any",},
-            {domid: "#paramTolerance2", niceLabel: "Ms2 Tolerance", min: 0, default: 20, step: "any",},
-            {domid: "#paramMissedCleavages", niceLabel: "Missed cleavages", min: 0, default: 4, step: 1,},
+            {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, step: "any",},
+            {domid: "#paramTolerance2", niceLabel: "Ms2 Tolerance", min: 0, step: "any",},
+            {domid: "#paramMissedCleavages", niceLabel: "Missed cleavages", min: 0, step: 1,},
         ];
         numberInputSettings.forEach (function (settings) {
             var elem = d3.select(settings.domid);
@@ -68,11 +68,8 @@ CLMSUI.buildSubmitSearch = function () {
             var spinner = $("#"+iid).spinner({
                 min: settings.min,
                 max: settings.max,
-                //value: settings.default,
                 step: 1,
             });
-
-            //$("#"+iid).spinner("value", settings.default);
 
             elem.selectAll(".ui-spinner")
                 .style("vertical-align", "baseline")    // baseline is different to selectmenu, causing vertical offset
@@ -83,8 +80,8 @@ CLMSUI.buildSubmitSearch = function () {
 
         // Make unit drop-downs
         var unitSettings = [
-            {domid: "#paramTolerance", units: ["ppm", "Da"], default: "ppm",},
-            {domid: "#paramTolerance2", units: ["ppm", "Da"], default: "ppm",},
+            {domid: "#paramTolerance", units: ["ppm", "Da"],},
+            {domid: "#paramTolerance2", units: ["ppm", "Da"],},
         ];
         unitSettings.forEach (function (settings) {
             var elem = d3.select(settings.domid);
@@ -98,7 +95,6 @@ CLMSUI.buildSubmitSearch = function () {
             optionJoin.enter()
                 .append("option")
                 .text (function(d) { return d; })
-                //.property ("selected", function(d) { return d === settings.default; })
             ;
 
             $("#"+baseId).selectmenu();
@@ -132,14 +128,16 @@ CLMSUI.buildSubmitSearch = function () {
 
 
         // Make buttons
-        var buttonIds = ["#startProcessing", "#backButton", "#useGlobalDefaults", "#useLastSearchDefaults"];
-        buttonIds.forEach (function (buttonId) {
-             $(buttonId).button();  
-            var d3button = d3.select(buttonId);
-            if (!d3button.attr("type")) {
-                d3button.attr ("type", "button");
-            }
-            console.log ("button", buttonId, "type", d3button.attr("type"), d3button.property("type"));
+        var buttonData = [
+            {id: "#startProcessing", type: "submit"},
+            {id: "#backButton", type: "button"},
+            {id: "#useGlobalDefaults", type: "button"},
+            {id: "#useLastSearchDefaults", type: "button"},
+        ];
+        buttonData.forEach (function (buttonDatum) {
+            var buttonID = buttonDatum.id;
+            $(buttonID).button();  
+            d3.select(buttonID).attr("type", buttonDatum.type);
         });
         
         // Add action for back button
@@ -160,9 +158,32 @@ CLMSUI.buildSubmitSearch = function () {
         });
         
         
+        function mergeInFilenamesToAcquistions (acquistions, runNames) {
+            console.log ("merge", arguments);
+            var nameMap = d3.map();
+            runNames.forEach (function(runName) {
+                var vals = nameMap.get(runName.acq_id);
+                if (!vals) {
+                    vals = [];
+                    nameMap.set(runName.acq_id, vals);
+                }
+                vals.push (runName.name);
+            });
+            console.log ("map", nameMap);
+            
+            acquistions.forEach (function (acq) {
+                //acq.files = nameMap.get(acq.id).sort();
+                var filenames = nameMap.get(acq.id);
+                acq.files = filenames.sort();
+                acq["#"] = filenames.length;
+            });
+        }
+        
         // http://stackoverflow.com/questions/23740548/how-to-pass-variables-and-data-from-php-to-javascript
         function gotChoicesResponse (data, textStatus, jqXhr) {
             console.log ("got", data, textStatus, jqXhr);
+            
+            
 
             if (data.redirect) {
                 window.location.replace (data.redirect);    // redirect if server php passes this field (should be to login page)    
@@ -171,18 +192,21 @@ CLMSUI.buildSubmitSearch = function () {
                 alert ("Error: "+data.error);
             }
             else {
+                
+                mergeInFilenamesToAcquistions (data.previousAcqui, data.filenames);
+                
                 var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded");
 
                 // Make combobox and multiple selection elements
                 // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                 // Multiple Selects need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
                 var populateOptionLists = [
-                    {data: data.xlinkers, defaultField: "is_default", domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker"},
-                    {data: data.enzymes, defaultField: "is_default", domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
-                    {data: data.modifications, defaultField: "is_default_fixed", domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications",},
-                    {data: data.modifications, defaultField: "is_default_var", domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications",},
-                    {data: data.ions, defaultField: "is_default", domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion"},
-                    {data: data.losses, defaultField: "is_default", domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses",},
+                    {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker"},
+                    {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
+                    {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications",},
+                    {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications",},
+                    {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion"},
+                    {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses",},
                 ];
                 populateOptionLists.forEach (function (poplist) {
                     var elem = d3.select(poplist.domid);
@@ -204,7 +228,6 @@ CLMSUI.buildSubmitSearch = function () {
                     dataJoin.enter().append("option")
                         .attr("value", function(d) { return d.id; })
                         .text(function(d) { return d.name; })
-                        //.property ("selected", function(d) { return d[poplist.defaultField] === 1 || d[poplist.defaultField] === 't'; }) // pre-select
                     ;
 
                     $("#"+baseId).multipleSelect({ 
@@ -592,6 +615,7 @@ CLMSUI.buildSubmitSearch = function () {
                 [seqFormActions, acqFormActions].forEach (function(formAct) { formAct.buttonEnabler(); });
                 
                 
+                // Make default loader buttons
                 var defaultButtonMap = [
                     {id: "#useLastSearchDefaults", php: "getLastDefaults.php"},
                     {id: "#useGlobalDefaults", php: "getGlobalDefaults.php"},
@@ -606,7 +630,7 @@ CLMSUI.buildSubmitSearch = function () {
                             success: function (data, textStatus, jqXhr) {
                                 console.log ("return", data, textStatus, jqXhr);
                                 if (!data.error) {
-                                    updateFieldsWithValues (data);
+                                    updateFieldsWithValues (data, prevTableClickFuncs);
                                     dispatchObj.formInputChanged();   
                                 }
                             },
@@ -617,74 +641,98 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                 });
                 
+                // programmatic click on global default button, load fields with those defaults
                 $("#useGlobalDefaults").click();
             }
         }
     });
 
     
-    function updateFieldsWithValues (data) {
-        console.log ("data", data);
+    function updateFieldsWithValues (data, prevTableClickFuncs) {
+        console.log ("data", data, prevTableClickFuncs);
         var parts = d3.select("#parameterForm").selectAll(".formPart");
         console.log ("parts", parts);
-        var numberParts = d3.select("#parameterForm").selectAll("input.formPart");
-        console.log ("nparts", numberParts);
         
-        var numberInputMap = {
-            "ms_tol" : "#paramToleranceValue",
-            "ms2_tol" : "#paramTolerance2Value",
-            "missed_cleavages" : "#paramMissedCleavagesValue",
-        };
-        
-        d3.entries(numberInputMap).forEach (function (entry) {
-            var exists = d3.select(entry.value);
-            if (!exists.empty() && data[entry.key]) {
-                $(entry.value).spinner("value", data[entry.key]);
-                //exists.property("value", data[entry.key]);
-            }
-        });
-        
-        var jQueryUISelectMap = {
-            "ms_tol_unit" : "#paramToleranceUnits",
-            "ms2_tol_unit" : "#paramTolerance2Units",
-        };
-        
-        d3.entries(jQueryUISelectMap).forEach (function (entry) {
-            var exists = d3.select(entry.value);
-            if (!exists.empty() && data[entry.key]) {
-                $(entry.value)
-                    .val(data[entry.key])
-                    .selectmenu("refresh")
-                    .selectmenu({width: "auto"})
-                ;
-            }
-        });
-        
-        var multipleSelectMap = {
-            "crosslinkers" : "#paramCrossLinkerSelect",
-            "enzyme" : "#paramEnzymeSelect",
-            "ions" : "#paramIonsSelect",
-            "fixedMods" : "#paramFixedModsSelect",
-            "varMods" : "#paramVarModsSelect",
-            "losses" : "#paramLossesSelect"
-        };
-        
-        d3.entries(multipleSelectMap).forEach (function (entry) {
-            var exists = d3.select(entry.value);
-            var mdata = data[entry.key];
+        var multiSelectSetFunc = function (domElem, mdata) {
             if (mdata instanceof Array) {
                 mdata = mdata.map (function (entry) { return d3.values(entry)[0]; });
             } else {
                 mdata = [mdata];
             }
-            console.log ("entry", entry, mdata);
+            $(domElem).multipleSelect("setSelects", mdata);
+        };
+        
+        var numberSetFunc = function (domElem, value) {
+            $(domElem).spinner("value", value);
+        };
+        
+        var jquerySelectSetFunc = function (domElem, value) {
+            $(domElem)
+                .val(value)
+                .selectmenu("refresh")
+                .selectmenu({width: "auto"})
+            ;
+        };
+        
+        var textAreaSetFunc = function (domElem, value) {
+            $(domElem).val (value);
+        };
+        
+        var dynamicTableSetFunc = function (domElem, mdata) {
+            if (mdata instanceof Array) {
+                mdata = mdata.map (function (entry) { return d3.values(entry)[0]; });
+            } else {
+                mdata = [mdata];
+            }
+            var mset = d3.set (mdata);
             
-            if (!exists.empty() && mdata) {
-                $(entry.value).multipleSelect("setSelects", mdata);
+            var dataTable = $(domElem).DataTable();  
+            /*
+            console.log ("rows", dataTable.rows(), dataTable.columns(), dataTable.column(0).data(), mset);
+            
+            dataTable.rows().every (function () {
+                var sel = mset.has(this.data()[0]);
+                d3.select(this.node()).select("input[type=checkbox]").property("checked", sel);
+            });
+            */
+            
+            // we added the data to the table rows via d3 earlier so we can access it like this too.
+            d3.selectAll(dataTable.rows().nodes())
+                .selectAll("input[type=checkbox]")
+                .property("checked", function(d) {
+                    return mset.has(d.id);
+                })
+            ;
+            prevTableClickFuncs[domElem.slice(1)]();
+        };
+        
+        var elementMap = {
+            "#paramToleranceValue" : {field : "ms_tol", func: numberSetFunc},
+            "#paramTolerance2Value" : {field : "ms2_tol", func: numberSetFunc},
+            "#paramMissedCleavagesValue" : {field : "missed_cleavages", func: numberSetFunc},
+            "#paramToleranceUnits" : {field : "ms_tol_unit", func: jquerySelectSetFunc},
+            "#paramTolerance2Units" : {field : "ms2_tol_unit", func: jquerySelectSetFunc},
+            "#paramCrossLinkerSelect" : {field : "crossLinkers", func: multiSelectSetFunc},
+            "#paramEnzymeSelect" : {field : "enzyme", func: multiSelectSetFunc},
+            "#paramIonsSelect" : {field : "ions", func: multiSelectSetFunc},
+            "#paramFixedModsSelect" : {field : "fixedMods", func: multiSelectSetFunc},
+            "#paramVarModsSelect" : {field : "varMods", func: multiSelectSetFunc},
+            "#paramLossesSelect" : {field : "losses", func: multiSelectSetFunc},
+            "#paramNotesValue" : {field : "notes", func: textAreaSetFunc},
+            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc},
+            "#acqPreviousTable" : {field : "acquisitions", func: dynamicTableSetFunc},
+            "#seqPreviousTable" : {field : "sequences", func: dynamicTableSetFunc},
+        };
+        
+        d3.entries(elementMap).forEach (function (entry) {
+            var exists = d3.select(entry.key);
+            var value = data[entry.value.field];
+            if (!exists.empty() && value) {
+                entry.value.func (entry.key, value);
             }
         });
-        
     }
 
+    
     canDoImmediately();
 };

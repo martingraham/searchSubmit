@@ -1,6 +1,6 @@
 <?php
     // from http://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
-    include('../../connectionStringSafe.php');
+    include('../../connectionString.php');
 
     function normalizeString ($str = '') {
         $str = filter_var ($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
@@ -15,7 +15,7 @@
     }
 
     function getLastSearchID () {
-        include('../../connectionStringSafe.php');
+        include('../../connectionString.php');
         $dbconn = pg_connect($connectionString);
 
         pg_prepare ($dbconn, "getLastSearchID", "SELECT id FROM search WHERE uploadedby = $1 ORDER BY id DESC LIMIT 1");
@@ -31,7 +31,7 @@
 
 
     function getDefaults ($searchID) {
-         include('../../connectionStringSafe.php');
+         include('../../connectionString.php');
          $dbconn = pg_connect($connectionString);
 
         pg_prepare($dbconn, "getParamSettings", "SELECT * from parameter_set WHERE parameter_set.id = (SELECT paramset_id FROM search WHERE search.id = $1)");
@@ -53,20 +53,33 @@
                 "ms_tol_unit" => $pSettings["ms_tol_unit"],
                 "ms2_tol_unit" => $pSettings["ms2_tol_unit"],
                 "missed_cleavages" => $pSettings["missed_cleavages"],
-                "enzyme" => $pSettings["enzyme_chosen"]
+                "enzyme" => $pSettings["enzyme_chosen"],
+                "notes" => $pSettings["notes"],
+                "customsettings" => $pSettings["customsettings"]
             );
 
-            $getMultiOptions = array (
+            $getParamMultiOptions = array (
                 "ions" => "SELECT ion_id FROM chosen_ions WHERE paramset_id = $1",
                 "crosslinkers" => "SELECT crosslinker_id FROM chosen_crosslinker WHERE paramset_id = $1",
                 "losses" => "SELECT loss_id FROM chosen_losses WHERE paramset_id = $1",
                 "fixedMods" => "SELECT mod_id FROM chosen_modification WHERE paramset_id = $1 AND fixed = TRUE",
                 "varMods" => "SELECT mod_id FROM chosen_modification WHERE paramset_id = $1 AND fixed = FALSE",
             );
+            
+            $getSearchMultiOptions = array (
+                "acquisitions" => "SELECT DISTINCT acq_id FROM search_acquisition WHERE search_id = $1",
+                "sequences" => "SELECT seqdb_id FROM search_sequencedb WHERE search_id = $1"
+            );
 
-            foreach ($getMultiOptions as $key => $value) {
+            foreach ($getParamMultiOptions as $key => $value) {
                 pg_prepare ($dbconn, $key, $value);
                 $result = pg_execute ($dbconn, $key, array($pid));
+                $defaults[$key] = resultsAsArray($result);
+            }
+            
+            foreach ($getSearchMultiOptions as $key => $value) {
+                pg_prepare ($dbconn, $key, $value);
+                $result = pg_execute ($dbconn, $key, array($searchID));
                 $defaults[$key] = resultsAsArray($result);
             }
         }
@@ -89,6 +102,10 @@
             "ms_tol_unit" => "ppm",
             "ms2_tol_unit" => "ppm",
             "missed_cleavages" => 4,
+            "notes" => "",
+            "customsettings" => "",
+            "acquisitions" => array(),
+            "sequences" => array()
         );
         
         $getMultiOptions = array (
