@@ -115,6 +115,7 @@ H3 {
 
 .chosenFiles {
     color: black;
+    padding-top: 0.55em;
 }
 
 .hiddenFromUser {
