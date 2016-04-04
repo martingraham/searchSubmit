@@ -104,6 +104,10 @@ H3 {
     margin: 0;
 }
 
+#acquire .ui-widget-content, #sequence .ui-widget-content {
+    color: #888;
+}
+
 .progress {
     line-height: 2em;
     padding-left: 0.2em;
