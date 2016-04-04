@@ -478,7 +478,7 @@ CLMSUI.buildSubmitSearch = function () {
                             }
                             else if (response.status == "success") {
                                 toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
-                                window.location.assign ("../xi2/history.php");
+                                window.location.assign ("../xi3/history.php");
                             } else {
                                 toDoMessage ("Error, "+response.error+".");
                                 happyToDo (false);
