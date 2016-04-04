@@ -16,10 +16,10 @@
 .col-11 {width: 91.66%;}
 .col-12 {width: 100%;}
 
+/*
 [class*="col-"] {
     float: left;
     padding: 0.3em 0.5em;
-    /*border: 1px solid gray;*/
     padding-top: 0.2em;
 }
 
@@ -29,6 +29,19 @@
     content: "";
     clear: both;
     display: block;
+}
+*/
+
+[class*="col-"] {
+    display: table-cell;
+    padding: 0.3em 0.5em;
+    padding-top: 0.2em;
+    vertical-align: top;
+}
+
+.row {
+    display: table;
+    width: 100%;
 }
 
 .paramSetting {
@@ -119,5 +132,9 @@ textarea.ui-state-default {
 }
 
 :-ms-input-placeholder {
-   color: #888;
+   color: #ccc !important;
+}
+
+::-ms-input-placeholder {
+   color: #ccc;
 }

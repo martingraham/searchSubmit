@@ -1,7 +1,7 @@
 <?php
-    // from http://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
-    include('../../connectionString.php');
+    //include('../../connectionString.php');
 
+    // from http://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
     function normalizeString ($str = '') {
         $str = filter_var ($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
         $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
@@ -15,25 +15,17 @@
     }
 
     function getLastSearchID () {
-        include('../../connectionString.php');
-        $dbconn = pg_connect($connectionString);
-
         pg_prepare ($dbconn, "getLastSearchID", "SELECT id FROM search WHERE uploadedby = $1 ORDER BY id DESC LIMIT 1");
         $result = pg_execute($dbconn, "getLastSearchID", array($_SESSION['user_id']));
         $lastSearchID = resultsAsArray($result);
         
         error_log (print_r($lastSearchID, TRUE));
 
-        pg_close($dbconn);
-
         return count($lastSearchID) == 0 ? null : $lastSearchID[0]["id"];
     }
 
 
     function getDefaults ($searchID) {
-         include('../../connectionString.php');
-         $dbconn = pg_connect($connectionString);
-
         pg_prepare($dbconn, "getParamSettings", "SELECT * from parameter_set WHERE parameter_set.id = (SELECT paramset_id FROM search WHERE search.id = $1)");
         $result = pg_execute($dbconn, "getParamSettings", array($searchID));
         $paramSettings = resultsAsArray($result);
@@ -85,17 +77,13 @@
         }
         
         error_log (print_r($defaults, TRUE));
-         //close connection
-         pg_close($dbconn);
 
         return $defaults;
     }
 
 
-    function getGlobalDefaults () {
-         include('../../connectionStringSafe.php');
-         $dbconn = pg_connect($connectionString);
-        
+    function getGlobalDefaults ($dbconn) {
+
         $defaults = array (
             "ms_tol" => 6,
             "ms2_tol" => 20,
@@ -125,8 +113,6 @@
         
         error_log (print_r($defaults, TRUE));
         
-        pg_close($dbconn);
-
         return $defaults;
     }
 
