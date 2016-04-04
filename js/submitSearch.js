@@ -10,7 +10,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
@@ -226,7 +226,12 @@ CLMSUI.buildSubmitSearch = function () {
                         .classed("formPart", true)
                         .property("multiple", poplist.multiple)
                         .property("required", poplist.required)
-                        .attr("required", poplist.required)
+                        .each (function(d) {
+                            if (poplist.required) {
+                                d3.select(this).attr("required", poplist.required);
+                            }
+                        })
+                        
                     ;
 
                     var dataJoin = selElem.selectAll("option")
@@ -334,7 +339,11 @@ CLMSUI.buildSubmitSearch = function () {
                         .attr ("data-label", psetting.niceLabel)   
                         .attr ("value", "")
                         .property ("required", psetting.required)
-                        .attr ("required", psetting.required)
+                        .each (function(d) {
+                            if (psetting.required) {
+                                d3.select(this).attr("required", psetting.required);
+                            }
+                        })
                     ;
 
                     // on a selection in the table, we then smuggle the current selection set of ids into the hidden form
@@ -428,6 +437,7 @@ CLMSUI.buildSubmitSearch = function () {
                     d3.select("#parameterForm").selectAll(".formPart[required]").each (function() {
                         //console.log ("part", this.id, this.value);
                         // form parts return arrays as strings so need to check for empty array as a string ("[]")
+                        console.log ("req", d3.select(this));
                         if (this.id && (!this.value || this.value == "[]")) {
                             todoList.add (d3.select(this).attr("data-label") || d3.select(this).attr("name"));
                         }
