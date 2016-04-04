@@ -1,6 +1,17 @@
 var CLMSUI = CLMSUI || {};
 
 CLMSUI.buildSubmitSearch = function () {
+    
+    (function (original) {
+        console.enableLogging = function () {
+            console.log = original;
+        };
+        console.disableLogging = function () {
+            console.log = function () {};
+        };
+    })(console.log);
+    console.disableLogging();
+    
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
         var acqSeqTemplateData = [
@@ -159,7 +170,6 @@ CLMSUI.buildSubmitSearch = function () {
         
         
         function mergeInFilenamesToAcquistions (acquistions, runNames) {
-            console.log ("merge", arguments);
             var nameMap = d3.map();
             runNames.forEach (function(runName) {
                 var vals = nameMap.get(runName.acq_id);
@@ -169,7 +179,6 @@ CLMSUI.buildSubmitSearch = function () {
                 }
                 vals.push (runName.name);
             });
-            console.log ("map", nameMap);
             
             acquistions.forEach (function (acq) {
                 //acq.files = nameMap.get(acq.id).sort();
@@ -183,8 +192,6 @@ CLMSUI.buildSubmitSearch = function () {
         function gotChoicesResponse (data, textStatus, jqXhr) {
             console.log ("got", data, textStatus, jqXhr);
             
-            
-
             if (data.redirect) {
                 window.location.replace (data.redirect);    // redirect if server php passes this field (should be to login page)    
             }
@@ -418,13 +425,8 @@ CLMSUI.buildSubmitSearch = function () {
                 
                 dispatchObj.on ("formInputChanged", function () {
                     var todoList = d3.set();
-                    var sel = d3.select("#parameterForm").selectAll(".formPart");
-                    var sel2 = d3.select("#parameterForm").selectAll(".formPart[required]");
-                    var sel3 = $("#parameterForm .formPart").filter("[required]");
-                     var sel4 = $("#parameterForm .formPart").filter("[required]").filter(function() { return this.value == '';});
-                    console.log ("part selection", sel, sel2, sel3, sel4);
                     d3.select("#parameterForm").selectAll(".formPart[required]").each (function() {
-                        console.log ("part", this.id, this.value);
+                        //console.log ("part", this.id, this.value);
                         // form parts return arrays as strings so need to check for empty array as a string ("[]")
                         if (this.id && (!this.value || this.value == "[]")) {
                             todoList.add (d3.select(this).attr("data-label") || d3.select(this).attr("name"));
@@ -695,9 +697,8 @@ CLMSUI.buildSubmitSearch = function () {
             var mset = d3.set (mdata);
             
             var dataTable = $(domElem).DataTable();  
-            /*
-            console.log ("rows", dataTable.rows(), dataTable.columns(), dataTable.column(0).data(), mset);
             
+            /*
             dataTable.rows().every (function () {
                 var sel = mset.has(this.data()[0]);
                 d3.select(this.node()).select("input[type=checkbox]").property("checked", sel);

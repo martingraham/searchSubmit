@@ -19,7 +19,7 @@
         $result = pg_execute($dbconn, "getLastSearchID", array($_SESSION['user_id']));
         $lastSearchID = resultsAsArray($result);
         
-        error_log (print_r($lastSearchID, TRUE));
+        //error_log (print_r($lastSearchID, TRUE));
 
         return count($lastSearchID) == 0 ? null : $lastSearchID[0]["id"];
     }
@@ -31,9 +31,9 @@
         $paramSettings = resultsAsArray($result);
         $defaults = array ();
         
-        error_log ("SID ".$searchID);
-        error_log (print_r($paramSettings, TRUE));
-        error_log ("PID ".$paramSettings[0]["id"]);
+        //error_log ("SID ".$searchID);
+        //error_log (print_r($paramSettings, TRUE));
+        //error_log ("PID ".$paramSettings[0]["id"]);
 
         if (count($paramSettings) > 0) {
             $pSettings = $paramSettings[0];
@@ -76,7 +76,7 @@
             }
         }
         
-        error_log (print_r($defaults, TRUE));
+        //error_log (print_r($defaults, TRUE));
 
         return $defaults;
     }
@@ -111,7 +111,7 @@
             $defaults[$key] = resultsAsArray($result);
         }
         
-        error_log (print_r($defaults, TRUE));
+        //error_log (print_r($defaults, TRUE));
         
         return $defaults;
     }
