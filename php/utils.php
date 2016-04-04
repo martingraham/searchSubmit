@@ -14,7 +14,7 @@
         return $str;
     }
 
-    function getLastSearchID () {
+    function getLastSearchID ($dbconn) {
         pg_prepare ($dbconn, "getLastSearchID", "SELECT id FROM search WHERE uploadedby = $1 ORDER BY id DESC LIMIT 1");
         $result = pg_execute($dbconn, "getLastSearchID", array($_SESSION['user_id']));
         $lastSearchID = resultsAsArray($result);
@@ -25,7 +25,7 @@
     }
 
 
-    function getDefaults ($searchID) {
+    function getDefaults ($dbconn, $searchID) {
         pg_prepare($dbconn, "getParamSettings", "SELECT * from parameter_set WHERE parameter_set.id = (SELECT paramset_id FROM search WHERE search.id = $1)");
         $result = pg_execute($dbconn, "getParamSettings", array($searchID));
         $paramSettings = resultsAsArray($result);
@@ -46,7 +46,6 @@
                 "ms2_tol_unit" => $pSettings["ms2_tol_unit"],
                 "missed_cleavages" => $pSettings["missed_cleavages"],
                 "enzyme" => $pSettings["enzyme_chosen"],
-                "notes" => $pSettings["notes"],
                 "customsettings" => $pSettings["customsettings"]
             );
 
@@ -58,6 +57,10 @@
                 "varMods" => "SELECT mod_id FROM chosen_modification WHERE paramset_id = $1 AND fixed = FALSE",
             );
             
+            $getSearchSingleResults = array (
+                "notes" => "SELECT notes FROM search WHERE id = $1"
+            );
+            
             $getSearchMultiOptions = array (
                 "acquisitions" => "SELECT DISTINCT acq_id FROM search_acquisition WHERE search_id = $1",
                 "sequences" => "SELECT seqdb_id FROM search_sequencedb WHERE search_id = $1"
@@ -67,6 +70,13 @@
                 pg_prepare ($dbconn, $key, $value);
                 $result = pg_execute ($dbconn, $key, array($pid));
                 $defaults[$key] = resultsAsArray($result);
+            }
+            
+            foreach ($getSearchSingleResults as $key => $value) {
+                pg_prepare ($dbconn, $key, $value);
+                $result = pg_execute ($dbconn, $key, array($searchID));
+                $defaults[$key] = pg_fetch_row($result)[0];
+                //error_log (print_r($result, TRUE));
             }
             
             foreach ($getSearchMultiOptions as $key => $value) {

@@ -14,8 +14,6 @@
         if ($sid != null) {
             $defaults = getDefaults ($dbconn, $sid);
             pg_close($dbconn);
-            
-            //error_log (print_r($defaults, TRUE));
             echo json_encode ($defaults);
         } else {
             pg_close($dbconn);
