@@ -6,7 +6,7 @@ if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) 
 }
 else {
 
-    include('../../connectionStringSafe.php');
+    include('../../connectionString.php');
     include('utils.php');
 
     try {

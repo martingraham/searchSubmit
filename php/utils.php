@@ -1,7 +1,7 @@
 <?php
-    // from http://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
-    include('../../connectionString.php');
+    //include('../../connectionString.php');
 
+    // from http://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
     function normalizeString ($str = '') {
         $str = filter_var ($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
         $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
@@ -14,34 +14,26 @@
         return $str;
     }
 
-    function getLastSearchID () {
-        include('../../connectionString.php');
-        $dbconn = pg_connect($connectionString);
-
+    function getLastSearchID ($dbconn) {
         pg_prepare ($dbconn, "getLastSearchID", "SELECT id FROM search WHERE uploadedby = $1 ORDER BY id DESC LIMIT 1");
         $result = pg_execute($dbconn, "getLastSearchID", array($_SESSION['user_id']));
         $lastSearchID = resultsAsArray($result);
         
-        error_log (print_r($lastSearchID, TRUE));
-
-        pg_close($dbconn);
+        //error_log (print_r($lastSearchID, TRUE));
 
         return count($lastSearchID) == 0 ? null : $lastSearchID[0]["id"];
     }
 
 
-    function getDefaults ($searchID) {
-         include('../../connectionString.php');
-         $dbconn = pg_connect($connectionString);
-
+    function getDefaults ($dbconn, $searchID) {
         pg_prepare($dbconn, "getParamSettings", "SELECT * from parameter_set WHERE parameter_set.id = (SELECT paramset_id FROM search WHERE search.id = $1)");
         $result = pg_execute($dbconn, "getParamSettings", array($searchID));
         $paramSettings = resultsAsArray($result);
         $defaults = array ();
         
-        error_log ("SID ".$searchID);
-        error_log (print_r($paramSettings, TRUE));
-        error_log ("PID ".$paramSettings[0]["id"]);
+        //error_log ("SID ".$searchID);
+        //error_log (print_r($paramSettings, TRUE));
+        //error_log ("PID ".$paramSettings[0]["id"]);
 
         if (count($paramSettings) > 0) {
             $pSettings = $paramSettings[0];
@@ -54,7 +46,6 @@
                 "ms2_tol_unit" => $pSettings["ms2_tol_unit"],
                 "missed_cleavages" => $pSettings["missed_cleavages"],
                 "enzyme" => $pSettings["enzyme_chosen"],
-                "notes" => $pSettings["notes"],
                 "customsettings" => $pSettings["customsettings"]
             );
 
@@ -64,6 +55,10 @@
                 "losses" => "SELECT loss_id FROM chosen_losses WHERE paramset_id = $1",
                 "fixedMods" => "SELECT mod_id FROM chosen_modification WHERE paramset_id = $1 AND fixed = TRUE",
                 "varMods" => "SELECT mod_id FROM chosen_modification WHERE paramset_id = $1 AND fixed = FALSE",
+            );
+            
+            $getSearchSingleResults = array (
+                "notes" => "SELECT notes FROM search WHERE id = $1"
             );
             
             $getSearchMultiOptions = array (
@@ -77,6 +72,13 @@
                 $defaults[$key] = resultsAsArray($result);
             }
             
+            foreach ($getSearchSingleResults as $key => $value) {
+                pg_prepare ($dbconn, $key, $value);
+                $result = pg_execute ($dbconn, $key, array($searchID));
+                $defaults[$key] = pg_fetch_row($result)[0];
+                //error_log (print_r($result, TRUE));
+            }
+            
             foreach ($getSearchMultiOptions as $key => $value) {
                 pg_prepare ($dbconn, $key, $value);
                 $result = pg_execute ($dbconn, $key, array($searchID));
@@ -84,18 +86,14 @@
             }
         }
         
-        error_log (print_r($defaults, TRUE));
-         //close connection
-         pg_close($dbconn);
+        //error_log (print_r($defaults, TRUE));
 
         return $defaults;
     }
 
 
-    function getGlobalDefaults () {
-         include('../../connectionStringSafe.php');
-         $dbconn = pg_connect($connectionString);
-        
+    function getGlobalDefaults ($dbconn) {
+
         $defaults = array (
             "ms_tol" => 6,
             "ms2_tol" => 20,
@@ -123,10 +121,8 @@
             $defaults[$key] = resultsAsArray($result);
         }
         
-        error_log (print_r($defaults, TRUE));
+        //error_log (print_r($defaults, TRUE));
         
-        pg_close($dbconn);
-
         return $defaults;
     }
 
