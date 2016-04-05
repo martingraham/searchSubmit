@@ -295,25 +295,47 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                 };
                 var previousSettings = [
-                    {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected",},
-                    {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected",},
+                    {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", widths: {id: 7, date: 10, user: 10, name: 30, files: 35, "#":4, selected: 4},},
+                    {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", widths: {id: 5, date: 10, user: 10, name: 35, file: 35, selected: 5}, },
                 ];
                 previousSettings.forEach (function (psetting) {
                     var sel = d3.select (psetting.domid);
                     var baseId = psetting.domid.slice(1)+"Table";
                     sel.html ("<TABLE><THEAD><TR></TR></THEAD><TBODY></TBODY></TABLE>");
-                    sel.select("table").attr("id", baseId);
+                    sel.select("table")
+                        .attr("id", baseId)
+                        .attr("class", "previousTable")
+                    ;
                     var hrow = sel.select("tr");
                     var headers = d3.keys(psetting.data[0]);
                     headers.push("selected");
-                    hrow.selectAll("th").data(headers).enter().append("th").text(function(d) { return d; });
+                    hrow.selectAll("th").data(headers).enter()
+                        .append("th")
+                        .text(function(d) { return d; })
+                    ;
+                    
+                    var colWidths = headers.map (function(header) {
+                        var val = psetting.widths[header];
+                        return val ? {width: val+"%"} : null;
+                    });
+                    //console.log ("widths", colWidths);
 
                     var tbody = sel.select("tbody");
                     var rowJoin = tbody.selectAll("tr").data(psetting.data, function(d) { return d.name; });
                     var newRows = rowJoin.enter().append("tr");
 
                     var cellJoin = newRows.selectAll("td").data (function(d) { return d3.values(d); });
-                    cellJoin.enter().append("td").text(function(d) { return d; });
+                    cellJoin.enter().append("td")
+                        .text(function(d) { return d; })
+                        .on ("mouseover", function(d,i) {
+                            var text = $.isArray(d) ? d.join("<br>") : d;
+                            CLMSUI.tooltip
+                                .updateText (headers[i], text)
+                                .updatePosition (d3.event)
+                            ;
+                        })
+                        .on ("mouseleave", CLMSUI.tooltip.setToFade)
+                    ;
 
                     newRows.append ("td").append("input")
                         .attr ("type", "checkbox")
@@ -324,6 +346,8 @@ CLMSUI.buildSubmitSearch = function () {
                         "jQueryUI": true,
                         "ordering": true,
                         "order": [[ 0, "desc" ]],   // order by first column
+                        "columns": colWidths,
+                        "autoWidth": false,
                         "columnDefs": [
                             {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
                         ]
