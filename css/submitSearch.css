@@ -93,12 +93,18 @@ H3 {
     word-wrap: break-word;
 }
 
-#acquire table td, #sequence table td {
+.previousTable {
+    table-layout: fixed;
+}
+
+
+.previousTable td, .previousTable th {
     white-space: nowrap;
-    max-width: 25em;
+    /*max-width: 25em;*/
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
 
 #acquire p, #sequence p {
     margin: 0;
