@@ -10,7 +10,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    //console.disableLogging();
+    console.disableLogging();
     
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
@@ -731,7 +731,7 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramMissedCleavagesValue" : {field : "missed_cleavages", func: numberSetFunc},
             "#paramToleranceUnits" : {field : "ms_tol_unit", func: jquerySelectSetFunc},
             "#paramTolerance2Units" : {field : "ms2_tol_unit", func: jquerySelectSetFunc},
-            "#paramCrossLinkerSelect" : {field : "crossLinkers", func: multiSelectSetFunc},
+            "#paramCrossLinkerSelect" : {field : "crosslinkers", func: multiSelectSetFunc},
             "#paramEnzymeSelect" : {field : "enzyme", func: multiSelectSetFunc},
             "#paramIonsSelect" : {field : "ions", func: multiSelectSetFunc},
             "#paramFixedModsSelect" : {field : "fixedMods", func: multiSelectSetFunc},
