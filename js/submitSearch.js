@@ -618,11 +618,12 @@ CLMSUI.buildSubmitSearch = function () {
                                         if (response.redirect) {
                                             window.location.replace (response.redirect);    // redirect if server php passes this field    
                                         } else {
+                                            var newRow = response.newRow;
                                             console.log ("db acq/seq insert success", response, textStatus);
-                                            if (response.newRow.files) {
-                                                response.newRow["#"] = response.newRow.files.length;
+                                            if (newRow && newRow.files) {
+                                                newRow["#"] = newRow.files.length;
                                             }
-                                            dispatchObj.newEntryUploaded (type, response.newRow);    // alert new row has been added to db
+                                            dispatchObj.newEntryUploaded (type, newRow);    // alert new row has been added to db
                                         }
                                     },
                                     error : function (jqXhr, textStatus, errorThrown) {
