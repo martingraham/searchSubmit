@@ -93,26 +93,31 @@ H3 {
     word-wrap: break-word;
 }
 
-.previousTable {
-    table-layout: fixed;
-}
 
+.previousTable {
+    table-layout: auto;
+}
 
 .previousTable td, .previousTable th {
     white-space: nowrap;
-    /*max-width: 25em;*/
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
+.varWidthCell {
+   min-width: 2em;
+   max-width: 5em;
+}
 
-#acquire p, #sequence p {
+
+.uploadTemplate p {
     margin: 0;
 }
 
-#acquire .ui-widget-content, #sequence .ui-widget-content {
+.uploadLabels {
     color: #888;
 }
+
 
 .progress {
     line-height: 2em;
@@ -136,15 +141,12 @@ H3 {
     display: inline-block;
 }
 
-textarea, input[type=text] {
+textarea, textarea.ui-state-default.formPart, input[type=text] {
     color: #222;
     width: 100%;
     overflow-x: hidden;
 }
 
-textarea.ui-state-default {
-    color: #222;
-}
 
 :-ms-input-placeholder {
    color: #ccc !important;
