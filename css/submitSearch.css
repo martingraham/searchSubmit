@@ -94,25 +94,29 @@ H3 {
 }
 
 .previousTable {
-    table-layout: fixed;
+    table-layout: auto;
 }
 
 
 .previousTable td, .previousTable th {
     white-space: nowrap;
-    /*max-width: 25em;*/
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
+.varWidthCell {
+   min-width: 2em;
+   max-width: 5em;
+}
 
-#acquire p, #sequence p {
+.uploadLabels p {
     margin: 0;
 }
 
-#acquire .ui-widget-content, #sequence .ui-widget-content {
+.uploadLabels {
     color: #888;
 }
+
 
 .progress {
     line-height: 2em;

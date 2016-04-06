@@ -295,8 +295,8 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                 };
                 var previousSettings = [
-                    {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", widths: {id: 7, date: 10, user: 10, name: 30, files: 35, "#":4, selected: 4},},
-                    {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", widths: {id: 5, date: 10, user: 10, name: 35, file: 35, selected: 5}, },
+                    {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"])},
+                    {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", autoWidths: d3.set(["file", "name"]),},
                 ];
                 previousSettings.forEach (function (psetting) {
                     var sel = d3.select (psetting.domid);
@@ -306,19 +306,19 @@ CLMSUI.buildSubmitSearch = function () {
                         .attr("id", baseId)
                         .attr("class", "previousTable")
                     ;
+                    var vcWidth = Math.floor (100.0 / Math.max (1, psetting.autoWidths.size()))+"%";
+                    
                     var hrow = sel.select("tr");
                     var headers = d3.keys(psetting.data[0]);
                     headers.push("selected");
                     hrow.selectAll("th").data(headers).enter()
                         .append("th")
                         .text(function(d) { return d; })
+                        .filter (function(d,i) { return psetting.autoWidths.has(d); })
+                        .classed ("varWidthCell", true)
+                        .style ("width", vcWidth)
                     ;
                     
-                    var colWidths = headers.map (function(header) {
-                        var val = psetting.widths[header];
-                        return val ? {width: val+"%"} : null;
-                    });
-                    //console.log ("widths", colWidths);
 
                     var tbody = sel.select("tbody");
                     var rowJoin = tbody.selectAll("tr").data(psetting.data, function(d) { return d.name; });
@@ -335,6 +335,9 @@ CLMSUI.buildSubmitSearch = function () {
                             ;
                         })
                         .on ("mouseleave", CLMSUI.tooltip.setToFade)
+                        .filter (function(d,i) { return psetting.autoWidths.has(headers[i]); })
+                        .classed ("varWidthCell", true)
+                        .style ("width", vcWidth)
                     ;
 
                     newRows.append ("td").append("input")
@@ -346,8 +349,9 @@ CLMSUI.buildSubmitSearch = function () {
                         "jQueryUI": true,
                         "ordering": true,
                         "order": [[ 0, "desc" ]],   // order by first column
-                        "columns": colWidths,
-                        "autoWidth": false,
+                        //"columns": colWidths,
+                        //"scrollX": true,
+                        //"autoWidth": false,
                         "columnDefs": [
                             {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
                         ]
