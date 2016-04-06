@@ -19,7 +19,10 @@ CLMSUI.buildSubmitSearch = function () {
             {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip"}},
         ];
         acqSeqTemplateData.forEach (function (datum) {
-            d3.select(datum.id).html (tmpl("template-acqseq-section", datum.fields));
+            d3.select(datum.id)
+                .html (tmpl("template-acqseq-section", datum.fields))
+                .classed ("uploadTemplate", true)
+            ;
         });
         
         
@@ -324,20 +327,21 @@ CLMSUI.buildSubmitSearch = function () {
                     var rowJoin = tbody.selectAll("tr").data(psetting.data, function(d) { return d.name; });
                     var newRows = rowJoin.enter().append("tr");
 
-                    var cellJoin = newRows.selectAll("td").data (function(d) { return d3.values(d); });
+                    var cellJoin = newRows.selectAll("td").data (function(d) { return d3.entries(d); });
                     cellJoin.enter().append("td")
-                        .text(function(d) { return d; })
-                        .on ("mouseover", function(d,i) {
-                            var text = $.isArray(d) ? d.join("<br>") : d;
+                        .text(function(d) { return d.value; })
+                        // stuff for variable width cells, including adding tooltips
+                        .filter (function(d) { return psetting.autoWidths.has(d.key); })
+                        .classed ("varWidthCell", true)
+                        .style ("width", vcWidth)
+                        .on ("mouseover", function(d) {
+                            var text = $.isArray(d.value) ? d.value.join("<br>") : d.value;
                             CLMSUI.tooltip
-                                .updateText (headers[i], text)
+                                .updateText (d.key, text)
                                 .updatePosition (d3.event)
                             ;
                         })
                         .on ("mouseleave", CLMSUI.tooltip.setToFade)
-                        .filter (function(d,i) { return psetting.autoWidths.has(headers[i]); })
-                        .classed ("varWidthCell", true)
-                        .style ("width", vcWidth)
                     ;
 
                     newRows.append ("td").append("input")
@@ -349,9 +353,6 @@ CLMSUI.buildSubmitSearch = function () {
                         "jQueryUI": true,
                         "ordering": true,
                         "order": [[ 0, "desc" ]],   // order by first column
-                        //"columns": colWidths,
-                        //"scrollX": true,
-                        //"autoWidth": false,
                         "columnDefs": [
                             {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
                         ]
@@ -568,7 +569,7 @@ CLMSUI.buildSubmitSearch = function () {
 
                     $(formid).on({
                         "fileuploadstart": function (e, data) {
-                            console.log ("started", e, data);
+                            console.log ("file upload started", e, data);
                             uploadSuccess = true;
                         },
                         "fileuploadadded": function (e, data) {
@@ -577,7 +578,7 @@ CLMSUI.buildSubmitSearch = function () {
                             enabler();
                         },
                         "fileuploadprocessfail": function (e, data) {
-                             console.log ("wibbly", e, data);
+                             console.log ("file upload process fail", e, data);
                              data.abort();
                         },
                         "fileuploadfail": function (e, data) {  // called before template rendered   
@@ -588,7 +589,7 @@ CLMSUI.buildSubmitSearch = function () {
                             uploadSuccess = false;
                         },
                         "fileuploadfailed": function (e, data) {    // called after template rendered                         
-                            console.log ("failed", e, data);
+                            console.log ("file upload failed", e, data);
                             if (data.errorThrown === "abort") {
                                 nonzeroes.filesAwaiting = rowCountFunc();
                                 enabler();
@@ -596,11 +597,11 @@ CLMSUI.buildSubmitSearch = function () {
                             uploadSuccess = false;
                         },
                         "fileuploaddone": function (e, data) {
-                            console.log ("done", e, data);
+                            console.log ("file upload done", e, data);
                             filesUploaded.push (data.files[0].name);
                         },
                         "fileuploadstopped": function (e, data) {
-                            console.log ("stopped", e, data, uploadSuccess);
+                            console.log ("file upload stopped", e, data, uploadSuccess);
                             if (uploadSuccess) {
                                 var formData = {
                                     name: d3.select(textinputid).property("value"),
@@ -676,7 +677,7 @@ CLMSUI.buildSubmitSearch = function () {
                             dataType: "json",
                             encode: true,
                             success: function (data, textStatus, jqXhr) {
-                                console.log ("return", data, textStatus, jqXhr);
+                                console.log ("defaults return", data, textStatus, jqXhr);
                                 if (!data.error) {
                                     updateFieldsWithValues (data, prevTableClickFuncs);
                                     dispatchObj.formInputChanged();   
@@ -722,8 +723,10 @@ CLMSUI.buildSubmitSearch = function () {
             ;
         };
         
-        var textAreaSetFunc = function (domElem, value) {
-            $(domElem).val (value);
+        var textAreaSetFunc = function (domElem, value, options) {
+            if (value || options.emptyOverwrite) {
+                $(domElem).val (value);
+            }
         };
         
         var dynamicTableSetFunc = function (domElem, mdata) {
@@ -765,17 +768,17 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramFixedModsSelect" : {field : "fixedMods", func: multiSelectSetFunc},
             "#paramVarModsSelect" : {field : "varMods", func: multiSelectSetFunc},
             "#paramLossesSelect" : {field : "losses", func: multiSelectSetFunc},
-            "#paramNotesValue" : {field : "notes", func: textAreaSetFunc},
-            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc},
+            "#paramNotesValue" : {field : "notes", func: textAreaSetFunc, options: {emptyOverwrite: false},},
+            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, options: {emptyOverwrite: true},},
             "#acqPreviousTable" : {field : "acquisitions", func: dynamicTableSetFunc},
             "#seqPreviousTable" : {field : "sequences", func: dynamicTableSetFunc},
         };
         
         d3.entries(elementMap).forEach (function (entry) {
             var exists = d3.select(entry.key);
-            var value = data[entry.value.field];
-            if (!exists.empty() && value) {
-                entry.value.func (entry.key, value);
+            var evalue = entry.value;
+            if (!exists.empty()) {
+                evalue.func (entry.key, data[evalue.field], evalue.options);
             }
         });
     }

@@ -93,10 +93,10 @@ H3 {
     word-wrap: break-word;
 }
 
+
 .previousTable {
     table-layout: auto;
 }
-
 
 .previousTable td, .previousTable th {
     white-space: nowrap;
@@ -109,7 +109,8 @@ H3 {
    max-width: 5em;
 }
 
-.uploadLabels p {
+
+.uploadTemplate p {
     margin: 0;
 }
 
@@ -140,15 +141,12 @@ H3 {
     display: inline-block;
 }
 
-textarea, input[type=text] {
+textarea, textarea.ui-state-default.formPart, input[type=text] {
     color: #222;
     width: 100%;
     overflow-x: hidden;
 }
 
-textarea.ui-state-default {
-    color: #222;
-}
 
 :-ms-input-placeholder {
    color: #ccc !important;
