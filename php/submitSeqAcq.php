@@ -75,6 +75,7 @@ else {
                 $result = pg_execute($dbconn, "acqAdd", [$userID, $tstampname]);
                 $returnRow = pg_fetch_assoc ($result); // return the inserted row (or selected parts thereof)
                 $returnRow["User"] = $username; // Add the username (will be username as this user added the row)
+                $returnRow["Files"] = $filenames;
                 $acqID = $returnRow["id"];
                 //ChromePhp::log(json_encode($returnRow));
 
@@ -94,6 +95,7 @@ else {
                 $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], $folder]);
                 $returnRow = pg_fetch_assoc ($result);  // get the newly added row, need it to return to client ui
                 $returnRow["User"] = $username; // Add the username (will be username as this user added the row)
+                $returnRow["File"] = $filenames;
                 //ChromePhp::log(json_encode($returnRow));
             } 
 

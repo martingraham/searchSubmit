@@ -619,6 +619,9 @@ CLMSUI.buildSubmitSearch = function () {
                                             window.location.replace (response.redirect);    // redirect if server php passes this field    
                                         } else {
                                             console.log ("db acq/seq insert success", response, textStatus);
+                                            if (response.newRow.files) {
+                                                response.newRow["#"] = response.newRow.files.length;
+                                            }
                                             dispatchObj.newEntryUploaded (type, response.newRow);    // alert new row has been added to db
                                         }
                                     },
