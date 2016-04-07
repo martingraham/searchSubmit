@@ -619,6 +619,7 @@ CLMSUI.buildSubmitSearch = function () {
                                             window.location.replace (response.redirect);    // redirect if server php passes this field    
                                         } else {
                                             var newRow = response.newRow;
+                                            
                                             console.log ("db acq/seq insert success", response, textStatus);
                                             if (newRow && newRow.files) {
                                                 newRow["#"] = newRow.files.length;

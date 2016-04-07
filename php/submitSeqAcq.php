@@ -75,7 +75,7 @@ else {
                 $result = pg_execute($dbconn, "acqAdd", [$userID, $tstampname]);
                 $returnRow = pg_fetch_assoc ($result); // return the inserted row (or selected parts thereof)
                 $returnRow["User"] = $username; // Add the username (will be username as this user added the row)
-                $returnRow["Files"] = $filenames;
+                $returnRow["files"] = $filenames;
                 $acqID = $returnRow["id"];
                 //ChromePhp::log(json_encode($returnRow));
 
