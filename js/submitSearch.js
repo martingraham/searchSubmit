@@ -28,6 +28,7 @@ CLMSUI.buildSubmitSearch = function () {
         
         // Make textboxes
         // Those with labeltag h3 can be accordion'ed later
+        CLMSUI.buildSubmitSearch.userAltered = {};
         var textBoxData = [
             {domid: "#paramNotes", niceLabel: "Search Notes", labelTag: "P", placeholderText: "Click here to add notes..."},
             {domid: "#paramCustom", niceLabel: "Custom Settings", labelTag: "H3", placeholderText: "Click here to add custom settings..."},
@@ -40,17 +41,21 @@ CLMSUI.buildSubmitSearch = function () {
                 elem = elem.append("div");
             }
             var tid = settings.domid.slice(1)+"Value";
-            elem.append("textarea").attr ({
-                class: "formPart",
-                wrap: "soft",
-                maxlength: settings.maxLength || 10000,
-                cols: 50,
-                rows: settings.rows || 4,
-                id: tid,
-                name: tid,
-                placeholder: settings.placeholderText
-            })
-            .classed ("ui-widget ui-state-default ui-corner-all", true)
+            elem.append("textarea")
+                .attr ({
+                    class: "formPart",
+                    wrap: "soft",
+                    maxlength: settings.maxLength || 10000,
+                    cols: 50,
+                    rows: settings.rows || 4,
+                    id: tid,
+                    name: tid,
+                    placeholder: settings.placeholderText
+                })
+                .classed ("ui-widget ui-state-default ui-corner-all", true)
+                .on ("keypress", function(d) {
+                    CLMSUI.buildSubmitSearch.userAltered[tid] = true;
+                }) 
             ;
         });
 
@@ -728,9 +733,22 @@ CLMSUI.buildSubmitSearch = function () {
             ;
         };
         
-        var textAreaSetFunc = function (domElem, value, options) {
-            if (value || options.emptyOverwrite) {
-                $(domElem).val (value);
+        var textAreaSetFunc = function (domID, newValue, options) {
+            var hashlessDomID = domID.slice(1);
+            var userAltered = CLMSUI.buildSubmitSearch.userAltered[hashlessDomID];
+            var currentValue = $(domID).val();
+            console.log ("user altered", domID, userAltered, currentValue);
+            // overwrite logic:
+            // Happens When
+            // 1. The new value is non-falsey OR if the emptyOverwrite option is set (so "" can be passed in)
+            // AND
+            // 2. We haven't registered user input in the textfield since the last overwrite OR the current value is empty
+            if ((newValue || options.emptyOverwrite) && (!userAltered || !currentValue)) {
+                $(domID).val (newValue);
+                CLMSUI.buildSubmitSearch.userAltered[hashlessDomID] = false;    // reset to no user input having occurred
+                if (options.postFunc && currentValue != newValue) {
+                    options.postFunc();
+                }
             }
         };
         
@@ -774,7 +792,9 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramVarModsSelect" : {field : "varMods", func: multiSelectSetFunc},
             "#paramLossesSelect" : {field : "losses", func: multiSelectSetFunc},
             "#paramNotesValue" : {field : "notes", func: textAreaSetFunc, options: {emptyOverwrite: false},},
-            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, options: {emptyOverwrite: true},},
+            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, options: 
+                                        {emptyOverwrite: true, postFunc: function() { $("#paramCustom").accordion("option", "active", 0); },},
+                                },
             "#acqPreviousTable" : {field : "acquisitions", func: dynamicTableSetFunc},
             "#seqPreviousTable" : {field : "sequences", func: dynamicTableSetFunc},
         };
