@@ -118,6 +118,23 @@ H3 {
     color: #888;
 }
 
+label.removable {
+    color: #444;
+    /*border: 1px solid #ba6;*/
+    border-radius: 0.3em;
+    background: #fec;
+    padding: 0.1em;
+    padding-left: 0.5em;
+    display: inline-block;
+}
+
+label.removable button {
+    border: 1px solid gray;
+    /*width: 18px;*/
+    margin: 0em 0.3em;
+    height: 1em;
+}
+
 
 .progress {
     line-height: 2em;

@@ -306,6 +306,36 @@ CLMSUI.buildSubmitSearch = function () {
                     {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"])},
                     {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", autoWidths: d3.set(["file", "name"]),},
                 ];
+                var makeRemovableLabels = function (domid, baseId, oids, tableRows) {
+                    var labels = d3.select(domid).selectAll("label").data(oids, function(d) { return d.id; });
+                    labels.exit().remove();
+                    var buts = labels.enter()
+                        .append("label")
+                        .attr("class", "removable")
+                        .text(function(d) { return d.name+ " (" + d.id + ")"; })
+                            .append ("button")
+                            .text (function(d) { return "De-select "+d.id; })
+                            .on ("click", function(d,i) {
+                                console.log ("close", d, i, tableRows[i]);
+                                toggleRowChecked (tableRows[i]);
+                                prevTableClickFuncs[baseId]();
+                            })
+                    ;
+                    // make close buttons jquery-ui buttons
+                    buts.each (function() {
+                        $(this).button ({
+                            icons: { primary: "ui-icon-circle-close"},
+                            text: false,
+                        });
+                    });
+                };
+                var toggleRowChecked = function (domRow) {
+                    d3.select(domRow).selectAll("input[type=checkbox]")
+                        .property ("checked", function() {
+                            return !(d3.select(this).property("checked"));  // toggle checkbox state on row click
+                        })
+                    ;
+                };
                 previousSettings.forEach (function (psetting) {
                     var sel = d3.select (psetting.domid);
                     var baseId = psetting.domid.slice(1)+"Table";
@@ -392,19 +422,14 @@ CLMSUI.buildSubmitSearch = function () {
                         var ids = checkedData.map (function(d) { return +d.id; });
                         d3.select("#"+baseId+"Hidden").property("value", "["+ids.join(",")+"]");  // Put the ids in the hidden form element
 
-                        var names = checkedData.map (function(d) { return d.name+" ("+d.id+")"; });
-                        d3.select(psetting.selectSummaryid).html (names.length ? names.length+" Selected: "+names.join("<br>") : null);  // Put names in label
+                        makeRemovableLabels (psetting.selectSummaryid, baseId, checkedData, checkedCells);
                         console.log ("change form");
                         dispatchObj.formInputChanged();
                     }; 
 
                     newRows
                         .on("click", function () {
-                            d3.select(this).selectAll("input[type=checkbox]")
-                                .property ("checked", function() {
-                                    return !(d3.select(this).property("checked"));  // toggle checkbox state on row click
-                                })
-                            ;
+                            toggleRowChecked (this);
                             prevTableClickFuncs[baseId]();
                         })
                         .selectAll("input[type=checkbox]")
