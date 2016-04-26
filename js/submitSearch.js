@@ -10,7 +10,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
@@ -316,8 +316,9 @@ CLMSUI.buildSubmitSearch = function () {
                             .append ("button")
                             .text (function(d) { return "De-select "+d.id; })
                             .on ("click", function(d,i) {
-                                console.log ("close", d, i, tableRows[i]);
-                                toggleRowChecked (tableRows[i]);
+                                //console.log ("close", d, i, tableRows[i]);
+                                d.isSelected = false;
+                                //toggleRowChecked (tableRows[i]);
                                 prevTableClickFuncs[baseId]();
                             })
                     ;
@@ -329,6 +330,7 @@ CLMSUI.buildSubmitSearch = function () {
                         });
                     });
                 };
+                /*
                 var toggleRowChecked = function (domRow) {
                     d3.select(domRow).selectAll("input[type=checkbox]")
                         .property ("checked", function() {
@@ -336,6 +338,7 @@ CLMSUI.buildSubmitSearch = function () {
                         })
                     ;
                 };
+                */
                 previousSettings.forEach (function (psetting) {
                     var sel = d3.select (psetting.domid);
                     var baseId = psetting.domid.slice(1)+"Table";
@@ -413,28 +416,48 @@ CLMSUI.buildSubmitSearch = function () {
                     // on a selection in the table, we then smuggle the current selection set of ids into the hidden form
                     // where they can be picked up on the parameter form submit, and show the current selection to the user
                     prevTableClickFuncs[baseId] = function () {
-                        var dtCells = $("#"+baseId).DataTable().rows().nodes(); // loads of tr dom nodes
-                        $(dtCells).removeClass("selected");
-                        var checkedCells = $(dtCells).has("input:checked"); // just the ones with a ticked checkbox
-                        checkedCells.addClass("selected");
-                        var checkedData = d3.selectAll(checkedCells).data();
+                        var dtRows = $("#"+baseId).DataTable().rows().nodes(); // loads of tr dom nodes
+                        var allRows =  d3.selectAll(dtRows);
+                        var allData = allRows.data();
+                        console.log ("alldata", allData);
+                        
+                        var selectedRows = allRows.filter(function(d) { return d.isSelected; });
+                        selectedRows
+                            .classed ("selected", true)
+                            .select("input")
+                                .property("checked", true)
+                        ;
+                        var unselectedRows = allRows.filter(function(d) { return ! d.isSelected; });
+                        unselectedRows
+                            .classed ("selected", false)
+                            .select("input")
+                                .property ("checked", false)
+                        ;
+                        
+                        //$(dtRows).removeClass("selected");
+                        //var checkedCells = $(dtRows).has("input:checked"); // just the ones with a ticked checkbox
+                        //checkedCells.addClass("selected");
+                        //var checkedData = d3.selectAll(checkedCells).data();
+                        var checkedData = selectedRows.data();
 
                         var ids = checkedData.map (function(d) { return +d.id; });
                         d3.select("#"+baseId+"Hidden").property("value", "["+ids.join(",")+"]");  // Put the ids in the hidden form element
 
-                        makeRemovableLabels (psetting.selectSummaryid, baseId, checkedData, checkedCells);
+                        makeRemovableLabels (psetting.selectSummaryid, baseId, checkedData/*, checkedCells*/);
                         console.log ("change form");
                         dispatchObj.formInputChanged();
                     }; 
 
                     newRows
-                        .on("click", function () {
-                            toggleRowChecked (this);
+                        .on("click", function (d) {
+                            //toggleRowChecked (this);
+                            d.isSelected = !!!d.isSelected;
                             prevTableClickFuncs[baseId]();
                         })
                         .selectAll("input[type=checkbox]")
-                            .on ("click", function() {
+                            .on ("click", function(d) {
                                 d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
+                                d.isSelected = !!!d.isSelected;
                                 prevTableClickFuncs[baseId]();
                             }
                         )
