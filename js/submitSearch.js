@@ -10,7 +10,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    //console.disableLogging();
+    console.disableLogging();
     
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
