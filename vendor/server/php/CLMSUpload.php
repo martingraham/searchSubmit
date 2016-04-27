@@ -30,7 +30,7 @@ if (! array_key_exists ("uploadTimeStamp", $_SESSION) || $_SESSION["uploadTimeSt
 
 $baseDir = $_SESSION["baseDir"];
 
-// override php.ini settings so massive files can be uploaded - doesn't work
+// override php.ini settings so massive files can be uploaded - doesn't work, needs to be in php.ini itself
 //ini_set('post_max_size', '4G');
 //ini_set('upload_max_filesize', '4G');
 
@@ -60,6 +60,31 @@ error_reporting(E_ALL | E_STRICT);
 require('UploadHandler.php');
 try {
     $upload_handler = new UploadHandler ($options);
+
+    if (property_exists ($upload_handler, "response") && array_key_exists ("files", $upload_handler->response)) {
+        $resp = $upload_handler->response;
+        $upFiles = $resp["files"];
+        foreach ($upFiles as $upFile) {
+            if (array_key_exists ("url", $upFile)) {
+                /*
+                error_log (print_R($upFile->url, TRUE));
+                $fperms = fileperms ($upFile->url);
+                $octal = substr(sprintf('%o', $fperms), -4);
+                error_log (print_R($octal, TRUE));
+                $stat = stat ($upFile->url);
+                */
+                $chsucc = chmod ($upFile->url, 0766);
+                /*
+                error_log ("chmodok to 0766 ".$chsucc);
+                $fperms = fileperms ($upFile->url);
+                $octal = substr(sprintf('%o', $fperms), -4);
+                error_log (print_R($octal, TRUE));
+                $stat = stat ($upFile->url);
+                error_log (print_R($stat, TRUE));
+                */
+            }
+        }
+    }
 }
 catch (Exception $e) {
     ChromePhp::log(json_encode($e));

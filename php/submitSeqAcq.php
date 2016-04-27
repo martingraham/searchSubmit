@@ -71,7 +71,7 @@ else {
             if ($_POST["type"] == "acq") {
                 $folder = "xi/users/".$username."/".$tstampname;
                 $acqAdd = pg_prepare($dbconn, "acqAdd",
-            "INSERT INTO acquisition (uploadedby, name, upload_date) VALUES ($1, $2, NOW()) RETURNING id, name AS NAME, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date");
+            "INSERT INTO acquisition (uploadedby, name, upload_date) VALUES ($1, $2, NOW()) RETURNING id, name AS NAME, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date");
                 $result = pg_execute($dbconn, "acqAdd", [$userID, $tstampname]);
                 $returnRow = pg_fetch_assoc ($result); // return the inserted row (or selected parts thereof)
                 $returnRow["User"] = $username; // Add the username (will be username as this user added the row)
@@ -91,7 +91,7 @@ else {
             else if ($_POST["type"] == "seq") {
                 $folder = "xi/sequenceDB/".$tstampname;
                 $seqAdd = pg_prepare($dbconn, "seqAdd",
-            "INSERT INTO sequence_file (uploadedby, name, file_name, file_path, upload_date) VALUES ($1, $2, $3, $4, NOW()) RETURNING id, name AS Name, file_name as file, to_char(upload_date, 'YYYY-MM-DD HH:MI') AS Date");
+            "INSERT INTO sequence_file (uploadedby, name, file_name, file_path, upload_date) VALUES ($1, $2, $3, $4, NOW()) RETURNING id, name AS Name, file_name as file, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date");
                 $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], $folder]);
                 $returnRow = pg_fetch_assoc ($result);  // get the newly added row, need it to return to client ui
                 $returnRow["User"] = $username; // Add the username (will be username as this user added the row)
