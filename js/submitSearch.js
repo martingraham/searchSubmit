@@ -306,7 +306,7 @@ CLMSUI.buildSubmitSearch = function () {
                     {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"])},
                     {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", autoWidths: d3.set(["file", "name"]),},
                 ];
-                var makeRemovableLabels = function (domid, baseId, oids, tableRows) {
+                var makeRemovableLabels = function (domid, baseId, oids) {
                     var labels = d3.select(domid).selectAll("label").data(oids, function(d) { return d.id; });
                     labels.exit().remove();
                     var buts = labels.enter()
@@ -316,9 +316,7 @@ CLMSUI.buildSubmitSearch = function () {
                             .append ("button")
                             .text (function(d) { return "De-select "+d.id; })
                             .on ("click", function(d,i) {
-                                //console.log ("close", d, i, tableRows[i]);
                                 d.isSelected = false;
-                                //toggleRowChecked (tableRows[i]);
                                 prevTableClickFuncs[baseId]();
                             })
                     ;
@@ -339,6 +337,24 @@ CLMSUI.buildSubmitSearch = function () {
                     ;
                 };
                 */
+                var addRowListeners = function (rowSel, baseId) {
+                    console.log ("addRoweList", rowSel, baseId);
+                    // row selection listeners
+                    rowSel
+                        .on("click", function (d) {
+                            //toggleRowChecked (this);
+                            d.isSelected = !!!d.isSelected;
+                            prevTableClickFuncs[baseId]();
+                        })
+                        .selectAll("input[type=checkbox]")
+                            .on ("click", function(d) {
+                                d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
+                                d.isSelected = !!!d.isSelected;
+                                prevTableClickFuncs[baseId]();
+                            }
+                        )
+                    ; 
+                };
                 previousSettings.forEach (function (psetting) {
                     var sel = d3.select (psetting.domid);
                     var baseId = psetting.domid.slice(1)+"Table";
@@ -371,7 +387,7 @@ CLMSUI.buildSubmitSearch = function () {
                         // stuff for variable width cells, including adding tooltips
                         .filter (function(d) { return psetting.autoWidths.has(d.key); })
                         .classed ("varWidthCell", true)
-                        .style ("width", vcWidth)
+                        .style ("width", vcWidth) 
                         .on ("mouseover", function(d) {
                             var text = $.isArray(d.value) ? d.value.join("<br>") : d.value;
                             CLMSUI.tooltip
@@ -443,25 +459,14 @@ CLMSUI.buildSubmitSearch = function () {
                         var ids = checkedData.map (function(d) { return +d.id; });
                         d3.select("#"+baseId+"Hidden").property("value", "["+ids.join(",")+"]");  // Put the ids in the hidden form element
 
-                        makeRemovableLabels (psetting.selectSummaryid, baseId, checkedData/*, checkedCells*/);
+                        // make removable labels outside of accordion area for selected rows
+                        makeRemovableLabels (psetting.selectSummaryid, baseId, checkedData);
+                        
                         console.log ("change form");
                         dispatchObj.formInputChanged();
                     }; 
 
-                    newRows
-                        .on("click", function (d) {
-                            //toggleRowChecked (this);
-                            d.isSelected = !!!d.isSelected;
-                            prevTableClickFuncs[baseId]();
-                        })
-                        .selectAll("input[type=checkbox]")
-                            .on ("click", function(d) {
-                                d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
-                                d.isSelected = !!!d.isSelected;
-                                prevTableClickFuncs[baseId]();
-                            }
-                        )
-                    ; 
+                    newRows.call (addRowListeners, baseId);
                 });
 
 
@@ -702,16 +707,16 @@ CLMSUI.buildSubmitSearch = function () {
                 dispatchObj.on ("newEntryUploaded", function (type, newRow) {
                     var tableId = type+"PreviousTable";
                     var dataTable = $("#"+tableId).DataTable();
-                    newRow.selected = "<input type='checkbox' checked>";    // add a ready selected checkbox as a html string
+                    newRow.selected = "<input type='checkbox'>";    // add a checkbox as a html string for display in the table
                     var newRowNode = dataTable.row
                         .add(d3.values(newRow)) // push the newrow as new table row data
                         .draw()                 // redraw the table
                         .node()                 // return the tr dom node for further manipulation
                     ;
+                    newRow.isSelected = true;   // Set as selected in the datum, this will be pushed through to the checkbox and the selected area in the following code
                     d3.select(newRowNode)
                         .datum(newRow)  // set the row data on the new tr dom node as a d3 datum
-                        .select("input[type=checkbox]")
-                        .on ("click", prevTableClickFuncs[tableId])    // so that calling this function works on click
+                        .call (addRowListeners, tableId)
                     ;   
                     prevTableClickFuncs[tableId] ();   // and we call the same func here as the checkbox is set pre-selected
                 });
