@@ -126,6 +126,7 @@ label.removable {
     padding: 0.1em;
     padding-left: 0.5em;
     display: inline-block;
+    margin-right: 0.15em;
 }
 
 label.removable button {
