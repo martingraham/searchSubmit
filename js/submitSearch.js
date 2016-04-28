@@ -12,14 +12,18 @@ CLMSUI.buildSubmitSearch = function () {
     })(console.log);
     console.disableLogging();
     
-    function errorDialog (dialogID, msg) {
+    function errorDialog (dialogID, msg, title) {
         d3.select("body").append("div")
             .attr("id", dialogID)
-            .attr("title", "Database Error")
+            .attr("title", title || "Database Error")
             .append("p")
                 .text(msg)
         ;
-        $(function() { $("#"+dialogID).dialog(); });
+        $(function() { 
+            $("#"+dialogID).dialog({
+                modal:true,
+            });
+        });
     }
     
     function canDoImmediately () {
@@ -317,10 +321,10 @@ CLMSUI.buildSubmitSearch = function () {
                 
                 // Maintains labels that appear next to sequence / acquisition headers to show state of current selection. Removeable by clicking close icon.
                 var makeRemovableLabels = function (domid, baseId, oids) {
-                    var labels = d3.select(domid).selectAll("label").data(oids, function(d) { return d.id; });
+                    var labels = d3.select(domid).selectAll("span.removable").data(oids, function(d) { return d.id; });
                     labels.exit().remove();
                     var buts = labels.enter()
-                        .append("label")
+                        .append("span")
                         .attr("class", "removable")
                         .text(function(d) { return d.name+ " (" + d.id + ")"; })
                             .append ("button")
@@ -648,7 +652,9 @@ CLMSUI.buildSubmitSearch = function () {
                         "fileuploadfail": function (e, data) {  // called before template rendered   
                             if (data.errorThrown && data.errorThrown.name == "SyntaxError") {
                                 // This usually means a html-encoded php error that jquery has tried to json decode
-                                data.files[0].error = "from Server, "+$(data.jqXHR.responseText).text().slice(0,40)+"...";
+                                var errorSubstring = $(data.jqXHR.responseText).text().slice(0,40)+"...";
+                                data.files[0].error = "from Server, "+errorSubstring;
+                                errorDialog ("popErrorDialog", errorSubstring, "File Upload Error");
                             }
                             uploadSuccess = false;
                         },
@@ -758,7 +764,7 @@ CLMSUI.buildSubmitSearch = function () {
                             },
                             error: function (jqXhr, textStatus, errorThrown) {
                                 console.log ("db get error", jqXhr, textStatus, errorThrown);    
-                                errorDialog ("popErrorDialog", "Database retrieve Search error "+ errorThrown);
+                                errorDialog ("popErrorDialog", "Cannot retrieve Search "+ errorThrown);
                             },
                         });
                     });

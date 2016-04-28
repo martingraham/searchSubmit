@@ -118,18 +118,18 @@ H3 {
     color: #888;
 }
 
-label.removable {
+span.removable {
     color: #444;
     /*border: 1px solid #ba6;*/
     border-radius: 0.3em;
     background: #fec;
-    padding: 0.1em;
     padding-left: 0.5em;
     display: inline-block;
     margin-right: 0.15em;
+    margin-bottom: 0.15em;
 }
 
-label.removable button {
+span.removable button {
     border: 1px solid gray;
     /*width: 18px;*/
     margin: 0em 0.3em;
@@ -172,4 +172,15 @@ textarea, textarea.ui-state-default.formPart, input[type=text] {
 
 ::-ms-input-placeholder {
    color: #ccc;
+}
+
+.ui-dialog {
+    -webkit-box-shadow: 10px 10px 10px 0px rgba(0,0,0,0.5);
+    -moz-box-shadow: 10px 10px 10px 0px rgba(0,0,0,0.5);
+    box-shadow: 10px 10px 10px 0px rgba(0,0,0,0.5);
+    border: 1px solid #444;
+    -webkit-user-select: all;  /* Chrome all / Safari all */
+    -moz-user-select: all;     /* Firefox all */
+    -ms-user-select: all;      /* IE 10+ */
+    user-select: all;          /* Likely future */  
 }
