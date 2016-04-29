@@ -73,7 +73,6 @@ else {
 
     //ChromePhp::log(json_encode($allGood));
 
-
     if ($allGood) {
 
         // make timestamps to use in name fields and in timestamp fields (different format required)
@@ -182,7 +181,8 @@ else {
             echo (json_encode(array ("status"=>"success", "newSearch"=>$searchRow)));
         } catch (Exception $e) {
             pg_query("ROLLBACK");
-            echo (json_encode(array ("status"=>"fail", "error"=>$e)));
+            $date = date("d-M-Y H:i:s");
+            echo (json_encode(array ("status"=>"fail", "error"=>"An Error occurred when inserting the submitted search into the database<br>".$date)));
         }
 
         //close connection
@@ -190,7 +190,8 @@ else {
     }
 
     else {
-        echo (json_encode(array ("status"=>"fail", "error"=>"missing or invalid fields")));
+        $date = date("d-M-Y H:i:s");
+        echo (json_encode(array ("status"=>"fail", "error"=>"Missing or invalid fields were found in the submitted search<br>".$date)));
     }
 }
 

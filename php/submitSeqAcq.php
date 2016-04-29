@@ -51,7 +51,6 @@ else {
 
     //ChromePhp::log(json_encode($allGood));
 
-
     if ($allGood) {
 
         $filenames = $_POST["filenames"];
@@ -64,10 +63,9 @@ else {
 
         // little bobby tables - https://xkcd.com/327/ 
         try {
-            
             //$baseDir = $_SESSION["baseDir"];
             pg_query("BEGIN") or die("Could not start transaction\n");
-
+            
             if ($_POST["type"] == "acq") {
                 $folder = "xi/users/".$username."/".$tstampname;
                 $acqAdd = pg_prepare($dbconn, "acqAdd",
@@ -103,14 +101,16 @@ else {
              echo (json_encode(array ("status"=>"success", "newRow"=>$returnRow)));
         } catch (Exception $e) {
              pg_query("ROLLBACK");
-             echo (json_encode(array ("status"=>"fail", "error"=>$e)));
+             $date = date("d-M-Y H:i:s");
+             echo (json_encode(array ("status"=>"fail", "error"=>"An Error occurred when inserting the new sequences/acquisitions into the database<br>".$date)));
         }
 
         //close connection
         pg_close($dbconn);
     }
     else {
-        echo (json_encode(array ("status"=>"fail", "error"=>"missing fields")));
+        $date = date("d-M-Y H:i:s");
+        echo (json_encode(array ("status"=>"fail", "error"=>"Missing required fields for seq/acq insert<br>".$date)));
     }
 }
 ?>
