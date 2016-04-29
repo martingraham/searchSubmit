@@ -184,3 +184,21 @@ textarea, textarea.ui-state-default.formPart, input[type=text] {
     -ms-user-select: all;      /* IE 10+ */
     user-select: all;          /* Likely future */  
 }
+
+.ui-dialog P:last-child {
+    text-align: center;
+}
+
+.ui-dialog A {
+    color: #44f;
+    font-size: 0.8em;
+}
+
+.ui-spinner {
+    vertical-align: baseline;
+    width: 5em;
+}
+
+input[type='number'], input[type='text'] {
+    height: 1.75em;
+}

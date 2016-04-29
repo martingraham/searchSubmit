@@ -12,12 +12,19 @@ CLMSUI.buildSubmitSearch = function () {
     })(console.log);
     console.disableLogging();
     
+    var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
+    
     function errorDialog (dialogID, msg, title) {
-        d3.select("body").append("div")
+        var msgs = msg.split("<br>");
+        msgs.push("<A href='https://github.com/Rappsilber-Laboratory/' target='_blank'>Rappsilber Lab GitHub</A>");
+        var errorDialogParas = d3.select("body").append("div")
             .attr("id", dialogID)
             .attr("title", title || "Database Error")
+            .selectAll("p").data(msgs)
+        ;
+        errorDialogParas.enter()
             .append("p")
-                .text(msg)
+            .html (function(d) { return d; })
         ;
         $(function() { 
             $("#"+dialogID).dialog({
@@ -26,6 +33,7 @@ CLMSUI.buildSubmitSearch = function () {
         });
     }
     
+    // Interface lements that can be built without waiting for database queries to return
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
         var acqSeqTemplateData = [
@@ -103,11 +111,6 @@ CLMSUI.buildSubmitSearch = function () {
                 max: settings.max,
                 step: 1,
             });
-
-            elem.selectAll(".ui-spinner")
-                .style("vertical-align", "baseline")    // baseline is different to selectmenu, causing vertical offset
-                .style("width", "5em")
-            ;
         });
 
 
@@ -186,8 +189,7 @@ CLMSUI.buildSubmitSearch = function () {
             encode: true,
             success: gotChoicesResponse,
             error: function (jqXhr, textStatus, errorThrown) {
-                console.log ("db get error", textStatus, errorThrown);
-                errorDialog ("popErrorDialog", errorThrown);
+                errorDialog ("popErrorDialog", "Error accessing database<br>"+errorDateFormat (new Date()), "Connection Error");
             },
         });
         
@@ -572,6 +574,12 @@ CLMSUI.buildSubmitSearch = function () {
                     
                     d3.select("body").style("cursor", "wait");
 
+                    function submitFailSets () {
+                        toDoMessage ("Error, search submit failed.");
+                        happyToDo (false);
+                        $("#startProcessing").button("option", "disabled", false);
+                    }
+                    
                     $.ajax ({
                         type: "POST",
                         url: "php/submitParams.php",
@@ -587,16 +595,13 @@ CLMSUI.buildSubmitSearch = function () {
                                 toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
                                 window.location.assign ("../xi3/history.php");
                             } else {
-                                toDoMessage ("Error, "+response.error+".");
-                                happyToDo (false);
-                                $("#startProcessing").button("option", "disabled", false);
+                                errorDialog ("popErrorDialog", response.error);
+                                submitFailSets();
                             }
                         },
-                        error: function (jqXhr, textStatus, errorThrown) {
-                            console.log ("db params insert error", textStatus, errorThrown);   
-                            toDoMessage ("Error, "+errorThrown+".");
-                            happyToDo (false);
-                            $("#startProcessing").button("option", "disabled", false);
+                        error: function (jqXhr, textStatus, errorThrown) {  
+                            errorDialog ("popErrorDialog", "Submit failed on server before reaching database<br>"+errorDateFormat (new Date()), "Connection Error");
+                            submitFailSets();
                         },
                         complete: function () {
                             d3.select("body").style("cursor", null);
@@ -652,9 +657,9 @@ CLMSUI.buildSubmitSearch = function () {
                         "fileuploadfail": function (e, data) {  // called before template rendered   
                             if (data.errorThrown && data.errorThrown.name == "SyntaxError") {
                                 // This usually means a html-encoded php error that jquery has tried to json decode
-                                var errorSubstring = $(data.jqXHR.responseText).text().slice(0,40)+"...";
-                                data.files[0].error = "from Server, "+errorSubstring;
-                                errorDialog ("popErrorDialog", errorSubstring, "File Upload Error");
+                                data.files[0].error = "File Upload failed<br>"+errorDateFormat (new Date());
+                                //console.log ("ferror", data, $(data.jqXHR.responseText).text(), e);
+                                errorDialog ("popErrorDialog", data.files[0].error, "File Upload Error");
                             }
                             uploadSuccess = false;
                         },
@@ -687,6 +692,8 @@ CLMSUI.buildSubmitSearch = function () {
                                     success: function (response, textStatus, jqXhr) {
                                         if (response.redirect) {
                                             window.location.replace (response.redirect);    // redirect if server php passes this field    
+                                        } else if (response.error) {
+                                            errorDialog ("popErrorDialog", response.error);
                                         } else {
                                             var newRow = response.newRow;
                                             
@@ -697,9 +704,8 @@ CLMSUI.buildSubmitSearch = function () {
                                             dispatchObj.newEntryUploaded (type, newRow);    // alert new row has been added to db
                                         }
                                     },
-                                    error : function (jqXhr, textStatus, errorThrown) {
-                                        console.log ("db acq/seq insert error", textStatus, errorThrown);
-                                        errorDialog ("popErrorDialog", "Database "+type+" insert error "+ errorThrown);
+                                    error: function (jqXhr, textStatus, errorThrown) {
+                                        errorDialog ("popErrorDialog", "Cannot reach database to insert "+type+" details<br>"+ errorDateFormat (new Date()), "Connection Error");
                                     },
                                 });
                                 filesUploaded.length = 0;
@@ -763,8 +769,8 @@ CLMSUI.buildSubmitSearch = function () {
                                 }
                             },
                             error: function (jqXhr, textStatus, errorThrown) {
-                                console.log ("db get error", jqXhr, textStatus, errorThrown);    
-                                errorDialog ("popErrorDialog", "Cannot retrieve Search "+ errorThrown);
+                                var type = d3.select(defaultButton.id).text();
+                                errorDialog ("popErrorDialog", "Cannot retrieve details for "+type+"<br>"+errorDateFormat (new Date()), "Connection Error");
                             },
                         });
                     });
