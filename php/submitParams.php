@@ -182,7 +182,7 @@ else {
         } catch (Exception $e) {
             pg_query("ROLLBACK");
             $date = date("d-M-Y H:i:s");
-            echo (json_encode(array ("status"=>"fail", "error"=>"Database insert error for submitted search<br>".$date)));
+            echo (json_encode(array ("status"=>"fail", "error"=>"An Error occurred when inserting the submitted search into the database<br>".$date)));
         }
 
         //close connection
@@ -191,7 +191,7 @@ else {
 
     else {
         $date = date("d-M-Y H:i:s");
-        echo (json_encode(array ("status"=>"fail", "error"=>"Missing or invalid fields found in submitted search<br>".$date)));
+        echo (json_encode(array ("status"=>"fail", "error"=>"Missing or invalid fields were found in the submitted search<br>".$date)));
     }
 }
 

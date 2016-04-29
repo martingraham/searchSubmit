@@ -189,7 +189,7 @@ CLMSUI.buildSubmitSearch = function () {
             encode: true,
             success: gotChoicesResponse,
             error: function (jqXhr, textStatus, errorThrown) {
-                errorDialog ("popErrorDialog", "Error accessing database<br>"+errorDateFormat (new Date()), "Connection Error");
+                errorDialog ("popErrorDialog", "An Error occurred when trying to access the database for form choices<br>"+errorDateFormat (new Date()), "Connection Error");
             },
         });
         
@@ -600,7 +600,7 @@ CLMSUI.buildSubmitSearch = function () {
                             }
                         },
                         error: function (jqXhr, textStatus, errorThrown) {  
-                            errorDialog ("popErrorDialog", "Submit failed on server before reaching database<br>"+errorDateFormat (new Date()), "Connection Error");
+                            errorDialog ("popErrorDialog", "Submit failed on the server before reaching the database<br>"+errorDateFormat (new Date()), "Connection Error");
                             submitFailSets();
                         },
                         complete: function () {
@@ -657,7 +657,7 @@ CLMSUI.buildSubmitSearch = function () {
                         "fileuploadfail": function (e, data) {  // called before template rendered   
                             if (data.errorThrown && data.errorThrown.name == "SyntaxError") {
                                 // This usually means a html-encoded php error that jquery has tried to json decode
-                                data.files[0].error = "File Upload failed<br>"+errorDateFormat (new Date());
+                                data.files[0].error = "A file upload failed<br>"+errorDateFormat (new Date());
                                 //console.log ("ferror", data, $(data.jqXHR.responseText).text(), e);
                                 errorDialog ("popErrorDialog", data.files[0].error, "File Upload Error");
                             }
@@ -770,7 +770,7 @@ CLMSUI.buildSubmitSearch = function () {
                             },
                             error: function (jqXhr, textStatus, errorThrown) {
                                 var type = d3.select(defaultButton.id).text();
-                                errorDialog ("popErrorDialog", "Cannot retrieve details for "+type+"<br>"+errorDateFormat (new Date()), "Connection Error");
+                                errorDialog ("popErrorDialog", "An Error occurred when trying to access the database for "+type+"<br>"+errorDateFormat (new Date()), "Connection Error");
                             },
                         });
                     });

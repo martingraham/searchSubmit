@@ -102,7 +102,7 @@ else {
         } catch (Exception $e) {
              pg_query("ROLLBACK");
              $date = date("d-M-Y H:i:s");
-             echo (json_encode(array ("status"=>"fail", "error"=>"Database error during seq/acq insert<br>".$date)));
+             echo (json_encode(array ("status"=>"fail", "error"=>"An Error occurred when inserting the new sequences/acquisitions into the database<br>".$date)));
         }
 
         //close connection
