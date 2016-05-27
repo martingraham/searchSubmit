@@ -165,13 +165,15 @@ textarea, textarea.ui-state-default.formPart, input[type=text] {
     overflow-x: hidden;
 }
 
+textarea[rows="1"] {
+    line-height: 1.8em;
+    height: 1.8em;
+    overflow-y: hidden;
+} 
+
 
 :-ms-input-placeholder {
    color: #ccc !important;
-}
-
-::-ms-input-placeholder {
-   color: #ccc;
 }
 
 .ui-dialog {
