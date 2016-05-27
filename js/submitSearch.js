@@ -193,7 +193,7 @@ CLMSUI.buildSubmitSearch = function () {
             },
         });
         
-        
+        // Do this client side to stop thrashing the server with it
         function mergeInFilenamesToAcquistions (acquistions, runNames) {
             var nameMap = d3.map();
             runNames.forEach (function(runName) {
