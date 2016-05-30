@@ -21,8 +21,8 @@ else {
             "xlinkers" => "SELECT id, name from crosslinker ORDER by name",
             "losses" => "SELECT id, name from loss ORDER by name",
             "modifications" => "SELECT id, name from modification ORDER by name",
-            "previousAcqui" => "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User from acquisition JOIN users ON (acquisition.uploadedby = users.id) ORDER BY acquisition.id DESC",
-            "previousSeq" => "SELECT sequence_file.id, name AS Name, file_name as file, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User from sequence_file JOIN users ON (sequence_file.uploadedby = users.id) ORDER BY upload_date DESC",
+            "previousAcqui" => "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User FROM acquisition JOIN users ON (acquisition.uploadedby = users.id) ORDER BY acquisition.id DESC",
+            "previousSeq" => "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User, file_name as file FROM sequence_file JOIN users ON (sequence_file.uploadedby = users.id) ORDER BY upload_date DESC",
             "filenames" => "SELECT acq_id, name FROM run ORDER by acq_id DESC"
         );
             

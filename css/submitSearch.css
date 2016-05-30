@@ -104,9 +104,21 @@ H3 {
     overflow: hidden;
 }
 
+.previousTable th {
+    text-transform: capitalize;
+}
+
 .varWidthCell {
    min-width: 2em;
    max-width: 5em;
+}
+
+.acqNumber {
+    color: #333;
+}
+
+.acqNumber::after {
+    content: ".\0009";
 }
 
 
