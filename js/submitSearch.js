@@ -10,28 +10,39 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     
-    function errorDialog (dialogID, msg, title) {
-        var msgs = msg.split("<br>");
-        msgs.push("<A href='https://github.com/Rappsilber-Laboratory/' target='_blank'>Rappsilber Lab GitHub</A>");
-        var errorDialogParas = d3.select("body").append("div")
+    function constructDialogMessage (dialogID, msg, title) {
+        var dialogParas = d3.select("body").select("#"+dialogID);
+        if (dialogParas.empty()) {
+            dialogParas = d3.select("body").append("div").attr("id", dialogID);
+        }
+        dialogParas.selectAll("p").remove();
+        dialogParas
             .attr("id", dialogID)
-            .attr("title", title || "Database Error")
-            .selectAll("p").data(msgs)
+            .attr("title", title)
+            .selectAll("p")
+            .data(msg.split("<br>"))
+            .enter()
+                .append("p")
+                .html (function(d) { return d; })
         ;
-        errorDialogParas.enter()
-            .append("p")
-            .html (function(d) { return d; })
-        ;
-        $(function() { 
-            $("#"+dialogID).dialog({
-                modal:true,
-            });
+    }
+    
+    function errorDialog (dialogID, msg, title) {
+        msg = msg.concat("<br><A href='https://github.com/Rappsilber-Laboratory/' target='_blank'>Rappsilber Lab GitHub</A>");
+        constructDialogMessage (dialogID, msg, title || "Database Error");
+
+        $("#"+dialogID).dialog({
+            close: function () {
+                $(this).dialog("destroy").remove();    
+            },
+            modal:true,
         });
     }
+    
     
     // Interface lements that can be built without waiting for database queries to return
     function canDoImmediately () {
@@ -364,9 +375,16 @@ CLMSUI.buildSubmitSearch = function () {
                 };
                 
                 var addToolTipListeners = function (cellSel) {
+                    function enumerateText (arr) {
+                        var enumArr = arr.map (function (d,i) {
+                           return "<span class='acqNumber'>"+(i+1)+"</span>"+d; 
+                        });
+                        return enumArr.join("<br>");
+                    }
+                    
                     cellSel
                         .on ("mouseover", function(d) {
-                            var text = $.isArray(d.value) ? d.value.join("<br>") : d.value;
+                            var text = $.isArray(d.value) ? enumerateText(d.value) : d.value;
                             CLMSUI.tooltip
                                 .updateText (d.key, text)
                                 .updatePosition (d3.event)
@@ -652,6 +670,9 @@ CLMSUI.buildSubmitSearch = function () {
                         },
                         "fileuploadprocessfail": function (e, data) {
                              console.log ("file upload process fail", e, data);
+                                data.files[0].error = "A file upload process failed<br>"+errorDateFormat (new Date());
+                                //console.log ("ferror", data, $(data.jqXHR.responseText).text(), e);
+                                errorDialog ("popErrorDialog", data.files[0].error, "File Upload Error");
                              data.abort();
                         },
                         "fileuploadfail": function (e, data) {  // called before template rendered   
