@@ -598,9 +598,11 @@ CLMSUI.buildSubmitSearch = function () {
                         $("#startProcessing").button("option", "disabled", false);
                     }
                     
+                    var parentForm = $(event.target);   // event.target is parent form of submit button (i.e. #parameterForm)
+                    
                     $.ajax ({
-                        type: "POST",
-                        url: "php/submitParams.php",
+                        type: parentForm.attr("method"),
+                        url: parentForm.attr("action"),
                         data: formData,
                         dataType: "json",
                         encode: true,
@@ -625,6 +627,7 @@ CLMSUI.buildSubmitSearch = function () {
                             d3.select("body").style("cursor", null);
                         },
                     });
+                    
                 });
 
 
@@ -670,15 +673,19 @@ CLMSUI.buildSubmitSearch = function () {
                         },
                         "fileuploadprocessfail": function (e, data) {
                              console.log ("file upload process fail", e, data);
+                             if (data.files && data.files[0]) {
                                 data.files[0].error = "A file upload process failed<br>"+errorDateFormat (new Date());
-                                //console.log ("ferror", data, $(data.jqXHR.responseText).text(), e);
-                                errorDialog ("popErrorDialog", data.files[0].error, "File Upload Error");
+                             }
+                             errorDialog ("popErrorDialog", data.files[0].error, "File Upload Error");
+                             uploadSuccess = false;
                              data.abort();
                         },
                         "fileuploadfail": function (e, data) {  // called before template rendered   
                             if (data.errorThrown && data.errorThrown.name == "SyntaxError") {
                                 // This usually means a html-encoded php error that jquery has tried to json decode
-                                data.files[0].error = "A file upload failed<br>"+errorDateFormat (new Date());
+                                if (data.files && data.files[0]) {
+                                    data.files[0].error = "A file upload failed<br>"+errorDateFormat (new Date());
+                                }
                                 //console.log ("ferror", data, $(data.jqXHR.responseText).text(), e);
                                 errorDialog ("popErrorDialog", data.files[0].error, "File Upload Error");
                             }

@@ -45,29 +45,36 @@ else {
                 }
             }  
         }
-
     }
-
-
-    //ChromePhp::log(json_encode($allGood));
-
+    
+    $filesExist = true;
     if ($allGood) {
-
+        // test if files are actually present, and these variables are available outside this bracket scope
+        // http://php.net/manual/en/language.variables.scope.php#105925
         $filenames = $_POST["filenames"];
         $saneName = normalizeString ($_POST["name"]);   // sanitise user-supplied acq/seq name, same as in clmsupload.php
         $tstampname = $saneName.$_SESSION["uploadTimeStamp"];
+        $baseDir = $_SESSION["baseDir"];
+        $folder = ($_POST["type"] == "acq") ? "xi/users/".$username."/".$tstampname : "xi/sequenceDB/".$tstampname;
+        
+        foreach ($filenames as $index => $val) {
+            if (!file_exists ($baseDir.$folder."/".$val)) {
+                $filesExist = false;
+            }
+        }
+    }
 
+
+    if ($allGood && $filesExist) {
         //open connection
         $dbconn = pg_connect($connectionString)
                 or die('Could not connect: ' . pg_last_error());
 
         // little bobby tables - https://xkcd.com/327/ 
         try {
-            //$baseDir = $_SESSION["baseDir"];
             pg_query("BEGIN") or die("Could not start transaction\n");
-            
+
             if ($_POST["type"] == "acq") {
-                $folder = "xi/users/".$username."/".$tstampname;
                 $acqAdd = pg_prepare($dbconn, "acqAdd",
             "INSERT INTO acquisition (uploadedby, name, upload_date) VALUES ($1, $2, NOW()) RETURNING id, name AS NAME, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date");
                 $result = pg_execute($dbconn, "acqAdd", [$userID, $tstampname]);
@@ -87,7 +94,6 @@ else {
                 $returnID = $acqID;
             } 
             else if ($_POST["type"] == "seq") {
-                $folder = "xi/sequenceDB/".$tstampname;
                 $seqAdd = pg_prepare($dbconn, "seqAdd",
             "INSERT INTO sequence_file (uploadedby, name, file_name, file_path, upload_date) VALUES ($1, $2, $3, $4, NOW()) RETURNING id, name AS Name, file_name as file, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date");
                 $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], $folder]);
@@ -109,8 +115,10 @@ else {
         pg_close($dbconn);
     }
     else {
+        $emsg = $allGood ? "" : "Missing required fields for seq/acq insert<br>";
+        $emsg = $filesExist ? $emsg : $emsg."Supposedly uploaded files are not present on server<br>";
         $date = date("d-M-Y H:i:s");
-        echo (json_encode(array ("status"=>"fail", "error"=>"Missing required fields for seq/acq insert<br>".$date)));
+        echo (json_encode(array ("status"=>"fail", "error"=>$emsg.$date)));
     }
 }
 ?>
