@@ -163,6 +163,13 @@ span.removable button {
     display: none;
 }
 
+/*tr.template-download:nth-child(odd), tr.template-upload:nth-child(odd) {*/
+tr.template-download, tr.template-upload {
+    /*background: #f8f8f8;*/
+    border-bottom: 1px solid #eee;
+}
+
+
 #backButton {
     float: right;
 }
