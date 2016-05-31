@@ -61,6 +61,21 @@
     display: none;
 }
 
+
+.fileNameExists {
+    display: none;
+}
+
+div.row > span.fileNameExists {
+    border: none;
+    background: none;
+}
+
+.fileNameExists span.ui-icon {
+    display: inline-block;
+}
+
+
 #parameterForm .paramSetting {
     border: 1px solid #ccc;
     border-bottom: 0;

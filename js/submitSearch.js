@@ -237,7 +237,7 @@ CLMSUI.buildSubmitSearch = function () {
                 
                 mergeInFilenamesToAcquistions (data.previousAcqui, data.filenames);
                 
-                var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded");
+                var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded", "newFileAdded");
 
                 // Make combobox and multiple selection elements
                 // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
@@ -406,6 +406,7 @@ CLMSUI.buildSubmitSearch = function () {
                     sel.select("table")
                         .attr("id", baseId)
                         .attr("class", "previousTable")
+                        .attr("title", psetting.niceLabel)
                     ;
                     var vcWidth = Math.floor (100.0 / Math.max (1, psetting.autoWidths.size()))+"%";
                     
@@ -446,9 +447,9 @@ CLMSUI.buildSubmitSearch = function () {
                         "order": [[ 0, "desc" ]],   // order by first column
                         "columnDefs": [
                             {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
-                        ]
+                        ],
                     });
-    
+                    
 
                     // this stuffs a hidden input field in the main parameter search form
                     d3.select("#parameterForm").append("input")
@@ -554,7 +555,7 @@ CLMSUI.buildSubmitSearch = function () {
                     d3.select("#parameterForm").selectAll(".formPart[required]").each (function() {
                         //console.log ("part", this.id, this.value);
                         // form parts return arrays as strings so need to check for empty array as a string ("[]")
-                        console.log ("req", d3.select(this));
+                        //console.log ("req", d3.select(this));
                         if (this.id && (!this.value || this.value == "[]")) {
                             todoList.add (d3.select(this).attr("data-label") || d3.select(this).attr("name"));
                         }
@@ -668,8 +669,8 @@ CLMSUI.buildSubmitSearch = function () {
                         },
                         "fileuploadadded": function (e, data) {
                             nonzeroes.filesAwaiting = rowCountFunc();
-                            console.log ("table rows awaiting, ", rowCountFunc());
                             enabler();
+                            dispatchObj.newFileAdded (type, data.files[0].name);
                         },
                         "fileuploadprocessfail": function (e, data) {
                              console.log ("file upload process fail", e, data);
@@ -749,6 +750,26 @@ CLMSUI.buildSubmitSearch = function () {
 
                     return this;
                 };
+                
+                // when a new file added for possible upload, check previous tables to see if the same name is there already
+                // which may indicate user can re-use old data
+                dispatchObj.on ("newFileAdded", function (type, fileName) {
+                    var uploadPanel = d3.select("#"+type+"Upload");
+                    var table = d3.select("#"+type+"PreviousTable");
+                    var dataTable = $(table.node()).DataTable();
+                    var curSearch = dataTable.search();
+                    
+                    dataTable.search(fileName);
+                    var hits = dataTable.$('tr', {"filter":"applied"}).length; //dataTable.rows().count();
+                    
+                    if (hits > 0) { // alert user if possible matches in linked previous table
+                        dataTable.draw();
+                        uploadPanel.select(".dynamicFileExistsInfo").text("Filename "+fileName+" is present in "+hits);
+                    } else { // restore old search if no hits
+                        dataTable.search(curSearch).draw();
+                    }
+                    uploadPanel.select(".fileNameExists").style("display", hits ? "inline" : null);
+                });
 
                 // if new row added, then add it to the correct table of previous results
                 dispatchObj.on ("newEntryUploaded", function (type, newRow) {

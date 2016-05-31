@@ -133,8 +133,15 @@
                                     </div>
                                 </div>
                                 <!-- The table listing the files available for upload/download -->
-                                <table role="presentation" class="table table-striped"><tbody class="files"></tbody></table>
+                                <table role="presentation" class="table"><tbody class="files"></tbody></table>
                             </form>
+                            <div class="row">
+                                <span class="ui-state-default fileNameExists">
+                                    <span class="ui-icon ui-icon-info"></span>
+                                    <span class="dynamicFileExistsInfo"></span>
+                                    <span> Previous {%=o.pluralLabel%}. Consider these before uploading.</span>
+                                </span>
+                            </div>
                         </div>
 
                         <h3>Use Previous {%=o.pluralLabel%}</h3>
