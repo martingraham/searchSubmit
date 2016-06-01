@@ -225,9 +225,12 @@ textarea[rows="1"] {
     text-align: center;
 }
 
-.ui-dialog A {
-    color: #44f;
-    font-size: 0.8em;
+.ui-dialog .reportError {
+    font-size: 0.75em;
+}
+
+.ui-dialog .reportError A {
+    color: blue;
 }
 
 .ui-spinner {
