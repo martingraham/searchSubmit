@@ -14,6 +14,11 @@
         return $str;
     }
 
+    function getNiceDate () {
+        $date = date("d-M-Y H:i:s");
+        return $date;
+    }
+
     function getLastSearchID ($dbconn) {
         pg_prepare ($dbconn, "getLastSearchID", "SELECT id FROM search WHERE uploadedby = $1 ORDER BY id DESC LIMIT 1");
         $result = pg_execute($dbconn, "getLastSearchID", array($_SESSION['user_id']));

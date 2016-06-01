@@ -17,7 +17,8 @@
             echo json_encode ($defaults);
         } else {
             pg_close($dbconn);
-            echo json_encode (array("error" => "no_results_returned"));
+            $date = date("d-M-Y H:i:s");
+            echo json_encode (array("error" => array ("No previous searches are available", $date)));
         }
     }
 ?>

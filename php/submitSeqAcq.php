@@ -108,17 +108,18 @@ else {
         } catch (Exception $e) {
              pg_query("ROLLBACK");
              $date = date("d-M-Y H:i:s");
-             echo (json_encode(array ("status"=>"fail", "error"=>"An Error occurred when inserting the new sequences/acquisitions into the database<br>".$date)));
+             echo (json_encode(array ("status"=>"fail", "error"=>array("An Error occurred when inserting the new sequences/acquisitions into the database",$date))));
         }
 
         //close connection
         pg_close($dbconn);
     }
     else {
-        $emsg = $allGood ? "" : "Missing required fields for seq/acq insert<br>";
-        $emsg = $filesExist ? $emsg : $emsg."Supposedly uploaded files are not present on server<br>";
+        $emsg = $allGood ? "" : "Missing required fields for sequence / acquisition insert";
+        $emsg = $filesExist ? $emsg : $emsg."Supposedly uploaded files are not present on the server";
+        $etype = $filesExist ? "Parameter Input Error" : "Upload Error";
         $date = date("d-M-Y H:i:s");
-        echo (json_encode(array ("status"=>"fail", "error"=>$emsg.$date)));
+        echo (json_encode(array ("status"=>"fail", "error"=> array ($emsg, $date), "errorType"=>$etype)));
     }
 }
 ?>
