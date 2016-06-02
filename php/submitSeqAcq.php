@@ -108,6 +108,7 @@ else {
         } catch (Exception $e) {
              pg_query("ROLLBACK");
              $date = date("d-M-Y H:i:s");
+             $_SESSION["uploadTimeStamp"] = null;
              echo (json_encode(array ("status"=>"fail", "error"=>array("An Error occurred when inserting the new sequences/acquisitions into the database",$date))));
         }
 
@@ -115,6 +116,7 @@ else {
         pg_close($dbconn);
     }
     else {
+        $_SESSION["uploadTimeStamp"] = null;
         $emsg = $allGood ? "" : "Missing required fields for sequence / acquisition insert";
         $emsg = $filesExist ? $emsg : $emsg."Supposedly uploaded files are not present on the server";
         $etype = $filesExist ? "Parameter Input Error" : "Upload Error";

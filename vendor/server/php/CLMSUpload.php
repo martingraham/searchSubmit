@@ -10,23 +10,20 @@ session_start();
  * Licensed under the MIT license:
  * http://www.opensource.org/licenses/MIT
  */
-
 if (!$_SESSION['session_name']) {
     header("location:login.html");
 }
  
-include './ChromePhp.php';
 include '../../../php/utils.php';
-//ChromePhp::log(json_encode($_POST));
-//ChromePhp::log(json_encode($_SESSION));
 
 // make a timestamp in the session to use in filepaths and name entries (so db php routines can use it) 
-if (! array_key_exists ("uploadTimeStamp", $_SESSION) || $_SESSION["uploadTimeStamp"] == null) {
+//if (! array_key_exists ("uploadTimeStamp", $_SESSION) || $_SESSION["uploadTimeStamp"] == null) {
+if (! isset($_SESSION["uploadTimeStamp"])) {
     date_default_timezone_set ('Europe/Berlin');
     $date = new DateTime();
     $_SESSION["uploadTimeStamp"] = $date->format("-H_i_s-d_M_Y");
+    error_log (print_r("uploadTimeStamp set to ".$_SESSION["uploadTimeStamp"], TRUE));
 }
-//ChromePhp::log(json_encode($_SESSION["uploadTimeStamp"]));
 
 $baseDir = $_SESSION["baseDir"];
 
@@ -46,15 +43,10 @@ if (array_key_exists ("newacqID", $_POST)) {
 else if (array_key_exists ("newseqID", $_POST)) {
     $dirName = $_POST["newseqID"].$_SESSION["uploadTimeStamp"];
     $dirName = normalizeString ($dirName);
-    //ChromePhp::log("why seq fail");
-    //ChromePhp::log($dirName);
     $folder = $baseDir."xi/sequenceDB/".$dirName."/";
-    //ChromePhp::log($folder);
 }
 
-//ChromePhp::log($folder);
 $options = array('upload_dir' => $folder, 'upload_url' => $folder);
-//ChromePhp::log($options);
 
 error_reporting(E_ALL | E_STRICT);
 require('UploadHandler.php');
@@ -67,10 +59,10 @@ try {
         foreach ($upFiles as $upFile) {
             if (array_key_exists ("url", $upFile)) {
                 /*
-                error_log (print_R($upFile->url, TRUE));
+                error_log (print_r($upFile->url, TRUE));
                 $fperms = fileperms ($upFile->url);
                 $octal = substr(sprintf('%o', $fperms), -4);
-                error_log (print_R($octal, TRUE));
+                error_log (print_r($octal, TRUE));
                 $stat = stat ($upFile->url);
                 */
                 $chsucc = chmod ($upFile->url, 0766);
@@ -78,16 +70,16 @@ try {
                 error_log ("chmodok to 0766 ".$chsucc);
                 $fperms = fileperms ($upFile->url);
                 $octal = substr(sprintf('%o', $fperms), -4);
-                error_log (print_R($octal, TRUE));
+                error_log (print_r($octal, TRUE));
                 $stat = stat ($upFile->url);
-                error_log (print_R($stat, TRUE));
+                error_log (print_r($stat, TRUE));
                 */
             }
         }
     }
 }
 catch (Exception $e) {
-    ChromePhp::log(json_encode($e));
+    error_log (print_r($e, TRUE));
 }
 
 ?>
