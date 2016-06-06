@@ -78,7 +78,10 @@
             {% for (var i=0, file; file=o.files[i]; i++) { %}
             <tr class="template-download fade">
                 <td>
-                    <p class="name">{%=file.name%}</p>
+                    {% if (!file.error) { %}
+                        <span class="label">Uploaded </span>
+                    {% } %}
+                    <span class="name">{%=file.name%}</p>
                     {% if (file.error) { %}
                     <div><span class="label label-important">Error</span> {%=file.error%}</div>
                     {% } %}
@@ -114,11 +117,11 @@
                                         <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="{%=o.singleLabel%} Name Required" size="30" style="width:33%"></input>
                                         <!-- The fileinput-button span is used to style the file input field as button -->
                                         <span class="fileinput-button">
-                                            <span>Add files...</span>
+                                            <span>Add Files</span>
                                             <input type="file" name="files[]" accept="{%=o.fileTypes%}" multiple>
                                         </span>
-                                        <button type="submit" class="start">Start upload</button>
-                                        <button type="reset" class="cancel">Remove all files</button>
+                                        <button type="submit" class="start">Start Upload</button>
+                                        <button type="reset" class="cancel">Remove All Files</button>
                                         <!-- <button type="button" class="delete">Delete</button> -->
                                         <!-- <input type="checkbox" class="toggle"> -->
                                         <!-- The global file processing state -->

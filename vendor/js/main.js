@@ -29,6 +29,7 @@ submitter.upload = function (myOptions) {
         var r = new RegExp ("(\.|\/)("+opts.fileTypes+")$");
         $(this).fileupload({
             dropZone: $(this),
+            //sequentialUploads: true,
             //acceptFileTypes: /(\.|\/)(zip)$/i,
             processQueue: [{ action: 'validate', acceptFileTypes: r}]
         });

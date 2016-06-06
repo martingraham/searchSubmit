@@ -184,6 +184,10 @@ tr.template-download, tr.template-upload {
     border-bottom: 1px solid #eee;
 }
 
+tr.template-download:nth-child(odd), tr.template-upload:nth-child(odd) {
+    background: #f8f8ff;
+}
+
 
 #backButton {
     float: right;

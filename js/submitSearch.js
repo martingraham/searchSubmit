@@ -697,7 +697,10 @@ CLMSUI.buildSubmitSearch = function () {
                             console.log ("file upload failed", e, data);
                             if (data.errorThrown === "abort") {
                                 nonzeroes.filesAwaiting = rowCountFunc();
-                                enabler();
+                                if (!nonzeroes.filesAwaiting) {
+                                    enabler();
+                                    dispatchObj.newFileAdded (type, "");
+                                }
                             }
                             uploadSuccess = false;
                         },
@@ -707,6 +710,7 @@ CLMSUI.buildSubmitSearch = function () {
                         },
                         "fileuploadstopped": function (e, data) {
                             console.log ("file upload stopped", e, data, uploadSuccess);
+                            dispatchObj.newFileAdded (type, "");
                             if (uploadSuccess) {
                                 var formData = {
                                     name: d3.select(textinputid).property("value"),
@@ -758,17 +762,20 @@ CLMSUI.buildSubmitSearch = function () {
                     var uploadPanel = d3.select("#"+type+"Upload");
                     var table = d3.select("#"+type+"PreviousTable");
                     var dataTable = $(table.node()).DataTable();
-                    var curSearch = dataTable.search();
-                    
+                    var oldSearch = dataTable.search();
+
                     dataTable.search(fileName);
-                    var hits = dataTable.$('tr', {"filter":"applied"}).length; //dataTable.rows().count();
+                    var hits = 0;
                     
-                    if (hits > 0) { // alert user if possible matches in linked previous table
-                        dataTable.draw();
-                        uploadPanel.select(".dynamicFileExistsInfo").text("Filename "+fileName+" is present in "+hits);
-                    } else { // restore old search if no hits
-                        dataTable.search(curSearch).draw();
-                    }
+                    if (fileName) {
+                        hits = dataTable.$('tr', {"filter":"applied"}).length; //dataTable.rows().count();
+                        if (hits > 0) { // alert user if possible matches in linked previous table
+                            uploadPanel.select(".dynamicFileExistsInfo").text("Filename "+fileName+" is present in "+hits);
+                        } else { // restore old search if no hits
+                            dataTable.search(oldSearch);
+                        }
+                    } 
+                    dataTable.draw();
                     uploadPanel.select(".fileNameExists").style("display", hits ? "inline" : null);
                 });
 
