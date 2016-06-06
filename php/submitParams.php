@@ -77,10 +77,9 @@ else {
 
         // make timestamps to use in name fields and in timestamp fields (different format required)
         date_default_timezone_set ('Europe/Berlin');
-        $date = new DateTime();
         //$SQLValidTimeStamp = $date->format("Y-m-d H:i:s");
         //ChromePhp::log(json_encode($SQLValidTimeStamp));
-        $timeStamp = $date->format("H_i_s-d_M_Y");
+        $timeStamp = (new DateTime())->format("H_i_s-d_M_Y");
 
         $preparedStatementTexts = array (
             "paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, customsettings, top_alpha_matches, template, synthetic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, '10', FALSE, FALSE) RETURNING id",

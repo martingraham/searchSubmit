@@ -48,12 +48,13 @@ else {
     }
     
     $filesExist = true;
+    $uploadTSKey = $_POST["type"]."UploadTimeStamp";
     if ($allGood) {
         // test if files are actually present, and these variables are available outside this bracket scope
         // http://php.net/manual/en/language.variables.scope.php#105925
         $filenames = $_POST["filenames"];
         $saneName = normalizeString ($_POST["name"]);   // sanitise user-supplied acq/seq name, same as in clmsupload.php
-        $tstampname = $saneName.$_SESSION["uploadTimeStamp"];
+        $tstampname = $saneName.$_SESSION[$uploadTSKey];
         $baseDir = $_SESSION["baseDir"];
         $folder = ($_POST["type"] == "acq") ? "xi/users/".$username."/".$tstampname : "xi/sequenceDB/".$tstampname;
         
@@ -103,12 +104,13 @@ else {
             } 
 
              pg_query("COMMIT");
-             $_SESSION["uploadTimeStamp"] = null;
+             $_SESSION[$uploadTSKey] = null;
+             //error_log(print_r ($_SESSION, true));
              echo (json_encode(array ("status"=>"success", "newRow"=>$returnRow)));
         } catch (Exception $e) {
              pg_query("ROLLBACK");
              $date = date("d-M-Y H:i:s");
-             $_SESSION["uploadTimeStamp"] = null;
+             $_SESSION[$uploadTSKey] = null;
              echo (json_encode(array ("status"=>"fail", "error"=>array("An Error occurred when inserting the new sequences/acquisitions into the database",$date))));
         }
 
@@ -116,7 +118,7 @@ else {
         pg_close($dbconn);
     }
     else {
-        $_SESSION["uploadTimeStamp"] = null;
+        $_SESSION[$uploadTSKey] = null;
         $emsg = $allGood ? "" : "Missing required fields for sequence / acquisition insert";
         $emsg = $filesExist ? $emsg : $emsg."Supposedly uploaded files are not present on the server";
         $etype = $filesExist ? "Parameter Input Error" : "Upload Error";
