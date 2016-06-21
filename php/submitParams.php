@@ -5,8 +5,6 @@ if (empty ($_SESSION['session_name'])) {
     echo (json_encode (array ("redirect" => "./login.html")));
 }
 else {
-    //include '../vendor/server/php/ChromePhp.php';
-
     $userID = $_SESSION['user_id'];
     $username = $_SESSION['session_name'];
 
@@ -42,7 +40,6 @@ else {
     foreach ($allUserFieldsMap as $key => $value) {
         // if no post value for expected variable give it a blank string
         if (!isset($_POST[$key])) {
-            //ChromePhp::log(json_encode("missing ".$key));
             $_POST[$key] = array_key_exists ($key, $paramLinkTableMap) ? [] : null;
             if ($value["required"]) {
                 $allGood = false;
@@ -61,7 +58,6 @@ else {
                 }
                 foreach ($arrval as $index => $val) {
                     $valid = filter_var ($val, $value["validate"]);
-                    //ChromePhp::log(json_encode(array($val, $valid)));
                     if ($valid === false) {
                         $allGood = false;
                     }
@@ -71,14 +67,12 @@ else {
     }
 
 
-    //ChromePhp::log(json_encode($allGood));
-
+    //if (false) {  // for error testing
     if ($allGood) {
 
         // make timestamps to use in name fields and in timestamp fields (different format required)
         date_default_timezone_set ('Europe/Berlin');
         //$SQLValidTimeStamp = $date->format("Y-m-d H:i:s");
-        //ChromePhp::log(json_encode($SQLValidTimeStamp));
         $timeStamp = (new DateTime())->format("H_i_s-d_M_Y");
 
         $preparedStatementTexts = array (
@@ -111,13 +105,11 @@ else {
 
                 // Get names of acquisitions (via ids) to make parameter name
                 $acqIds = "{".join(',',$_POST["acqPreviousTable"])."}"; // re-use this later to get run data too
-                //ChromePhp::log(json_encode($acqIds));
                 $getAcqNames = pg_prepare($dbconn, "getAcqNames", $preparedStatementTexts["acqPreviousTable"]);
                 $result = pg_execute($dbconn, "getAcqNames", array($acqIds));
                 $acqNameRows = pg_fetch_all ($result); // get associated acquisition names to make name for parameter
                 $allAcqNames = array_map(function($row) { return $row["name"]; }, $acqNameRows);
                 $paramName = join('-',$allAcqNames)."-".$timeStamp;
-                //ChromePhp::log(json_encode($paramName));
 
                 // Add parameter_set values to db
                 $result = pg_prepare($dbconn, "paramsAdd", $preparedStatementTexts["paramSet"]);
@@ -142,7 +134,6 @@ else {
                                 $arr[] = $dval; // append $dval to $arr
                             }
                         } 
-                        //ChromePhp::log(json_encode($arr));
                         $result = pg_execute($dbconn, $key, $arr);
                     }
                 }
@@ -151,7 +142,6 @@ else {
                 $result = pg_execute ($dbconn, "getUserGroups", [$userID]);
                 $userGroupIdRow = pg_fetch_assoc ($result); // get first user group for this user
                 $userGroupId = $userGroupIdRow["group_id"];
-                //ChromePhp::log(json_encode($userGroupId));
 
                 // Add search to db
                 // Make search name timestamped list of acquisitions if not explicitly provided
@@ -171,7 +161,6 @@ else {
                 $getRuns = pg_prepare ($dbconn, "getRuns", $preparedStatementTexts["getRuns"]);
                 $result = pg_execute ($dbconn, "getRuns", [$acqIds]);
                 $runRows = pg_fetch_all ($result);
-                //ChromePhp::log(json_encode($runRows));
                 // Add search-to-acquisition-and-run link table rows
                 $searchAcqLink = pg_prepare ($dbconn, "searchAcqLink", $preparedStatementTexts["newSearchAcqLink"]);
                 foreach ($runRows as $key => $run) {
@@ -188,7 +177,7 @@ else {
         } catch (Exception $e) {
             pg_query("ROLLBACK");
             $date = date("d-M-Y H:i:s");
-            echo (json_encode(array ("status"=>"fail", "error"=> array("An Error occurred when inserting the submitted search into the database", $date))));
+            echo (json_encode(array ("status"=>"fail", "error"=> "An Error occurred when trying to submit the search to the database<br>".$date)));
         }
 
         //close connection
@@ -198,7 +187,7 @@ else {
     else {
         $date = date("d-M-Y H:i:s");
         $etype = "Parameter Input Error";
-        echo (json_encode(array ("status"=>"fail", "error"=> array("Missing or invalid fields were found in the submitted search", $date), "errorType"=>$etype)));
+        echo (json_encode(array ("status"=>"fail", "error"=> "Missing or invalid fields were found in the submitted search<br>".$date, "errorType"=>$etype)));
     }
 }
 

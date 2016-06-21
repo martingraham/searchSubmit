@@ -65,7 +65,7 @@ else {
     }
     catch (Exception $e) {
         $date = date("d-M-Y H:i:s");
-        echo (json_encode (array ("error" => array ("Error when querying database for default values", $date))));
+        echo (json_encode (array ("error" => "Error when querying database for default values<br>".$date)));
     }
 }
 

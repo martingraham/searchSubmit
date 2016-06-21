@@ -21,7 +21,6 @@ else {
 
     foreach ($paramFieldNameMap as $key => $value) {
         $arrval = $_POST[$key];
-        //ChromePhp::log(json_encode([$key, $_POST[$key]]));
         $count = count($arrval);
         if (($count == 0 || ($count == 1 && strlen($arrval[0]) == 0)) && $value["required"] == true) {
             $allGood = false;
@@ -33,7 +32,6 @@ else {
             }
             foreach ($arrval as $index => $val) {
                 $valid = filter_var ($val, $value["validate"]);
-                //ChromePhp::log($valid);
                 if ($valid === false) {
                     $allGood = false;
                 }
@@ -63,6 +61,7 @@ else {
     }
 
 
+    //if (false) {    // for error testing
     if ($allGood && $filesExist) {
         //open connection
         $dbconn = pg_connect($connectionString)
@@ -82,12 +81,10 @@ else {
                     $returnRow["User"] = $username; // Add the username (will be username as this user added the row)
                     $returnRow["files"] = $filenames;
                     $acqID = $returnRow["id"];
-                    //ChromePhp::log(json_encode($returnRow));
 
                      $runAdd = pg_prepare($dbconn, "runAdd",
                 "INSERT INTO run (acq_id, run_id, name, file_path) VALUES ($1, $2, $3, $4)");
                     foreach ($filenames as $index => $val) {
-                        //ChromePhp::log(json_encode([$index+1, $val]));
                         $result = pg_execute($dbconn, "runAdd", [$acqID, $index+1, $val, $folder."/".$val]);
                     }
 
@@ -99,7 +96,6 @@ else {
                     $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], $folder]);
                     $returnRow = pg_fetch_assoc ($result);  // get the newly added row, need it to return to client ui
                     $returnRow["User"] = $username; // Add the username (will be username as this user added the row)
-                    //ChromePhp::log(json_encode($returnRow));
                 } 
 
                  pg_query("COMMIT");
@@ -114,7 +110,7 @@ else {
              pg_query("ROLLBACK");
              $date = date("d-M-Y H:i:s");
              $_SESSION[$uploadTSKey] = null;
-             echo (json_encode(array ("status"=>"fail", "error"=>array("An Error occurred when inserting the new sequences/acquisitions into the database",$date))));
+             echo (json_encode(array ("status"=>"fail", "error"=>"An Error occurred when inserting the new sequences/acquisitions into the database<br>".$date)));
         }
 
         //close connection
@@ -122,11 +118,11 @@ else {
     }
     else {
         $_SESSION[$uploadTSKey] = null;
-        $emsg = $allGood ? "" : "Missing required fields for sequence / acquisition insert";
-        $emsg = $filesExist ? $emsg : $emsg."Supposedly uploaded files are not present on the server";
+        $emsg = $allGood ? "" : "Missing required fields for sequence / acquisition insert<br>";
+        $emsg = $filesExist ? $emsg : $emsg."Supposedly uploaded files are not present on the server<br>";
         $etype = $filesExist ? "Parameter Input Error" : "Upload Error";
         $date = date("d-M-Y H:i:s");
-        echo (json_encode(array ("status"=>"fail", "error"=> array ($emsg, $date), "errorType"=>$etype)));
+        echo (json_encode(array ("status"=>"fail", "error"=> $emsg.$date, "errorType"=>$etype)));
     }
 }
 ?>
