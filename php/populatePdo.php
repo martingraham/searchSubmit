@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) {
+if (empty ($_SESSION['session_name'])) {
     header("location:login.html");
 }
 

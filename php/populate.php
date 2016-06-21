@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) {
+if (empty ($_SESSION['session_name'])) {
     // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
     echo (json_encode (array ("redirect" => "./login.html")));
 }
@@ -38,11 +38,19 @@ else {
 
         // Store this server side 'cos we don't need it client side
         $_SESSION["baseDir"] = $baseDir;
-
+              
+        // Get user rights from database
+        $userRights = getUserRights ($dbconn, $_SESSION["user_id"]);
+        $_SESSION["canAddNewSearch"] = $userRights["canAddNewSearch"];
+        
         //close connection
         pg_close($dbconn);
-
-        echo json_encode ($possibleValues);
+        
+        if (!$userRights["canAddNewSearch"]) {
+            echo json_encode (array ("redirect" => 'login.html'));
+        } else {
+            echo json_encode ($possibleValues);
+        }
     }
     catch (Exception $e) {
         $date = date("d-M-Y H:i:s");
