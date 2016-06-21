@@ -72,8 +72,7 @@ else {
         try {
             pg_query("BEGIN") or die("Could not start transaction\n");
             
-            $userRights = getUserRights ($dbconn, $userID);
-            if ($userRights["canAddNewSearch"]) {
+            if ($_SESSION["canAddNewSearch"]) {
 
                 if ($_POST["type"] == "acq") {
                     $acqAdd = pg_prepare($dbconn, "acqAdd",
