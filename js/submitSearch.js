@@ -336,14 +336,46 @@ CLMSUI.buildSubmitSearch = function () {
                             d.isSelected = !!!d.isSelected;
                             prevTableClickFuncs[baseId]();
                         })
-                        .selectAll("input[type=checkbox]")
-                            .on ("click", function(d) {
-                                d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
-                                d.isSelected = !!!d.isSelected;
-                                prevTableClickFuncs[baseId]();
-                            }
-                        )
+                    ;
+                    rowSel.selectAll("input[type=checkbox]")
+                        .on ("click", function(d) {
+                            d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
+                            d.isSelected = !!!d.isSelected;
+                            prevTableClickFuncs[baseId]();
+                        })
                     ; 
+                    rowSel.selectAll("button.download")
+                        .on ("click", function(d) {
+                            d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
+                            var fdata = {type: d.files ? "acq" : "seq", datum: d};
+                            
+                            $.ajax ({
+                                type: "POST",
+                                url: "./php/getFileDetails.php",
+                                data: fdata,
+                                dataType: "json",
+                                encode: true,
+                                success: function (response, textStatus, jqXhr) {
+                                    if (response.error) {
+                                        CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
+                                    } else if (response) {
+                                        response.forEach (function (fileData, i) {
+                                            var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
+                                            if (i === 0) {
+                                                window.location = url;
+                                            } else {
+                                                window.open(url, "_blank");
+                                            }
+                                        });
+                                    }
+                                },
+                                error: function () {
+                                    CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "An Error occurred when trying to access these files<br>"+errorDateFormat (new Date()), "File Error");
+                                },
+                            });
+                            
+                        })
+                    ;
                 };
                 
                 var addToolTipListeners = function (cellSel) {
@@ -369,6 +401,7 @@ CLMSUI.buildSubmitSearch = function () {
                 // Add header row to table using an array of column names. Autowidths is d3 set containing which column names are auto-sized.
                 var setHeaderRow = function (tableSel, columnNames, autoWidths) {
                     var hrow = tableSel.select("thead tr");
+                    columnNames.push("download");
                     columnNames.push("selected");
                     var vcWidth = Math.floor (100.0 / Math.max (1, autoWidths.size()))+"%";
                     
@@ -426,10 +459,16 @@ CLMSUI.buildSubmitSearch = function () {
                         .call (addToolTipListeners)
                     ;
 
-                    newRows.append ("td").append("input")
-                        .attr ("type", "checkbox")
+                    newRows.append("td").append("button").attr("class", "download")
+                        // hide button if no files (shouldn't happen but it can)
+                        .style("display", function(d) { return !d.files || d.files.length > 0 ? null : "none"; })
                     ;
-
+                    newRows.append("td").append("input").attr("type", "checkbox");
+                    $("#"+baseId+" button").button({
+                        icons: { primary: "ui-icon-arrowthickstop-1-s"},
+                        text: false,
+                    });
+                    
                     makeDataTable (baseId); // add the DataTable bells n whistles to the DOM table
                     
                     // this stuffs a hidden input field in the main parameter search form
@@ -773,6 +812,7 @@ CLMSUI.buildSubmitSearch = function () {
                         makeDataTable (tableId);
                         dataTable = $("#"+tableId).DataTable();
                     }
+
                     newRow.selected = "<input type='checkbox'>";    // add a checkbox as a html string for display in the table
                     var newRowNode = dataTable.row
                         .add(d3.values(newRow)) // push the newrow as new table row data
