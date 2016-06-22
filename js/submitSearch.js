@@ -10,7 +10,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    //console.disableLogging();
+    console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
 
@@ -365,6 +365,34 @@ CLMSUI.buildSubmitSearch = function () {
                     ;
                 };
                 
+                // Add header row to table using an array of column names. Autowidths is d3 set containing which column names are auto-sized.
+                var setHeaderRow = function (tableSel, columnNames, autoWidths) {
+                    var hrow = tableSel.select("thead tr");
+                    columnNames.push("selected");
+                    var vcWidth = Math.floor (100.0 / Math.max (1, autoWidths.size()))+"%";
+                    
+                    hrow.selectAll("th").remove();
+                    hrow.selectAll("th").data(columnNames).enter()
+                        .append("th")
+                        .text(function(d) { return d; })
+                        .filter (function(d,i) { return autoWidths.has(d); })
+                        .classed ("varWidthCell", true)
+                        .style ("width", vcWidth)
+                    ;
+                };
+                
+                var makeDataTable = function (tableId) {
+                    return $("#"+tableId).dataTable ({
+                        "paging": true,
+                        "jQueryUI": true,
+                        "ordering": true,
+                        "order": [[ 0, "desc" ]],   // order by first column
+                        "columnDefs": [
+                            {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
+                        ],
+                    });
+                };
+                
                 // Settings for tables of previous acquisitions / sequences
                 var previousSettings = {
                     acq: {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"])},
@@ -379,20 +407,10 @@ CLMSUI.buildSubmitSearch = function () {
                         .attr("class", "previousTable")
                         .attr("title", psetting.niceLabel)
                     ;
+                    
+                    setHeaderRow (sel, d3.keys(psetting.data[0]), psetting.autoWidths);
+                    
                     var vcWidth = Math.floor (100.0 / Math.max (1, psetting.autoWidths.size()))+"%";
-                    
-                    var hrow = sel.select("tr");
-                    var headers = d3.keys(psetting.data[0]);
-                    headers.push("selected");
-                    hrow.selectAll("th").data(headers).enter()
-                        .append("th")
-                        .text(function(d) { return d; })
-                        .filter (function(d,i) { return psetting.autoWidths.has(d); })
-                        .classed ("varWidthCell", true)
-                        .style ("width", vcWidth)
-                    ;
-                    
-
                     var tbody = sel.select("tbody");
                     var rowJoin = tbody.selectAll("tr").data(psetting.data, function(d) { return d.name; });
                     var newRows = rowJoin.enter().append("tr");
@@ -411,17 +429,8 @@ CLMSUI.buildSubmitSearch = function () {
                         .attr ("type", "checkbox")
                     ;
 
-                    var table = $("#"+baseId).dataTable ({
-                        "paging": true,
-                        "jQueryUI": true,
-                        "ordering": true,
-                        "order": [[ 0, "desc" ]],   // order by first column
-                        "columnDefs": [
-                            {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
-                        ],
-                    });
+                    makeDataTable (baseId); // add the DataTable bells n whistles to the DOM table
                     
-
                     // this stuffs a hidden input field in the main parameter search form
                     d3.select("#parameterForm").append("input")
                         .attr ("class", "formPart")
@@ -474,6 +483,7 @@ CLMSUI.buildSubmitSearch = function () {
 
 
                 // Make checkbox/radio choice controls - not currently used
+                /*
                 var buttonGroups = [
                     //{domid: "#paramIons", choices: data.ions, type: "radio", nameFunc: function(d) { return d.name; },},
                     //{domid: "#paramLosses", choices: data.losses, type: "radio", nameFunc: function(d) { return d.name; },},
@@ -497,7 +507,7 @@ CLMSUI.buildSubmitSearch = function () {
 
                     $(buttonGroup.domid).buttonset();
                 });
-
+                */
 
 
                 // Sections to control availability of main submit button and explain why disabled if so
@@ -753,6 +763,15 @@ CLMSUI.buildSubmitSearch = function () {
                 dispatchObj.on ("newEntryUploaded", function (type, newRow) {
                     var tableId = type+"PreviousTable";
                     var dataTable = $("#"+tableId).DataTable();
+                    var autoWidths =  previousSettings[type].autoWidths;
+
+                    // With a hitherto empty table, it's easier to remake it than try and add in new columns
+                    if (!dataTable.data().count()) {
+                        dataTable.destroy();
+                        setHeaderRow (d3.select("#"+tableId), d3.keys(newRow), autoWidths);
+                        makeDataTable (tableId);
+                        dataTable = $("#"+tableId).DataTable();
+                    }
                     newRow.selected = "<input type='checkbox'>";    // add a checkbox as a html string for display in the table
                     var newRowNode = dataTable.row
                         .add(d3.values(newRow)) // push the newrow as new table row data
@@ -763,7 +782,7 @@ CLMSUI.buildSubmitSearch = function () {
                         .datum(newRow)  // set the row data on the new tr dom node as a d3 datum
                         .call (addRowListeners, tableId)
                         .selectAll("td").data(function(d) { return d3.entries(d); })    // Set individual data on cells from the row data
-                            .filter (function(d) { return previousSettings[type].autoWidths.has(d.key); })  // filter using settings for accordions
+                            .filter (function(d) { return autoWidths.has(d.key); })  // filter using settings for accordions
                             .call (addToolTipListeners, tableId)
                     ;   
                     newRow.isSelected = true;   // Set as selected in the datum, this will be pushed through to the checkbox and the selected area in the following code

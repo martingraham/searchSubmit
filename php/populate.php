@@ -49,7 +49,7 @@ else {
                 $result = pg_execute ($dbconn, $key, $params);
                 $possibleValues[$key] = resultsAsArray($result);
             }
-
+            
             // Get basedir for file uploads
             $query = "SELECT setting FROM base_setting WHERE name='base_directory_path';";
             $baseDir = pg_fetch_row(pg_query($query))[0];
