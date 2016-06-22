@@ -1,3 +1,4 @@
+/*jslint maxerr: 150*/
 var CLMSUI = CLMSUI || {};
 
 CLMSUI.buildSubmitSearch = function () {
@@ -57,7 +58,7 @@ CLMSUI.buildSubmitSearch = function () {
                     placeholder: settings.placeholderText
                 })
                 .classed ("ui-widget ui-state-default ui-corner-all", true)
-                .on ("keypress", function(d) {
+                .on ("keypress", function() {
                     CLMSUI.buildSubmitSearch.userAltered[tid] = true;
                 }) 
             ;
@@ -74,7 +75,7 @@ CLMSUI.buildSubmitSearch = function () {
             var elem = d3.select(settings.domid);
             elem.append("p").text(settings.niceLabel);
             var iid = settings.domid.slice(1)+"Value";
-            var inputElem = elem.append("input")
+            elem.append("input")
                 .attr ("type", "number")
                 .attr ("min", settings.min)
                 .attr ("step", settings.step)
@@ -88,7 +89,7 @@ CLMSUI.buildSubmitSearch = function () {
                 .classed("formPart", true)
             ;
 
-            var spinner = $("#"+iid).spinner({
+            $("#"+iid).spinner({
                 min: settings.min,
                 max: settings.max,
                 step: 1,
@@ -127,8 +128,8 @@ CLMSUI.buildSubmitSearch = function () {
             {id: "#seqAccordion", scrollTo: false}, 
             {id: "#paramCustom", scrollTo: true}, 
         ];
-        var scrollVisible = [false, false, true];
-        accordionSettings.forEach (function (accordionSet,i) {
+        //var scrollVisible = [false, false, true];
+        accordionSettings.forEach (function (accordionSet) {
             $(accordionSet.id).accordion ({
                 collapsible: true,
                 active: false,
@@ -232,7 +233,7 @@ CLMSUI.buildSubmitSearch = function () {
                         .classed("formPart", true)
                         .property("multiple", poplist.multiple)
                         .property("required", poplist.required)
-                        .each (function(d) {
+                        .each (function() {
                             if (poplist.required) {
                                 d3.select(this).attr("required", poplist.required);
                             }
@@ -257,7 +258,7 @@ CLMSUI.buildSubmitSearch = function () {
                         multiple: true, // this is to show multiple options per row, not to do with multiple selections (that's single)
                         //width: 450,
                         multipleWidth: 200,
-                        onClick: function (view) {
+                        onClick: function () {
                             dispatchObj.formInputChanged();   
                         },
                     });
@@ -298,7 +299,7 @@ CLMSUI.buildSubmitSearch = function () {
                 var prevTableClickFuncs = {}; // so we can keep these for later
                 // Routine for sorting datatable column of checkboxes via dom element values
                 $.fn.dataTable.ext.order['dom-checkbox'] = function ( settings, col ) {
-                    return this.api().column(col, {order:'index'}).nodes().map (function (td, i) {
+                    return this.api().column(col, {order:'index'}).nodes().map (function (td) {
                         return $('input', td).prop('checked') ? '1' : '0';
                     });
                 };
@@ -313,7 +314,7 @@ CLMSUI.buildSubmitSearch = function () {
                         .text(function(d) { return d.name+ " (" + d.id + ")"; })
                             .append ("button")
                             .text (function(d) { return "De-select "+d.id; })
-                            .on ("click", function(d,i) {
+                            .on ("click", function(d) {
                                 d.isSelected = false;
                                 prevTableClickFuncs[baseId]();
                             })
@@ -375,7 +376,7 @@ CLMSUI.buildSubmitSearch = function () {
                     hrow.selectAll("th").data(columnNames).enter()
                         .append("th")
                         .text(function(d) { return d; })
-                        .filter (function(d,i) { return autoWidths.has(d); })
+                        .filter (function(d) { return autoWidths.has(d); })
                         .classed ("varWidthCell", true)
                         .style ("width", vcWidth)
                     ;
@@ -440,7 +441,7 @@ CLMSUI.buildSubmitSearch = function () {
                         .attr ("data-label", psetting.niceLabel)   
                         .attr ("value", "")
                         .property ("required", psetting.required)
-                        .each (function(d) {
+                        .each (function() {
                             if (psetting.required) {
                                 d3.select(this).attr("required", psetting.required);
                             }
@@ -615,7 +616,7 @@ CLMSUI.buildSubmitSearch = function () {
 
                 // initialize blueimp file uploader bits
                 console.log ("submitter", submitter);
-                uploadOptions = {
+                var uploadOptions = {
                     "seqfileupload": {"fileTypes":"fasta|txt"},
                     "acqfileupload": {"fileTypes":"mgf|msm|apl|zip"}
                 };
@@ -635,7 +636,7 @@ CLMSUI.buildSubmitSearch = function () {
                         buttons.button ("option", "disabled", submitBlocked);
 
                         var resetBlocked = (nonzeroes.filesAwaiting === 0);
-                        var buttons = $(formid+" button[type='reset']");
+                        buttons = $(formid+" button[type='reset']");
                         buttons.button ("option", "disabled", resetBlocked); 
                     };
                     this.buttonEnabler = enabler;
