@@ -696,7 +696,8 @@ CLMSUI.buildSubmitSearch = function () {
                         "fileuploadprocessfail": function (e, data) {
                              console.log ("file upload process fail", e, data);
                              if (data.files && data.files[0]) {
-                                data.files[0].error = "A file upload process failed<br>"+errorDateFormat (new Date());
+                                //data.files[0].error = "A file upload process failed<br>"+errorDateFormat (new Date());
+                                data.files[0].error = (data.files[0].error || "") + "<br>" +errorDateFormat (new Date());
                              }
                              CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.files[0].error, "File Upload Error");
                              uploadSuccess = false;
