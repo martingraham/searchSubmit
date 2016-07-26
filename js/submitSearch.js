@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    //console.disableLogging();
+    console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
 
@@ -347,33 +347,35 @@ CLMSUI.buildSubmitSearch = function () {
                     rowSel.selectAll("button.download")
                         .on ("click", function(d) {
                             d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
-                            var fdata = {type: d.files ? "acq" : "seq", datum: d};
-                            
-                            $.ajax ({
-                                type: "POST",
-                                url: "./php/getFileDetails.php",
-                                data: fdata,
-                                dataType: "json",
-                                encode: true,
-                                success: function (response, textStatus, jqXhr) {
-                                    if (response.error) {
-                                        CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
-                                    } else if (response) {
-                                        response.forEach (function (fileData, i) {
-                                            var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
-                                            if (i === 0) {
-                                                window.location = url;
-                                            } else {
-                                                window.open(url, "_blank");
-                                            }
-                                        });
-                                    }
-                                },
-                                error: function () {
-                                    CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "An Error occurred when trying to access these files<br>"+errorDateFormat (new Date()), "File Error");
-                                },
-                            });
-                            
+                            console.log ("button pressed", d);
+                            if (d) {
+                                var fdata = {type: d.files ? "acq" : "seq", datum: d};
+
+                                $.ajax ({
+                                    type: "POST",
+                                    url: "./php/getFileDetails.php",
+                                    data: fdata,
+                                    dataType: "json",
+                                    encode: true,
+                                    success: function (response, textStatus, jqXhr) {
+                                        if (response.error) {
+                                            CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
+                                        } else if (response) {
+                                            response.forEach (function (fileData, i) {
+                                                var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
+                                                if (i === 0) {
+                                                    window.location = url;
+                                                } else {
+                                                    window.open(url, "_blank");
+                                                }
+                                            });
+                                        }
+                                    },
+                                    error: function () {
+                                        CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "An Error occurred when trying to access these files<br>"+errorDateFormat (new Date()), "File Error");
+                                    },
+                                });
+                            }
                         })
                     ;
                 };
@@ -427,6 +429,13 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                 };
                 
+                var makeJQUIButtons = function (id) {
+                     $("#"+id+" button").button({
+                        icons: { primary: "ui-icon-arrowthickstop-1-s"},
+                        text: false,
+                    });
+                }
+                
                 // Settings for tables of previous acquisitions / sequences
                 var previousSettings = {
                     acq: {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"])},
@@ -464,11 +473,8 @@ CLMSUI.buildSubmitSearch = function () {
                         .style("display", function(d) { return !d.files || d.files.length > 0 ? null : "none"; })
                     ;
                     newRows.append("td").append("input").attr("type", "checkbox");
-                    $("#"+baseId+" button").button({
-                        icons: { primary: "ui-icon-arrowthickstop-1-s"},
-                        text: false,
-                    });
                     
+                    makeJQUIButtons (baseId); 
                     makeDataTable (baseId); // add the DataTable bells n whistles to the DOM table
                     
                     // this stuffs a hidden input field in the main parameter search form
@@ -707,6 +713,7 @@ CLMSUI.buildSubmitSearch = function () {
                             if (data.errorThrown && data.errorThrown.name == "SyntaxError") {
                                 // This usually means a html-encoded php error that jquery has tried to json decode
                                 if (data.files && data.files[0]) {
+                                    console.log ("ddd", data.files[0].error);
                                     data.files[0].error = "A file upload failed<br>"+errorDateFormat (new Date());
                                 }
                                 //console.log ("ferror", data, $(data.jqXHR.responseText).text(), e);
@@ -756,6 +763,7 @@ CLMSUI.buildSubmitSearch = function () {
                                             if (newRow && newRow.files) {
                                                 newRow["#"] = newRow.files.length;
                                             }
+                                            console.log ("newRow", newRow);
                                             dispatchObj.newEntryUploaded (type, newRow);    // alert new row has been added to db
                                         }
                                     },
@@ -814,19 +822,42 @@ CLMSUI.buildSubmitSearch = function () {
                         dataTable = $("#"+tableId).DataTable();
                     }
 
+                    newRow.download = "<button class='download'/>";
                     newRow.selected = "<input type='checkbox'>";    // add a checkbox as a html string for display in the table
+                    
+                    // keep field order same as existing table header if possible
+                    var order = d3.select("#"+tableId+" thead").selectAll("th").data();
+                    if (order) {
+                        var reorderedRow = {};
+                        order.forEach (function (field) {
+                            reorderedRow[field] = newRow[field];
+                        });
+                        newRow = reorderedRow;
+                    }
+                    var newVals = order ? order.map (function(field) { return newRow[field]; }) : d3.values(newRow);
+                    
                     var newRowNode = dataTable.row
-                        .add(d3.values(newRow)) // push the newrow as new table row data
+                        .add(newVals) // push the newrow as new table row data
                         .draw()                 // redraw the table
                         .node()                 // return the tr dom node for further manipulation
                     ;
-                    d3.select(newRowNode)
+                    var newRowD3 = d3.select(newRowNode)
                         .datum(newRow)  // set the row data on the new tr dom node as a d3 datum
-                        .call (addRowListeners, tableId)
+                        //.call (addRowListeners, tableId)
+                    newRowD3
                         .selectAll("td").data(function(d) { return d3.entries(d); })    // Set individual data on cells from the row data
                             .filter (function(d) { return autoWidths.has(d.key); })  // filter using settings for accordions
                             .call (addToolTipListeners, tableId)
-                    ;   
+                    ;
+                    // jquery ui the download button
+                    makeJQUIButtons (tableId);
+                    newRowD3
+                        .call (addRowListeners, tableId)    // add listeners to row
+                        .selectAll("td")    // set download button to hold newrow object (same as in previous rows)
+                            .filter(function(d) { return d.key === "download"; })
+                            .select("button")
+                            .datum (newRow)
+                    ;
                     newRow.isSelected = true;   // Set as selected in the datum, this will be pushed through to the checkbox and the selected area in the following code
                     prevTableClickFuncs[tableId] ();   // and we call the same func here as the checkbox is set pre-selected
                 });

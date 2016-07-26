@@ -25,6 +25,8 @@ CLMSUI.jqdialogs = {
         $("#"+dialogID).dialog({
             modal:true,
         });
+        
+        $("#"+dialogID).dialog('option', 'title', title || "Database Error"); // to change existing title
     },
     
     areYouSureDialog: function (dialogID, msg, title, yesText, noText, yesFunc) {
