@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
 
@@ -854,6 +854,8 @@ CLMSUI.buildSubmitSearch = function () {
                                 if (!data.error) {
                                     updateFieldsWithValues (data, prevTableClickFuncs);
                                     dispatchObj.formInputChanged();   
+                                } else {
+                                    CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], "No Last Search Exists");
                                 }
                             },
                             error: function (jqXhr, textStatus, errorThrown) {

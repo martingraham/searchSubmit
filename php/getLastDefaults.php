@@ -18,7 +18,7 @@
         } else {
             pg_close($dbconn);
             $date = date("d-M-Y H:i:s");
-            echo json_encode (array("error" => array ("No previous searches are available", $date)));
+            echo json_encode (array("error" => array ("You have made no previous searches", $date)));
         }
     }
 ?>
