@@ -15,13 +15,26 @@ CLMSUI.buildSubmitSearch = function () {
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
 
+    function setTabSessionVar () {
+        var lastId = window.localStorage.lastId || '0';
+        var newId = (parseInt(lastId, 10) + 1) % 10000;
+        window.localStorage.lastId = newId;
+        window.sessionStorage.setItem ("tab", newId);
+    }
+    
+    function getTabSessionVar () {
+        return window.sessionStorage ? window.sessionStorage.getItem ("tab") : "1";
+    }
+    
+    setTabSessionVar ();
+    
     
     // Interface lements that can be built without waiting for database queries to return
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
         var acqSeqTemplateData = [
-            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "partialId":"seq", "fileTypes":".fasta,.txt"}},
-            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip"}},
+            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "partialId":"seq", "fileTypes":".fasta,.txt", "tabVal": getTabSessionVar()}},
+            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip", "tabVal":getTabSessionVar()}},
         ];
         acqSeqTemplateData.forEach (function (datum) {
             d3.select(datum.id)
@@ -744,6 +757,7 @@ CLMSUI.buildSubmitSearch = function () {
                                     name: d3.select(textinputid).property("value"),
                                     filenames: filesUploaded,
                                     type: type,
+                                    tabID: getTabSessionVar(),
                                 };
                                 $.ajax ({
                                     type: "POST",

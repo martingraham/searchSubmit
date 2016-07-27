@@ -42,7 +42,7 @@ else {
 
     
     $filesExist = true;
-    $uploadTSKey = $_POST["type"]."UploadTimeStamp";
+    $uploadTSKey = $_POST["type"]."UploadTimeStamp".$_POST["tabID"];
     if ($allGood) {
         // test if files are actually present, and these variables are available outside this bracket scope
         // http://php.net/manual/en/language.variables.scope.php#105925
