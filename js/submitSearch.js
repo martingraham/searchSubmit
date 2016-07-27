@@ -385,7 +385,8 @@ CLMSUI.buildSubmitSearch = function () {
                                         }
                                     },
                                     error: function () {
-                                        CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "An Error occurred when trying to access these files<br>"+errorDateFormat (new Date()), "File Error");
+                                        CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "This feature is embargoed until xi3 release<br>"+errorDateFormat (new Date()), "Feature Embargo");
+                                        //CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "An Error occurred when trying to access these files<br>"+errorDateFormat (new //Date()), "File Error");
                                     },
                                 });
                             }

@@ -10,6 +10,7 @@ else {
     include('utils.php');
 
     try {
+        throw new Exception ("Temporary feature embargo until xi3 release.", 403); // this line prevents file downloading
         //open connection
         $dbconn = pg_connect($connectionString);
         
@@ -46,8 +47,10 @@ else {
         pg_close($dbconn);
     }
     catch (Exception $e) {
+        //error_log (print_r ($e->getMessage(), true));
+        $errorMsg = $e->getCode() === 403 ? $e->getMessage() : "Error when querying database for default values";
         $date = date("d-M-Y H:i:s");
-        echo (json_encode (array ("error" => "Error when querying database for default values<br>".$date)));
+        echo (json_encode (array ("error" => $errorMsg."<br>".$date)));
     }
 }
 
