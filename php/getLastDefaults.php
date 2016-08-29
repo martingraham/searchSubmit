@@ -1,11 +1,11 @@
 <?php
     session_start();
-    if (!array_key_exists("session_name", $_SESSION) || !$_SESSION['session_name']) {
+    if (empty ($_SESSION['session_name'])) {
         // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
         echo (json_encode (array ("redirect" => "./login.html")));
     }
     else {
-        include 'utils.php';
+        include 'getDefaults.php';
         include('../../connectionString.php');
         
         $dbconn = pg_connect($connectionString);
@@ -18,7 +18,7 @@
         } else {
             pg_close($dbconn);
             $date = date("d-M-Y H:i:s");
-            echo json_encode (array("error" => array ("No previous searches are available", $date)));
+            echo json_encode (array("error" => array ("You have made no previous searches", $date)));
         }
     }
 ?>
