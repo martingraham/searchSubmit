@@ -655,7 +655,7 @@ CLMSUI.buildSubmitSearch = function () {
                             }
                             else if (response.status == "success") {
                                 toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
-                                window.location.assign ("../xi3/history.php");
+                                window.location.assign ("../history/history.html");
                             } else {
                                 CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
                                 submitFailSets();
