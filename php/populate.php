@@ -11,7 +11,7 @@ else {
 
     try {
         //open connection
-        $dbconn = pg_connect($connectionString);
+        $dbconn = pg_connect($connectionString) or die('Could not connect: ' . pg_last_error());
         
         // Get user rights from database
         $userRights = getUserRights ($dbconn, $_SESSION["user_id"]);
