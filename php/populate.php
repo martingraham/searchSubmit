@@ -1,13 +1,12 @@
 <?php
 session_start();
+include('utils.php');
 if (empty ($_SESSION['session_name'])) {
-    // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
-    echo (json_encode (array ("redirect" => "./login.html")));
+    ajaxLoginRedirect();
 }
 else {
 
     include('../../connectionString.php');
-    include('utils.php');
 
     try {
         //open connection
@@ -19,7 +18,7 @@ else {
         $canSeeAll = $userRights["canSeeAll"];
         
         if (!$userRights["canAddNewSearch"]) {
-            echo json_encode (array ("redirect" => 'login.html'));
+            ajaxLoginRedirect();
         } else {
             $possibleValues = array();
         

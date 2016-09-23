@@ -1,13 +1,12 @@
 <?php
 session_start();
+include ('utils.php');
 if (empty ($_SESSION['session_name'])) {
-    // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
-    echo (json_encode (array ("redirect" => "./login.html")));
+    ajaxLoginRedirect();
 }
 else {
     include('../../connectionString.php');
-    include 'utils.php';
-    
+   
     $userID = $_SESSION['user_id'];
     $username = $_SESSION['session_name'];
 
@@ -104,7 +103,7 @@ else {
                  echo (json_encode(array ("status"=>"success", "newRow"=>$returnRow)));
             } else {
                  pg_query("ROLLBACK");
-                 echo (json_encode (array ("redirect" => "./login.html"))); // if user not permitted to enter seq/acqs
+                ajaxLoginRedirect(); // if user not permitted to enter seq/acqs
             }
         } catch (Exception $e) {
              pg_query("ROLLBACK");

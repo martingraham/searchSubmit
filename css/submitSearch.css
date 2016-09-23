@@ -75,6 +75,10 @@ div.row > span.fileNameExists {
     display: inline-block;
 }
 
+.progress-extended {
+    line-height: 1.8em;
+}
+
 
 #parameterForm .paramSetting {
     border: 1px solid #ccc;

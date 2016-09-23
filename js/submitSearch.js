@@ -727,7 +727,7 @@ CLMSUI.buildSubmitSearch = function () {
                             if (data.errorThrown && data.errorThrown.name == "SyntaxError") {
                                 // This usually means a html-encoded php error that jquery has tried to json decode
                                 if (data.files && data.files[0]) {
-                                    console.log ("ddd", data.files[0].error);
+                                    console.log ("ddd", data, data.files[0].error);
                                     data.files[0].error = "A file upload failed<br>"+errorDateFormat (new Date());
                                 }
                                 //console.log ("ferror", data, $(data.jqXHR.responseText).text(), e);
@@ -760,6 +760,7 @@ CLMSUI.buildSubmitSearch = function () {
                                     type: type,
                                     tabID: getTabSessionVar(),
                                 };
+                                
                                 $.ajax ({
                                     type: "POST",
                                     url: "php/submitSeqAcq.php",
@@ -786,6 +787,7 @@ CLMSUI.buildSubmitSearch = function () {
                                         CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "Cannot reach database to insert "+type+" details<br>"+errorDateFormat (new Date()), "Connection Error");
                                     },
                                 });
+                                
                                 filesUploaded.length = 0;
                             }
                             nonzeroes.filesAwaiting = rowCountFunc();
@@ -897,11 +899,14 @@ CLMSUI.buildSubmitSearch = function () {
                             encode: true,
                             success: function (data, textStatus, jqXhr) {
                                 console.log ("defaults return", data, textStatus, jqXhr);
-                                if (!data.error) {
-                                    updateFieldsWithValues (data, prevTableClickFuncs);
-                                    dispatchObj.formInputChanged();   
-                                } else {
+                                if (data.redirect) {
+                                    window.location.replace (data.redirect);    // redirect if server php passes this field (should be to login page)    
+                                }
+                                else if (data.error) {
                                     CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], "No Last Search Exists");
+                                } else {
+                                    updateFieldsWithValues (data, prevTableClickFuncs);
+                                    dispatchObj.formInputChanged();
                                 }
                             },
                             error: function (jqXhr, textStatus, errorThrown) {

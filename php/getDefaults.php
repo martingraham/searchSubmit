@@ -1,5 +1,5 @@
 <?php  
-    include 'utils.php';
+    include ('utils.php');
 
     function getLastSearchID ($dbconn) {
         pg_prepare ($dbconn, "getLastSearchID", "SELECT id FROM search WHERE uploadedby = $1 ORDER BY id DESC LIMIT 1");

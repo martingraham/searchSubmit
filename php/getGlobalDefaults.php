@@ -2,8 +2,8 @@
     session_start();
 
     if (empty ($_SESSION['session_name'])) {
-        // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
-        echo (json_encode (array ("redirect" => "./login.html")));
+        include ('utils.php');
+        ajaxLoginRedirect();
     }
     else {
         include 'getDefaults.php';
