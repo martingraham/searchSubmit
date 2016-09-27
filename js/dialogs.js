@@ -18,6 +18,27 @@ CLMSUI.jqdialogs = {
         ;
     },
     
+    logoutDialog: function (dialogID, loginUrl) {
+        var msg = "<br>You need to be logged in to use the Search Submission page.<br>Press the Login button below.<br>";
+        CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, "Not Logged In !");
+        
+        function divertToLogin () {
+             $(this).dialog("close").dialog("destroy").remove();
+             window.location.replace (loginUrl);  
+        }
+        
+        $("#"+dialogID).dialog({
+            modal: true,
+            dialogClass: "no-close",
+            open: function () {
+                $('.ui-dialog :button').blur(); // http://stackoverflow.com/questions/1793592/jquery-ui-dialog-button-focus
+            },
+            buttons: [
+                {text: "Login", click: divertToLogin},
+            ]
+        });  
+    },
+    
     errorDialog: function (dialogID, msg, title) {
         msg = msg.concat("<br><A href='https://github.com/Rappsilber-Laboratory/' target='_blank'>Rappsilber Lab GitHub</A>");
         CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, title || "Database Error");

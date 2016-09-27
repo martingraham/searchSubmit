@@ -249,3 +249,7 @@ textarea[rows="1"] {
 input[type='number'], input[type='text'] {
     height: 1.75em;
 }
+
+.no-close .ui-dialog-titlebar-close {
+    display: none;
+}
