@@ -15,8 +15,7 @@
     }
 
     function getNiceDate () {
-        $date = date("d-M-Y H:i:s");
-        return $date;
+        return date("d-M-Y H:i:s");
     }
 
     // database connection needs to be open and user logged in for these functions to work
@@ -34,6 +33,44 @@
         $canAddNewSearch = (!isset($row["can_add_search"]) || $row["can_add_search"] === 't');  // 1 if can_add_search flag is true or if that flag doesn't exist in the database 
         $isSuperUser = (isset($row["super_user"]) && $row["super_user"] === 't');  // 1 if super_user flag is present AND true
         return array ("canSeeAll"=>$canSeeAll, "canAddNewSearch"=>$canAddNewSearch, "isSuperUser"=>$isSuperUser);
+    }
+
+    // restrict user searches to one per day if user is member of 'external_taster' group on top of existing 'can_add_Search' restriction
+    function canAddNewSearchToday ($dbconn, $userID) {
+        $elapsedSeconds = null;
+        if ($_SESSION['canAddNewSearch']) {
+            if (isRestrictedUser ($dbconn, $userID)) {
+                if (doesColumnExist ($dbconn, "users", "last_search"))
+                    pg_prepare ($dbconn, "sinceLastSearch", "SELECT extract(epoch from (now()::timestamp - last_search::timestamp)) AS elapsedseconds FROM users WHERE id = $1");
+                    $result = pg_execute ($dbconn, "sinceLastSearch", []);
+                    $row = pg_fetch_assoc ($result);
+                    $elapsedSeconds = $row['elapsedSeconds'];
+                }
+            }
+        }
+        return ($elapsedSeconds == null || $elapsedSeconds < 60*60*24 ) && $_SESSION['canAddNewSearch'];
+    }
+
+    // Number of searches by a particular user
+    function countUserSearches ($dbconn, $userID) {
+        pg_prepare ($dbconn, "activeUserSearches", "SELECT COUNT(id) FROM search WHERE uploadedby = $1");
+        $result = pg_execute ($dbconn, "activeUserSearches", [$userID]);
+        $row = pg_fetch_assoc ($result);
+        return $row["count"];
+    }
+
+    function isRestrictedUser ($dbconn, $userID) {
+        pg_prepare ($dbconn, "isRestrictedUser", "SELECT COUNT(group_id) FROM user_in_group JOIN user_groups ON user_groups.id = user_in_group.group_id WHERE user_id = $1 AND user_groups.name = 'external_taster'");
+        $result = pg_execute ($dbconn, "isRestrictedUser", [$userID]);
+        $row = pg_fetch_assoc ($result);
+        return ($row["count"] == 1);
+    }
+
+    function doesColumnExist ($dbconn, $tableName, $columnName) {
+        pg_prepare($dbconn, "doesColExist", "SELECT COUNT(column_name) FROM information_schema.columns WHERE table_name=$1 AND column_name=$2");
+        $result = pg_execute ($dbconn, "doesColExist", [$tableName, $columnName]);
+        $row = pg_fetch_assoc ($result);
+        return ($row["count"] == 1);
     }
 
     // Turn result set into array of objects
