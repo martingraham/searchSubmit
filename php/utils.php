@@ -5,7 +5,7 @@
     function normalizeString ($str = '') {
         $str = filter_var ($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
         $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
-        $str = html_entity_decode( $str, ENT_QUOTES, "utf-8" );
+        $str = html_entity_decode ($str, ENT_QUOTES, "utf-8" );
         $str = htmlentities($str, ENT_QUOTES, "utf-8");
         $str = preg_replace("/(&)([a-z])([a-z]+;)/i", '$2', $str);
         $str = str_replace(' ', '-', $str);
@@ -29,8 +29,8 @@
         $result = pg_execute ($dbconn, "user_rights", [$userID]);
         $row = pg_fetch_assoc ($result);
         //error_log (print_r ($row, true));
-        $canSeeAll = (!isset($row["see_all"]) || $row["see_all"] === 't');  // 1 if see_all flag is true or if that flag doesn't exist in the database 
-        $canAddNewSearch = (!isset($row["can_add_search"]) || $row["can_add_search"] === 't');  // 1 if can_add_search flag is true or if that flag doesn't exist in the database 
+        $canSeeAll = (!isset($row["see_all"]) || $row["see_all"] === 't');  // 1 if see_all flag is true or if that flag doesn't exist in the database
+        $canAddNewSearch = (!isset($row["can_add_search"]) || $row["can_add_search"] === 't');  // 1 if can_add_search flag is true or if that flag doesn't exist in the database
         $isSuperUser = (isset($row["super_user"]) && $row["super_user"] === 't');  // 1 if super_user flag is present AND true
         return array ("canSeeAll"=>$canSeeAll, "canAddNewSearch"=>$canAddNewSearch, "isSuperUser"=>$isSuperUser);
     }
@@ -40,7 +40,7 @@
         $elapsedSeconds = null;
         if ($_SESSION['canAddNewSearch']) {
             if (isRestrictedUser ($dbconn, $userID)) {
-                if (doesColumnExist ($dbconn, "users", "last_search"))
+                if (doesColumnExist ($dbconn, "users", "last_search")) {
                     pg_prepare ($dbconn, "sinceLastSearch", "SELECT extract(epoch from (now()::timestamp - last_search::timestamp)) AS elapsedseconds FROM users WHERE id = $1");
                     $result = pg_execute ($dbconn, "sinceLastSearch", []);
                     $row = pg_fetch_assoc ($result);
