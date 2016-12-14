@@ -226,6 +226,10 @@ CLMSUI.buildSubmitSearch = function () {
             }
             else {
                 
+                if (data.noSearchAllowed) {
+                    d3.select("h1").text("New Search Form - "+data.noSearchAllowed);
+                }
+                
                 mergeInFilenamesToAcquistions (data.previousAcqui, data.filenames);
                 
                 var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded", "newFileAdded");
@@ -607,7 +611,7 @@ CLMSUI.buildSubmitSearch = function () {
                             todoList.add (d3.select(this).attr("data-label") || d3.select(this).attr("name"));
                         }
                     });
-                    $("#startProcessing").button("option", "disabled", !todoList.empty());
+                    $("#startProcessing").button("option", "disabled", !todoList.empty() || data.noSearchAllowed);
                     happyToDo (todoList.empty());
                     toDoMessage (todoList.empty() ? "Ready to Submit" : "To enable Submit, selections are required for:<br>"+todoList.values().join(", "));
                 });
