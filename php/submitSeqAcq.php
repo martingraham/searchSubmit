@@ -103,7 +103,7 @@ else {
                  echo (json_encode(array ("status"=>"success", "newRow"=>$returnRow)));
             } else {
                  pg_query("ROLLBACK");
-                ajaxLoginRedirect(); // if user not permitted to enter seq/acqs
+                ajaxHistoryRedirect ("Your user role doesn't have the permissions to upload sequence or acquisition files."); // if user not permitted to enter seq/acqs
             }
         } catch (Exception $e) {
              pg_query("ROLLBACK");

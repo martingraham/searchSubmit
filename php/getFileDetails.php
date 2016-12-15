@@ -19,7 +19,7 @@ else {
         $canSeeAll = $userRights["canSeeAll"];
         
         if (!$userRights["canAddNewSearch"]) {
-            ajaxLoginRedirect();
+            ajaxHistoryRedirect("You don't have permission to download this file due to your user role.");  // Shouldn't get here, but still... defensive coding
         } else {
             $type = $_POST["type"];
             $datum = $_POST["datum"];

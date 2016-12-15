@@ -39,7 +39,7 @@
         $maxSearchCount = 10000;
         $maxSearchLifetime = 1000;
         $maxSearchesPerDay = 100;
-        $searchDenyReason = null;
+        $searchDenyReason = $canAddNewSearch ? "" : "Your user role is not allowed to add new searches.";
         
         if (doesColumnExist ($dbconn, "user_groups", "max_aas")) {
             pg_prepare($dbconn, "user_rights2", "SELECT max(user_groups.max_search_count) as max_search_count, max(user_groups.max_spectra) as max_spectra, max(user_groups.max_aas) as max_aas, max(user_groups.search_lifetime_days) as max_search_lifetime, max(user_groups.max_searches_per_day) as max_searches_per_day,
@@ -125,5 +125,10 @@
     function ajaxLoginRedirect () {
         // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
          echo (json_encode (array ("redirect" => "../xi3/login.html")));
+    }
+
+    function ajaxHistoryRedirect ($why) {
+        // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
+         echo (json_encode (array ("redirect" => "../history/history.html", "why" => $why."<br>Press the button below to go to the Xi history page.")));
     }
 ?>

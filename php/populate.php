@@ -18,7 +18,7 @@ else {
         $canSeeAll = $userRights["canSeeAll"];
         
         if (!$userRights["canAddNewSearch"]) {
-            ajaxLoginRedirect();
+            ajaxHistoryRedirect ($userRights["searchDenyReason"]);
         } else {
             $possibleValues = array();
         
@@ -55,8 +55,6 @@ else {
 
             // Store this server side 'cos we don't need it client side
             $_SESSION["baseDir"] = $baseDir;
-            
-            $possibleValues["noSearchAllowed"] = $userRights["searchDenyReason"];
             
             echo json_encode ($possibleValues);
         }

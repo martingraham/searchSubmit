@@ -172,7 +172,7 @@ else {
                 echo (json_encode(array ("status"=>"success", "newSearch"=>$searchRow)));
             } else {
                 pg_query("ROLLBACK");
-                ajaxLoginRedirect();    // if user not permitted to enter seq/acqs
+                ajaxHistoryRedirect ("Permission to upload a new search has been denied.");    // if user not permitted to enter seq/acqs
             }
         } catch (Exception $e) {
             pg_query("ROLLBACK");

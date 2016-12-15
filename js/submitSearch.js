@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
 
@@ -27,8 +27,8 @@ CLMSUI.buildSubmitSearch = function () {
     }
     
     // redirect via explanatory dialog if not logged in
-    function loginDivert (loginUrl) {
-        CLMSUI.jqdialogs.logoutDialog ("popErrorDialog", loginUrl);
+    function redirector (redirectUrl, why) {
+        CLMSUI.jqdialogs.redirectDialog ("popErrorDialog", redirectUrl, why);
         //window.location.replace (loginUrl);    
     }
     
@@ -219,17 +219,12 @@ CLMSUI.buildSubmitSearch = function () {
             console.log ("got", data, textStatus, jqXhr);
             
             if (data.redirect) {
-                loginDivert (data.redirect);    // redirect if server php passes this field (should be to login page)      
+                redirector (data.redirect, data.why);    // redirect if server php passes this field (should be to login page)      
             }
             else if (data.error) {
                 CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error);
             }
-            else {
-                
-                if (data.noSearchAllowed) {
-                    d3.select("h1").text("New Search Form - "+data.noSearchAllowed);
-                }
-                
+            else {     
                 mergeInFilenamesToAcquistions (data.previousAcqui, data.filenames);
                 
                 var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded", "newFileAdded");
@@ -661,7 +656,7 @@ CLMSUI.buildSubmitSearch = function () {
                         success: function (response, textStatus, jqXhr) {
                             console.log ("db params insert success", response, textStatus);
                             if (response.redirect) {
-                                loginDivert (response.redirect);    // redirect if server php passes this field (should be to login page)     
+                                redirector (response.redirect);    // redirect if server php passes this field (should be to login page)     
                             }
                             else if (response.status == "success") {
                                 toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
@@ -779,7 +774,7 @@ CLMSUI.buildSubmitSearch = function () {
                                     encode: true,
                                     success: function (response, textStatus, jqXhr) {
                                         if (response.redirect) {
-                                            loginDivert (response.redirect);    // redirect if server php passes this field (should be to login page)       
+                                            redirector (response.redirect);    // redirect if server php passes this field (should be to login page)       
                                         } else if (response.error) {
                                             CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
                                         } else {
@@ -910,7 +905,7 @@ CLMSUI.buildSubmitSearch = function () {
                             success: function (data, textStatus, jqXhr) {
                                 console.log ("defaults return", data, textStatus, jqXhr);
                                 if (data.redirect) {
-                                    loginDivert (data.redirect);    // redirect if server php passes this field (should be to login page)        
+                                    redirector (data.redirect);    // redirect if server php passes this field (should be to login page)        
                                 }
                                 else if (data.error) {
                                     CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], "No Last Search Exists");

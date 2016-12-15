@@ -18,13 +18,13 @@ CLMSUI.jqdialogs = {
         ;
     },
     
-    logoutDialog: function (dialogID, loginUrl) {
-        var msg = "<br>You need to be logged in to use the Search Submission page.<br>Press the Login button below.<br>";
-        CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, "Not Logged In !");
+    redirectDialog: function (dialogID, redirectUrl, why) {
+        var msg = why ? "<br>"+why+"<br>": "<br>You need to be logged in to use the Search Submission page.<br>Press the button below to go to the Login page.<br>";
+        CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, why ? "No New Search Permission" : "Not Logged In !");
         
-        function divertToLogin () {
+        function redirectAction () {
              $(this).dialog("close").dialog("destroy").remove();
-             window.location.replace (loginUrl);  
+             window.location.replace (redirectUrl);  
         }
         
         $("#"+dialogID).dialog({
@@ -34,7 +34,7 @@ CLMSUI.jqdialogs = {
                 $('.ui-dialog :button').blur(); // http://stackoverflow.com/questions/1793592/jquery-ui-dialog-button-focus
             },
             buttons: [
-                {text: "Login", click: divertToLogin},
+                {text: "OK", click: redirectAction},
             ]
         });  
     },
