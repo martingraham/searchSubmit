@@ -14,6 +14,7 @@ CLMSUI.buildSubmitSearch = function () {
     //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
+    var integerFormat = d3.format(",.0f");
 
     function setTabSessionVar () {
         var lastId = window.localStorage.lastId || '0';
@@ -233,7 +234,7 @@ CLMSUI.buildSubmitSearch = function () {
                 // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                 // Multiple Selects need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
                 var populateOptionLists = [
-                    {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker"},
+                    {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker", textFunc: function(d) { return d.name+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }},
                     {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
                     {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications",},
                     {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications",},
@@ -265,7 +266,7 @@ CLMSUI.buildSubmitSearch = function () {
 
                     dataJoin.enter().append("option")
                         .attr("value", function(d) { return d.id; })
-                        .text(function(d) { return d.name; })
+                        .html(function(d) { return poplist.textFunc ? poplist.textFunc(d) : d.name; })
                     ;
 
                     $("#"+baseId).multipleSelect({ 
@@ -285,7 +286,7 @@ CLMSUI.buildSubmitSearch = function () {
                         .classed("ui-state-default", true)
                     ;
                     // add tooltips to list items
-                    elem.select("ul").selectAll("li")
+                    elem.select("ul").selectAll("li:not(.ms-no-results)")
                         .attr ("title", function() { return d3.select(this).text(); })
                     ;
                     // set widget to a relative rather than pixel width

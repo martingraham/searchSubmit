@@ -253,3 +253,8 @@ input[type='number'], input[type='text'] {
 .no-close .ui-dialog-titlebar-close {
     display: none;
 }
+
+.xlinkerMassNote {
+    font-size: 0.75em;
+    color: #88f;
+}

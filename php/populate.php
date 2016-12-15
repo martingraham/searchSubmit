@@ -25,7 +25,7 @@ else {
             $getFieldValues = array (
                 "enzymes" => array ("q" => "SELECT id, name from enzyme ORDER by name"),
                 "ions" => array ("q" => "SELECT id, name from ion ORDER by name"),
-                "xlinkers" => array ("q" => "SELECT id, name from crosslinker ORDER by name"),
+                "xlinkers" => array ("q" => "SELECT id, mass, name from crosslinker ORDER by name"),
                 "losses" => array ("q" => "SELECT id, name from loss ORDER by name"),
                 "modifications" => array ("q" => "SELECT id, name from modification ORDER by name"),
                 "previousAcqui" => $canSeeAll 
