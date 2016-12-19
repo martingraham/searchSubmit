@@ -226,6 +226,17 @@ CLMSUI.buildSubmitSearch = function () {
                 CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error);
             }
             else {     
+                // initialize blueimp file uploader bits. moved here cos we need userRights info
+                console.log ("submitter", submitter);
+                var uploadOptions = {
+                    "seqfileupload": {"fileTypes":"fasta|txt", "maxFileSize": data.userRights.maxAAs || 1024},
+                    "acqfileupload": {"fileTypes":"mgf|msm|apl|zip", "maxFileSize": (data.userRights.maxSpectra * 2) || 100000}
+                };
+                // This was easier than waiting to initialise the acq/seq templates because of one extra bit of info
+                var uFormat = d3.format(".2s");
+                d3.selectAll(".maxFile").data(d3.keys(uploadOptions).reverse()).text(function(d) { return uFormat (uploadOptions[d].maxFileSize); });
+                submitter.upload (uploadOptions);
+                
                 mergeInFilenamesToAcquistions (data.previousAcqui, data.filenames);
                 
                 var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded", "newFileAdded");
@@ -677,15 +688,6 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                     
                 });
-
-
-                // initialize blueimp file uploader bits
-                console.log ("submitter", submitter);
-                var uploadOptions = {
-                    "seqfileupload": {"fileTypes":"fasta|txt"},
-                    "acqfileupload": {"fileTypes":"mgf|msm|apl|zip"}
-                };
-                submitter.upload (uploadOptions);
 
 
                 // Function to control actions/consequences of upload/delete buttons in seq/acq upload forms

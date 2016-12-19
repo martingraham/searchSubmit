@@ -49,6 +49,9 @@ else {
                 $possibleValues[$key] = resultsAsArray($result);
             }
             
+            // Add user rights so interface can provide appropriate labelling
+            $possibleValues["userRights"] = $userRights;
+            
             // Get basedir for file uploads
             $query = "SELECT setting FROM base_setting WHERE name='base_directory_path';";
             $baseDir = pg_fetch_row(pg_query($query))[0];
