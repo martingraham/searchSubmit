@@ -258,3 +258,10 @@ input[type='number'], input[type='text'] {
     font-size: 0.75em;
     color: #88f;
 }
+
+.progressLabel {
+    position: absolute;
+    width: 50%;
+    margin-top: 0.5em;
+    transform: translate(50%, 0%);
+}

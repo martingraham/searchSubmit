@@ -18,6 +18,28 @@ CLMSUI.jqdialogs = {
         ;
     },
     
+    
+    waitDialog: function (dialogID, msg, title) {
+        CLMSUI.jqdialogs.constructDialogMessage (dialogID, "", title);
+           
+        $("#"+dialogID).dialog({
+            modal: true,
+            dialogClass: "no-close",
+            open: function () {
+                $('.ui-dialog :button').blur(); // http://stackoverflow.com/questions/1793592/jquery-ui-dialog-button-focus
+            },
+        }); 
+        
+        d3.select("#"+dialogID).append("div")
+            .attr ("id", dialogID+"progress")
+            .append ("div")
+                .attr("class", "progressLabel")
+                .text (msg)
+        ;
+        
+        return $("#"+dialogID+"progress").progressbar({"value": false});
+    },
+    
     redirectDialog: function (dialogID, redirectUrl, why) {
         var msg = why ? "<br>"+why+"<br>": "<br>You need to be logged in to use the Search Submission page.<br>Press the button below to go to the Login page.<br>";
         CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, why ? "No New Search Permission" : "Not Logged In !");

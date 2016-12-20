@@ -196,11 +196,16 @@ CLMSUI.buildSubmitSearch = function () {
 
     $(document).ready (function () {
         
+        var pbar = CLMSUI.jqdialogs.waitDialog ("databaseLoading", "Please Wait...", "Populating Fields");
         $.ajax ({
             type: "GET",
             url: "./php/populate.php",
             dataType: "json",
             encode: true,
+            complete: function () {
+                pbar.progressbar("destroy");
+                $("#databaseLoading").dialog("destroy");
+            },
             success: gotChoicesResponse,
             error: function (jqXhr, textStatus, errorThrown) {
                 CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "An Error occurred when trying to access the database for form choices<br>"+errorDateFormat (new Date()), "Connection Error");
