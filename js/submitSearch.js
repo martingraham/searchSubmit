@@ -179,6 +179,17 @@ CLMSUI.buildSubmitSearch = function () {
             d3.select(buttonID).attr("type", buttonDatum.type);
         });
         
+        
+        // Set checkboxes as form parts
+        var checkboxData = [
+            {id: "#privacy", type: "checkbox"},
+        ];
+        checkboxData.forEach (function (checkboxDatum) {
+            var checkboxID = checkboxDatum.id;
+            d3.select(checkboxID).classed("formPart", true);
+        });
+        
+        
         // Add action for back button
         d3.select("#backButton").on("click", function() { window.history.back(); });
     }
@@ -635,7 +646,7 @@ CLMSUI.buildSubmitSearch = function () {
                     toDoMessage ("Processing");
                     var formData = {};
                     d3.select("#parameterForm").selectAll(".formPart").each (function() {
-                        if (this.id) {
+                        if (this.id && (this.type !== "checkbox" || this.checked)) {    // unselected checkboxes aren't passed by form submit so do this here too
                             var val = this.value;
                             // If one of the multiple select widgets, must get multiple values like this
                             if (this.type === "select-multiple") {
