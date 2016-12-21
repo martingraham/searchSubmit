@@ -11,9 +11,10 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
+    var integerFormat = d3.format(",.0f");
 
     function setTabSessionVar () {
         var lastId = window.localStorage.lastId || '0';
@@ -26,6 +27,12 @@ CLMSUI.buildSubmitSearch = function () {
         return window.sessionStorage ? window.sessionStorage.getItem ("tab") : "1";
     }
     
+    // redirect via explanatory dialog if not logged in
+    function redirector (redirectUrl, why) {
+        CLMSUI.jqdialogs.redirectDialog ("popErrorDialog", redirectUrl, why);
+        //window.location.replace (loginUrl);    
+    }
+    
     setTabSessionVar ();
     
     
@@ -33,8 +40,8 @@ CLMSUI.buildSubmitSearch = function () {
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
         var acqSeqTemplateData = [
-            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "partialId":"seq", "fileTypes":".fasta,.txt", "tabVal": getTabSessionVar()}},
-            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip", "tabVal":getTabSessionVar()}},
+            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "sPronoun":"A", "partialId":"seq", "fileTypes":".fasta,.txt", "tabVal": getTabSessionVar()}},
+            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "sPronoun": "An", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip", "tabVal":getTabSessionVar()}},
         ];
         acqSeqTemplateData.forEach (function (datum) {
             d3.select(datum.id)
@@ -50,7 +57,7 @@ CLMSUI.buildSubmitSearch = function () {
         var textBoxData = [
             {domid: "#paramNotes", niceLabel: "Search Notes", labelTag: "P", placeholderText: "Click here to add notes..."},
             {domid: "#paramCustom", niceLabel: "Custom Settings", labelTag: "H3", placeholderText: "Click here to add custom settings..."},
-            {domid: "#paramSearchName", niceLabel: "New Search Name", labelTag: "P", placeholderText: "If left empty, search will use acquisition names", rows: 1, maxLength: 1000},
+            {domid: "#paramSearchName", niceLabel: "New Search Name", labelTag: "P", placeholderText: "If left empty, the search name will be the acquisition names + timestamp", rows: 1, maxLength: 1000},
         ];
         textBoxData.forEach (function (settings) {
             var elem = d3.select(settings.domid);
@@ -172,17 +179,35 @@ CLMSUI.buildSubmitSearch = function () {
             d3.select(buttonID).attr("type", buttonDatum.type);
         });
         
+        
+        // Set checkboxes as form parts
+        var checkboxData = [
+            {id: "#privacy", type: "checkbox"},
+        ];
+        checkboxData.forEach (function (checkboxDatum) {
+            var checkboxID = checkboxDatum.id;
+            d3.select(checkboxID).classed("formPart", true);
+        });
+        
+        
         // Add action for back button
         d3.select("#backButton").on("click", function() { window.history.back(); });
     }
 
     $(document).ready (function () {
         
+        var waitDialogID = "databaseLoading";
+        var pbar = CLMSUI.jqdialogs.waitDialog (waitDialogID, "Please Wait...", "Populating Fields");
         $.ajax ({
             type: "GET",
             url: "./php/populate.php",
             dataType: "json",
             encode: true,
+            complete: function () {
+                pbar.progressbar("destroy");
+                $("#"+waitDialogID).dialog("destroy");
+                d3.select("#"+waitDialogID).remove();
+            },
             success: gotChoicesResponse,
             error: function (jqXhr, textStatus, errorThrown) {
                 CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "An Error occurred when trying to access the database for form choices<br>"+errorDateFormat (new Date()), "Connection Error");
@@ -213,12 +238,22 @@ CLMSUI.buildSubmitSearch = function () {
             console.log ("got", data, textStatus, jqXhr);
             
             if (data.redirect) {
-                window.location.replace (data.redirect);    // redirect if server php passes this field (should be to login page)    
+                redirector (data.redirect, data.why);    // redirect if server php passes this field (should be to login page)      
             }
             else if (data.error) {
                 CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error);
             }
-            else {
+            else {     
+                // initialize blueimp file uploader bits. moved here cos we need userRights info
+                console.log ("submitter", submitter);
+                var uploadOptions = {
+                    "seqfileupload": {"fileTypes":"fasta|txt", "maxFileSize": data.userRights.maxAAs || 1024},
+                    "acqfileupload": {"fileTypes":"mgf|msm|apl|zip", "maxFileSize": (data.userRights.maxSpectra * 2) || 100000}
+                };
+                // This was easier than waiting to initialise the acq/seq templates because of one extra bit of info
+                var uFormat = d3.format(".2s");
+                d3.selectAll(".maxFile").data(d3.keys(uploadOptions).reverse()).text(function(d) { return uFormat (uploadOptions[d].maxFileSize); });
+                submitter.upload (uploadOptions);
                 
                 mergeInFilenamesToAcquistions (data.previousAcqui, data.filenames);
                 
@@ -228,7 +263,7 @@ CLMSUI.buildSubmitSearch = function () {
                 // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                 // Multiple Selects need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
                 var populateOptionLists = [
-                    {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker"},
+                    {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker", textFunc: function(d) { return d.name+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }},
                     {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
                     {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications",},
                     {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications",},
@@ -260,7 +295,7 @@ CLMSUI.buildSubmitSearch = function () {
 
                     dataJoin.enter().append("option")
                         .attr("value", function(d) { return d.id; })
-                        .text(function(d) { return d.name; })
+                        .html(function(d) { return poplist.textFunc ? poplist.textFunc(d) : d.name; })
                     ;
 
                     $("#"+baseId).multipleSelect({ 
@@ -280,7 +315,7 @@ CLMSUI.buildSubmitSearch = function () {
                         .classed("ui-state-default", true)
                     ;
                     // add tooltips to list items
-                    elem.select("ul").selectAll("li")
+                    elem.select("ul").selectAll("li:not(.ms-no-results)")
                         .attr ("title", function() { return d3.select(this).text(); })
                     ;
                     // set widget to a relative rather than pixel width
@@ -396,10 +431,10 @@ CLMSUI.buildSubmitSearch = function () {
                 
                 var addToolTipListeners = function (cellSel) {
                     function enumerateText (arr) {
-                        var enumArr = arr.map (function (d,i) {
-                           return "<span class='acqNumber'>"+(i+1)+"</span>"+d; 
+                        var enumArr = arr.map (function (d) {
+                           return "<span class='acqTooltipDetails'>"+d+"</span>";   // acqNumber style does automatic css numbering, cool!
                         });
-                        return enumArr.join("<br>");
+                        return enumArr.join("");
                     }
                     
                     cellSel
@@ -461,7 +496,7 @@ CLMSUI.buildSubmitSearch = function () {
                     sel.html ("<TABLE><THEAD><TR></TR></THEAD><TBODY></TBODY></TABLE>");
                     sel.select("table")
                         .attr("id", baseId)
-                        .attr("class", "previousTable")
+                        .attr("class", "previousTable stripe")
                         .attr("title", psetting.niceLabel)
                     ;
                     
@@ -601,7 +636,7 @@ CLMSUI.buildSubmitSearch = function () {
                             todoList.add (d3.select(this).attr("data-label") || d3.select(this).attr("name"));
                         }
                     });
-                    $("#startProcessing").button("option", "disabled", !todoList.empty());
+                    $("#startProcessing").button("option", "disabled", !todoList.empty() || data.noSearchAllowed);
                     happyToDo (todoList.empty());
                     toDoMessage (todoList.empty() ? "Ready to Submit" : "To enable Submit, selections are required for:<br>"+todoList.values().join(", "));
                 });
@@ -618,7 +653,7 @@ CLMSUI.buildSubmitSearch = function () {
                     toDoMessage ("Processing");
                     var formData = {};
                     d3.select("#parameterForm").selectAll(".formPart").each (function() {
-                        if (this.id) {
+                        if (this.id && (this.type !== "checkbox" || this.checked)) {    // unselected checkboxes aren't passed by form submit so do this here too
                             var val = this.value;
                             // If one of the multiple select widgets, must get multiple values like this
                             if (this.type === "select-multiple") {
@@ -651,7 +686,7 @@ CLMSUI.buildSubmitSearch = function () {
                         success: function (response, textStatus, jqXhr) {
                             console.log ("db params insert success", response, textStatus);
                             if (response.redirect) {
-                                window.location.replace (response.redirect);    // redirect if server php passes this field    
+                                redirector (response.redirect);    // redirect if server php passes this field (should be to login page)     
                             }
                             else if (response.status == "success") {
                                 toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
@@ -671,15 +706,6 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                     
                 });
-
-
-                // initialize blueimp file uploader bits
-                console.log ("submitter", submitter);
-                var uploadOptions = {
-                    "seqfileupload": {"fileTypes":"fasta|txt"},
-                    "acqfileupload": {"fileTypes":"mgf|msm|apl|zip"}
-                };
-                submitter.upload (uploadOptions);
 
 
                 // Function to control actions/consequences of upload/delete buttons in seq/acq upload forms
@@ -727,7 +753,7 @@ CLMSUI.buildSubmitSearch = function () {
                             if (data.errorThrown && data.errorThrown.name == "SyntaxError") {
                                 // This usually means a html-encoded php error that jquery has tried to json decode
                                 if (data.files && data.files[0]) {
-                                    console.log ("ddd", data.files[0].error);
+                                    console.log ("ddd", data, data.files[0].error);
                                     data.files[0].error = "A file upload failed<br>"+errorDateFormat (new Date());
                                 }
                                 //console.log ("ferror", data, $(data.jqXHR.responseText).text(), e);
@@ -760,6 +786,7 @@ CLMSUI.buildSubmitSearch = function () {
                                     type: type,
                                     tabID: getTabSessionVar(),
                                 };
+                                
                                 $.ajax ({
                                     type: "POST",
                                     url: "php/submitSeqAcq.php",
@@ -768,7 +795,7 @@ CLMSUI.buildSubmitSearch = function () {
                                     encode: true,
                                     success: function (response, textStatus, jqXhr) {
                                         if (response.redirect) {
-                                            window.location.replace (response.redirect);    // redirect if server php passes this field    
+                                            redirector (response.redirect);    // redirect if server php passes this field (should be to login page)       
                                         } else if (response.error) {
                                             CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
                                         } else {
@@ -786,6 +813,7 @@ CLMSUI.buildSubmitSearch = function () {
                                         CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "Cannot reach database to insert "+type+" details<br>"+errorDateFormat (new Date()), "Connection Error");
                                     },
                                 });
+                                
                                 filesUploaded.length = 0;
                             }
                             nonzeroes.filesAwaiting = rowCountFunc();
@@ -897,11 +925,14 @@ CLMSUI.buildSubmitSearch = function () {
                             encode: true,
                             success: function (data, textStatus, jqXhr) {
                                 console.log ("defaults return", data, textStatus, jqXhr);
-                                if (!data.error) {
-                                    updateFieldsWithValues (data, prevTableClickFuncs);
-                                    dispatchObj.formInputChanged();   
-                                } else {
+                                if (data.redirect) {
+                                    redirector (data.redirect);    // redirect if server php passes this field (should be to login page)        
+                                }
+                                else if (data.error) {
                                     CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], "No Last Search Exists");
+                                } else {
+                                    updateFieldsWithValues (data, prevTableClickFuncs);
+                                    dispatchObj.formInputChanged();
                                 }
                             },
                             error: function (jqXhr, textStatus, errorThrown) {

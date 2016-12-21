@@ -108,7 +108,7 @@
                         <div id="{%=o.partialId%}Upload">
                             <div class="row uploadLabels">
                                 <div class="col-4"><p>Enter New {%=o.singleLabel%} Name</P></div>
-                                <div class="col-8"><p>Accepted File Types: {%=o.fileTypes%}</P></div>
+                                <div class="col-8"><p>Accepted File Types: {%=o.fileTypes%}, Max File Size: <span class="maxFile"></span>B</P></div>
                             </div>
                             <!-- The file upload form used as target for the file upload widget -->
                             <form class="fileupload" id="{%=o.partialId%}fileupload" action="./vendor/server/php/CLMSUpload.php" method="POST" enctype="multipart/form-data">
@@ -116,7 +116,7 @@
                                 <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
                                 <div class="row fileupload-buttonbar">
                                     <div class="fileupload-buttons">
-                                        <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="{%=o.singleLabel%} Name Required" size="30" style="width:33%"></input>
+                                        <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="{%=o.sPronoun%} {%=o.singleLabel%} Name is Required" size="30" style="width:33%"></input>
                                         <!-- The fileinput-button span is used to style the file input field as button -->
                                         <span class="fileinput-button">
                                             <span>Add Files</span>
@@ -158,7 +158,7 @@
          
         <div>
             <button id="backButton"><span class="ui-icon ui-icon-arrowreturnthick-1-w"></span>Back</button>
-            <h1>New Search Form</h1>
+            <h1>New Xi Search Form</h1>
             <div id="acquire"></div>
             <div id="sequence"></div>
         
@@ -196,10 +196,20 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-2">
-                        <button id="startProcessing">Submit New Search</button>
+                    <div class="col-6">
+                        <h3>Submit</h3>
+                        <div class="col-2">
+                            <button id="startProcessing" disabled>Submit New Search</button>
+                        </div>
+                        <div class="col-4">
+                            <div class="row">
+                                <div class="col-12 paramSetting">
+                                    <label for="privacy">Set Search As Private?</label><input name="privacy" type="checkbox" id="privacy"></div>
+                            </div>
+                            <div id="todo"></div>
+                        </div>
                     </div>
-                    <div class="col-4" id="todo"></div>
+                    
                     <div class="col-6 paramSetting" id="paramNotes"></div>
                 </div>
 

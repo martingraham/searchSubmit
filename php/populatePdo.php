@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (empty ($_SESSION['session_name'])) {
-    header("location:login.html");
+    header("location:../xi3/login.html");
 }
 
 $pageName = "New Search";

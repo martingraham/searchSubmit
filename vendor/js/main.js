@@ -26,12 +26,13 @@ submitter.upload = function (myOptions) {
     $('.fileupload').each(function () {
         var id = d3.select(this).attr("id");
         var opts = myOptions[id];
+        console.log ("options", opts);
         var r = new RegExp ("(\.|\/)("+opts.fileTypes+")$", "i");
         $(this).fileupload({
             dropZone: $(this),
             //sequentialUploads: true,
             //acceptFileTypes: /(\.|\/)(zip)$/i,
-            processQueue: [{ action: 'validate', acceptFileTypes: r}]
+            processQueue: [{ action: 'validate', acceptFileTypes: r, maxFileSize: opts.maxFileSize}]
         });
     });
 

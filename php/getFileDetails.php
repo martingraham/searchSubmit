@@ -1,13 +1,13 @@
 <?php
 session_start();
+include('utils.php');
+
 if (empty ($_SESSION['session_name'])) {
-    // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
-    echo (json_encode (array ("redirect" => "./login.html")));
+    ajaxLoginRedirect();
 }
 else {
 
     include('../../connectionString.php');
-    include('utils.php');
 
     try {
         throw new Exception ("Temporary feature embargo until xi3 release.", 403); // this line prevents file downloading
@@ -19,7 +19,7 @@ else {
         $canSeeAll = $userRights["canSeeAll"];
         
         if (!$userRights["canAddNewSearch"]) {
-            echo json_encode (array ("redirect" => 'login.html'));
+            ajaxHistoryRedirect("You don't have permission to download this file due to your user role.");  // Shouldn't get here, but still... defensive coding
         } else {
             $type = $_POST["type"];
             $datum = $_POST["datum"];

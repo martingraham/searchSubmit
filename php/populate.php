@@ -1,13 +1,12 @@
 <?php
 session_start();
+include('utils.php');
 if (empty ($_SESSION['session_name'])) {
-    // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
-    echo (json_encode (array ("redirect" => "./login.html")));
+    ajaxLoginRedirect();
 }
 else {
 
     include('../../connectionString.php');
-    include('utils.php');
 
     try {
         //open connection
@@ -19,14 +18,14 @@ else {
         $canSeeAll = $userRights["canSeeAll"];
         
         if (!$userRights["canAddNewSearch"]) {
-            echo json_encode (array ("redirect" => 'login.html'));
+            ajaxHistoryRedirect ($userRights["searchDenyReason"]);
         } else {
             $possibleValues = array();
         
             $getFieldValues = array (
                 "enzymes" => array ("q" => "SELECT id, name from enzyme ORDER by name"),
                 "ions" => array ("q" => "SELECT id, name from ion ORDER by name"),
-                "xlinkers" => array ("q" => "SELECT id, name from crosslinker ORDER by name"),
+                "xlinkers" => array ("q" => "SELECT id, mass, name from crosslinker ORDER by name"),
                 "losses" => array ("q" => "SELECT id, name from loss ORDER by name"),
                 "modifications" => array ("q" => "SELECT id, name from modification ORDER by name"),
                 "previousAcqui" => $canSeeAll 
@@ -49,6 +48,9 @@ else {
                 $result = pg_execute ($dbconn, $key, $params);
                 $possibleValues[$key] = resultsAsArray($result);
             }
+            
+            // Add user rights so interface can provide appropriate labelling
+            $possibleValues["userRights"] = $userRights;
             
             // Get basedir for file uploads
             $query = "SELECT setting FROM base_setting WHERE name='base_directory_path';";
