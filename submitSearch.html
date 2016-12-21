@@ -158,7 +158,7 @@
          
         <div>
             <button id="backButton"><span class="ui-icon ui-icon-arrowreturnthick-1-w"></span>Back</button>
-            <h1>New Search Form</h1>
+            <h1>New Xi Search Form</h1>
             <div id="acquire"></div>
             <div id="sequence"></div>
         
@@ -196,11 +196,20 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-2">
-                        <div class="col-12 paramSetting"><label for="privacy">Mark Search As Private?</label><input name="privacy" type="checkbox" id="privacy"></div>
-                        <button id="startProcessing" disabled>Submit New Search</button>
+                    <div class="col-6">
+                        <h3>Submit</h3>
+                        
+                        <div class="col-2">
+                            <button id="startProcessing" disabled>Submit New Search</button>
+                        </div>
+                        <div class="col-4">
+                            <div class="row">
+                                <div class="col-12 paramSetting"><label for="privacy">Set Search As Private?</label><input name="privacy" type="checkbox" id="privacy"></div>
+                            </div>
+                            <div id="todo"></div>
+                        </div>
                     </div>
-                    <div class="col-4" id="todo"></div>
+                    
                     <div class="col-6 paramSetting" id="paramNotes"></div>
                 </div>
 

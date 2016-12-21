@@ -1,3 +1,7 @@
+body {
+    counter-reset: section;
+}
+
 * {
     box-sizing: border-box;
     line-height: 0.8em;
@@ -34,8 +38,7 @@
 
 [class*="col-"] {
     display: table-cell;
-    padding: 0.3em 0.5em;
-    padding-top: 0.2em;
+    padding: 0.1em 0.5em 0.3em 0.5em;
     vertical-align: top;
 }
 
@@ -87,10 +90,12 @@ div.row > span.fileNameExists {
 
 #todo {
     background: #fdd;
+    border: 1px solid #caa;
 }
 
 #todo.paramSubmitReady {
     background: #dfd;
+    border: 1px solid #aca;
 }
 
 #todo span {
@@ -112,6 +117,10 @@ H3 {
     word-wrap: break-word;
 }
 
+[class*="col-"]:not(.paramSetting) > H3:before {
+    counter-increment: section;
+    content: counter(section) ". ";
+}
 
 .previousTable {
     table-layout: auto;
@@ -264,4 +273,13 @@ input[type='number'], input[type='text'] {
     width: 50%;
     margin-top: 0.5em;
     transform: translate(50%, 0%);
+}
+
+.maxFile {
+    text-transform: uppercase;
+}
+
+#startProcessing {
+    margin-top: 0.25em;
+    text-transform: uppercase;
 }

@@ -41,8 +41,8 @@ CLMSUI.jqdialogs = {
     },
     
     redirectDialog: function (dialogID, redirectUrl, why) {
-        var msg = why ? "<br>"+why+"<br>": "<br>You need to be logged in to use the Search Submission page.<br>Press the button below to go to the Login page.<br>";
-        CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, why ? "No New Search Permission" : "Not Logged In !");
+        var msg = why ? "<br>"+why+"<br>": "<br>You need to be logged in to use the Search Submission page.<br>Press 'OK' to access the Login page.<br>";
+        CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, why ? "No New Search Permission" : "Login Required");
         
         function redirectAction () {
              $(this).dialog("close").dialog("destroy").remove();

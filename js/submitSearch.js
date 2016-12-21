@@ -57,7 +57,7 @@ CLMSUI.buildSubmitSearch = function () {
         var textBoxData = [
             {domid: "#paramNotes", niceLabel: "Search Notes", labelTag: "P", placeholderText: "Click here to add notes..."},
             {domid: "#paramCustom", niceLabel: "Custom Settings", labelTag: "H3", placeholderText: "Click here to add custom settings..."},
-            {domid: "#paramSearchName", niceLabel: "New Search Name", labelTag: "P", placeholderText: "If left empty, search will use acquisition names", rows: 1, maxLength: 1000},
+            {domid: "#paramSearchName", niceLabel: "New Search Name", labelTag: "P", placeholderText: "If left empty, the search name will be the acquisition names + timestamp", rows: 1, maxLength: 1000},
         ];
         textBoxData.forEach (function (settings) {
             var elem = d3.select(settings.domid);
@@ -196,7 +196,8 @@ CLMSUI.buildSubmitSearch = function () {
 
     $(document).ready (function () {
         
-        var pbar = CLMSUI.jqdialogs.waitDialog ("databaseLoading", "Please Wait...", "Populating Fields");
+        var waitDialogID = "databaseLoading";
+        var pbar = CLMSUI.jqdialogs.waitDialog (waitDialogID, "Please Wait...", "Populating Fields");
         $.ajax ({
             type: "GET",
             url: "./php/populate.php",
@@ -204,7 +205,8 @@ CLMSUI.buildSubmitSearch = function () {
             encode: true,
             complete: function () {
                 pbar.progressbar("destroy");
-                $("#databaseLoading").dialog("destroy");
+                $("#"+waitDialogID).dialog("destroy");
+                d3.select("#"+waitDialogID).remove();
             },
             success: gotChoicesResponse,
             error: function (jqXhr, textStatus, errorThrown) {
