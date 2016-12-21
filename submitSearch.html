@@ -116,7 +116,7 @@
                                 <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
                                 <div class="row fileupload-buttonbar">
                                     <div class="fileupload-buttons">
-                                        <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="{%=o.singleLabel%} Name Required" size="30" style="width:33%"></input>
+                                        <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="{%=o.sPronoun%} {%=o.singleLabel%} Name is Required" size="30" style="width:33%"></input>
                                         <!-- The fileinput-button span is used to style the file input field as button -->
                                         <span class="fileinput-button">
                                             <span>Add Files</span>
@@ -198,13 +198,13 @@
                 <div class="row">
                     <div class="col-6">
                         <h3>Submit</h3>
-                        
                         <div class="col-2">
                             <button id="startProcessing" disabled>Submit New Search</button>
                         </div>
                         <div class="col-4">
                             <div class="row">
-                                <div class="col-12 paramSetting"><label for="privacy">Set Search As Private?</label><input name="privacy" type="checkbox" id="privacy"></div>
+                                <div class="col-12 paramSetting">
+                                    <label for="privacy">Set Search As Private?</label><input name="privacy" type="checkbox" id="privacy"></div>
                             </div>
                             <div id="todo"></div>
                         </div>

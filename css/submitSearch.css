@@ -2,6 +2,8 @@ body {
     counter-reset: section;
 }
 
+/* https://www.ventureharbour.com/form-design-best-practices/ */
+
 * {
     box-sizing: border-box;
     line-height: 0.8em;
@@ -56,6 +58,16 @@ body {
     margin: 0;
 }
 
+#parameterForm .paramSetting {
+    border: 1px solid #ccc;
+    border-bottom: 0;
+}
+
+#parameterForm .paramSetting + .paramSetting {
+    border-left: 0;
+}
+
+
 .lrmargin {
     margin: 0 0.5em;
 }
@@ -80,12 +92,6 @@ div.row > span.fileNameExists {
 
 .progress-extended {
     line-height: 1.8em;
-}
-
-
-#parameterForm .paramSetting {
-    border: 1px solid #ccc;
-    border-bottom: 0;
 }
 
 #todo {
@@ -121,6 +127,7 @@ H3 {
     counter-increment: section;
     content: counter(section) ". ";
 }
+
 
 .previousTable {
     table-layout: auto;
@@ -159,7 +166,6 @@ H3 {
 }
 
 span.removable {
-    color: #444;
     /*border: 1px solid #ba6;*/
     border-radius: 0.3em;
     background: #fec;
@@ -167,6 +173,7 @@ span.removable {
     display: inline-block;
     margin-right: 0.15em;
     margin-bottom: 0.15em;
+    /*font-weight: bold;*/
 }
 
 span.removable button {
@@ -210,7 +217,7 @@ tr.template-download:nth-child(odd), tr.template-upload:nth-child(odd) {
     display: inline-block;
 }
 
-textarea, textarea.ui-state-default.formPart, input[type=text] {
+textarea, textarea.ui-state-default.formPart, input[type='text'] {
     color: #222;
     width: 100%;
     overflow-x: hidden;
@@ -221,6 +228,15 @@ textarea[rows="1"] {
     height: 1.8em;
     overflow-y: hidden;
 } 
+
+.ms-choice > span, input[type='number'] {
+    color: #222;
+    font-weight: bold;
+}
+
+input[type='number'], input[type='text'] {
+    height: 1.75em;
+}
 
 
 :-ms-input-placeholder {
@@ -253,10 +269,6 @@ textarea[rows="1"] {
 .ui-spinner {
     vertical-align: baseline;
     width: 5em;
-}
-
-input[type='number'], input[type='text'] {
-    height: 1.75em;
 }
 
 .no-close .ui-dialog-titlebar-close {
