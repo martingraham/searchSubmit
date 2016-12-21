@@ -431,10 +431,10 @@ CLMSUI.buildSubmitSearch = function () {
                 
                 var addToolTipListeners = function (cellSel) {
                     function enumerateText (arr) {
-                        var enumArr = arr.map (function (d,i) {
-                           return "<span class='acqNumber'>"+(i+1)+"</span>"+d; 
+                        var enumArr = arr.map (function (d) {
+                           return "<span class='acqTooltipDetails'>"+d+"</span>";   // acqNumber style does automatic css numbering, cool!
                         });
-                        return enumArr.join("<br>");
+                        return enumArr.join("");
                     }
                     
                     cellSel
@@ -496,7 +496,7 @@ CLMSUI.buildSubmitSearch = function () {
                     sel.html ("<TABLE><THEAD><TR></TR></THEAD><TBODY></TBODY></TABLE>");
                     sel.select("table")
                         .attr("id", baseId)
-                        .attr("class", "previousTable")
+                        .attr("class", "previousTable stripe")
                         .attr("title", psetting.niceLabel)
                     ;
                     
