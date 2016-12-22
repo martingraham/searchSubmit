@@ -1,13 +1,10 @@
 body {
     counter-reset: section;
-}
-
-/* https://www.ventureharbour.com/form-design-best-practices/ */
-
-* {
     box-sizing: border-box;
     line-height: 0.8em;
 }
+
+/* https://www.ventureharbour.com/form-design-best-practices/ */
 
 .col-1 {width: 8.33%;}
 .col-2 {width: 16.66%;}
@@ -52,6 +49,8 @@ body {
 
 .paramSetting {
     background: #eee;
+    border: 1px solid #ccc;
+    border-right: 0;
 }
 
 .paramSetting P {
@@ -59,24 +58,20 @@ body {
     margin: 0;
 }
 
-#parameterForm .paramSetting {
-    border: 1px solid #ccc;
-    border-right: 0;
-}
-
-#parameterForm .row .paramSetting:last-child {
+.row .paramSetting:last-child {
     border-right: 1px solid #ccc;
 }
 
 
 .lrmargin {
-    margin: 0.2em 0.5em 0em 0.5em;
+    margin: 0.2em 0.5em 0 0.5em;
 }
 
+/*
 #acqUpload, #acquisitions-browse, #seqUpload, #sequence-browse {
     display: none;
 }
-
+*/
 
 .fileNameExists {
     display: none;
@@ -87,7 +82,7 @@ div.row > span.fileNameExists {
     background: none;
 }
 
-.fileNameExists span.ui-icon {
+.fileNameExists .ui-icon {
     display: inline-block;
 }
 
@@ -99,10 +94,10 @@ div.row > span.fileNameExists {
     background: #fdd;
     border: 1px solid #caa;
     margin-top: -1px;
-    padding: 0.5em 0em;
+    padding: 0.5em 0;
 }
 
-#todo.paramSubmitReady {
+.paramSubmitReady {
     background: #dfd;
     border: 1px solid #aca;
 }
@@ -156,13 +151,17 @@ H3 {
     display: block;
 }
 
-#mgtooltip {
+.mgTooltip {
     counter-reset: tooltipCount;
 }
 
 .acqTooltipDetails:before {
     counter-increment: tooltipCount;
     content: counter(tooltipCount) ".\0009";
+}
+
+.mgTooltip h2 {
+    text-transform: capitalize;
 }
 
 
@@ -188,7 +187,7 @@ span.removable {
 span.removable button {
     border: 1px solid gray;
     /*width: 18px;*/
-    margin: 0em 0.3em;
+    margin: 0 0.3em;
     height: 1em;
 }
 
@@ -226,7 +225,7 @@ tr.template-download:nth-child(odd), tr.template-upload:nth-child(odd) {
     display: inline-block;
 }
 
-textarea, textarea.ui-state-default.formPart, input[type='text'] {
+textarea.formPart.ui-state-default, input[type='text'] {
     color: #222;
     width: 100%;
     overflow-x: hidden;
@@ -253,9 +252,9 @@ input[type='number'], input[type='text'] {
 }
 
 .ui-dialog {
-    -webkit-box-shadow: 10px 10px 10px 0px rgba(0,0,0,0.5);
-    -moz-box-shadow: 10px 10px 10px 0px rgba(0,0,0,0.5);
-    box-shadow: 10px 10px 10px 0px rgba(0,0,0,0.5);
+    -webkit-box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
+    -moz-box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
+    box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
     border: 1px solid #444;
     -webkit-user-select: all;  /* Chrome all / Safari all */
     -moz-user-select: all;     /* Firefox all */

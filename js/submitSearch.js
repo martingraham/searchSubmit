@@ -613,7 +613,7 @@ CLMSUI.buildSubmitSearch = function () {
                 ;
 
                 var happyToDo = function (happy) {
-                    d3.select("#todo span.ui-icon")
+                    d3.select("#todo .ui-icon")
                         .classed ("ui-icon-notice", !happy)
                         .classed ("ui-icon-check", happy)
                     ;
@@ -623,7 +623,7 @@ CLMSUI.buildSubmitSearch = function () {
                 };
 
                 var toDoMessage = function (msg) {
-                    d3.select("#todo span.notice").html(msg);
+                    d3.select("#todo .notice").html(msg);
                 };
                 
                 dispatchObj.on ("formInputChanged", function () {
