@@ -780,11 +780,14 @@ CLMSUI.buildSubmitSearch = function () {
                             console.log ("file upload stopped", e, data, uploadSuccess);
                             dispatchObj.newFileAdded (type, "");
                             if (uploadSuccess) {
+                                var privateElem = d3.select(formid).select(".privacy");
+                                var private = privateElem.empty() ? false : privateElem.property("checked");
                                 var formData = {
                                     name: d3.select(textinputid).property("value"),
                                     filenames: filesUploaded,
                                     type: type,
                                     tabID: getTabSessionVar(),
+                                    private: private,
                                 };
                                 
                                 $.ajax ({

@@ -16,11 +16,17 @@ else {
         $userRights = getUserRights ($dbconn, $_SESSION["user_id"]);
         $_SESSION["canAddNewSearch"] = $userRights["canAddNewSearch"];
         $canSeeAll = $userRights["canSeeAll"];
+        $isSuperUser = $userRights["isSuperUser"];
         
         if (!$userRights["canAddNewSearch"]) {
             ajaxHistoryRedirect ($userRights["searchDenyReason"]);
         } else {
             $possibleValues = array();
+            
+            $seeAllCond = $canSeeAll ? "" : "users.id = $1 AND ";   // condition where only stuff for 1 user is returned (i.e. can't see other people's)
+            $privacyCond = $canSeeAll && !$isSuperUser ? "WHERE private = 'false' " : "";   // put a condition in where non-superusers don't see other users stuff marked as private
+            $pAcquiStr = "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User FROM acquisition JOIN users ON (".$seeAllCond."acquisition.uploadedby = users.id) ".$privacyCond."ORDER BY acquisition.id DESC";
+            $pSeqStr = "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User, file_name as file FROM sequence_file JOIN users ON (".$seeAllCond."sequence_file.uploadedby = users.id) ".$privacyCond."ORDER BY upload_date DESC";
         
             $getFieldValues = array (
                 "enzymes" => array ("q" => "SELECT id, name from enzyme ORDER by name"),
@@ -29,14 +35,12 @@ else {
                 "losses" => array ("q" => "SELECT id, name from loss ORDER by name"),
                 "modifications" => array ("q" => "SELECT id, name from modification ORDER by name"),
                 "previousAcqui" => $canSeeAll 
-                    ? array ("q" => "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User FROM acquisition JOIN users ON (acquisition.uploadedby = users.id) ORDER BY acquisition.id DESC")
-                    : array ("q" => "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User FROM acquisition JOIN users ON (users.id = $1 AND acquisition.uploadedby = users.id) ORDER BY acquisition.id DESC",
-                                 "params" => [$_SESSION["user_id"]] )
+                    ? array ("q" => $pAcquiStr)
+                    : array ("q" => $pAcquiStr, "params" => [$_SESSION["user_id"]])
                 ,
                 "previousSeq" => $canSeeAll 
-                    ? array ("q" => "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User, file_name as file FROM sequence_file JOIN users ON (sequence_file.uploadedby = users.id) ORDER BY upload_date DESC")
-                    : array ("q" => "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User, file_name as file FROM sequence_file JOIN users ON (users.id = $1 AND sequence_file.uploadedby = users.id) ORDER BY upload_date DESC",
-                             "params" => [$_SESSION["user_id"]] )
+                    ? array ("q" => $pSeqStr)
+                    : array ("q" => $pSeqStr, "params" => [$_SESSION["user_id"]])
                 ,
                 "filenames" => array ("q" => "SELECT acq_id, name FROM run ORDER by acq_id DESC")
             );
