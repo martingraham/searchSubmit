@@ -129,6 +129,9 @@
                                         <!-- The global file processing state -->
                                         <span class="fileupload-process"></span>
                                     </div>
+                                    <div>
+                                        <label class="privacyLabel"><input type="checkbox" default="false" class="privacy"></input></label>
+                                    </div>
                                     <!-- The global progress state -->
                                     <div class="fileupload-progress fade" style="display:none">
                                         <!-- The global progress bar -->
@@ -158,7 +161,7 @@
          
         <div>
             <button id="backButton"><span class="ui-icon ui-icon-arrowreturnthick-1-w"></span>Back</button>
-            <h1>New Xi Search Form</h1>
+            <h1>New Xi Search Form - <span id="username"></span></h1>
             <div id="acquire"></div>
             <div id="sequence"></div>
         
@@ -204,7 +207,7 @@
                         <div class="col-4">
                             <div class="row">
                                 <div class="col-12 paramSetting">
-                                    <label for="privacy">Set Search As Private?</label><input name="privacy" type="checkbox" id="privacy"></div>
+                                    <label for="privacy" title="If checked, only you and administrators will see this search">Set Search As Private?</label><input name="privacy" type="checkbox" id="privacy"></div>
                             </div>
                             <div id="todo"></div>
                         </div>

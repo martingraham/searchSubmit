@@ -303,3 +303,16 @@ input[type='number'], input[type='text'] {
     margin-top: 0.25em;
     text-transform: uppercase;
 }
+
+label.privacyLabel {
+    line-height: 1.5em;
+    color: #222;
+}
+
+label.privacyLabel:before {
+    content: 'Set Upload as Private';
+}
+
+#username {
+    text-transform: capitalize;
+}

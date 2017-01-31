@@ -71,11 +71,13 @@ else {
             pg_query("BEGIN") or die("Could not start transaction\n");
             
             if ($_SESSION["canAddNewSearch"]) {
+                
+                $private = isset($_POST["private"]) && ($_POST["private"] == "true") ? "true" : "false";
 
                 if ($_POST["type"] == "acq") {
                     $acqAdd = pg_prepare($dbconn, "acqAdd",
-                "INSERT INTO acquisition (uploadedby, name, upload_date) VALUES ($1, $2, NOW()) RETURNING id, name AS NAME, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date");
-                    $result = pg_execute($dbconn, "acqAdd", [$userID, $tstampname]);
+                "INSERT INTO acquisition (uploadedby, name, upload_date, private) VALUES ($1, $2, NOW(), $3) RETURNING id, name AS NAME, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date");
+                    $result = pg_execute($dbconn, "acqAdd", [$userID, $tstampname, $private]);
                     $returnRow = pg_fetch_assoc ($result); // return the inserted row (or selected parts thereof)
                     $returnRow["user"] = $username; // Add the username (will be username as this user added the row)
                     $returnRow["files"] = $filenames;
@@ -91,8 +93,8 @@ else {
                 } 
                 else if ($_POST["type"] == "seq") {
                     $seqAdd = pg_prepare($dbconn, "seqAdd",
-                "INSERT INTO sequence_file (uploadedby, name, file_name, file_path, upload_date) VALUES ($1, $2, $3, $4, NOW()) RETURNING id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, file_name as file");
-                    $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], $folder]);
+                "INSERT INTO sequence_file (uploadedby, name, file_name, file_path, private, upload_date) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, file_name as file");
+                    $result = pg_execute($dbconn, "seqAdd", [$userID, $tstampname, $filenames[0], $folder, $private]);
                     $returnRow = pg_fetch_assoc ($result);  // get the newly added row, need it to return to client ui
                     $returnRow["user"] = $username; // Add the username (will be username as this user added the row)
                 } 

@@ -244,6 +244,10 @@ CLMSUI.buildSubmitSearch = function () {
                 CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error);
             }
             else {     
+                // Add username
+                d3.select("#username").text(data.username[0].user_name);
+                
+                
                 // initialize blueimp file uploader bits. moved here cos we need userRights info
                 console.log ("submitter", submitter);
                 var uploadOptions = {
@@ -780,11 +784,14 @@ CLMSUI.buildSubmitSearch = function () {
                             console.log ("file upload stopped", e, data, uploadSuccess);
                             dispatchObj.newFileAdded (type, "");
                             if (uploadSuccess) {
+                                var privateElem = d3.select(formid).select(".privacy");
+                                var private = privateElem.empty() ? false : privateElem.property("checked");
                                 var formData = {
                                     name: d3.select(textinputid).property("value"),
                                     filenames: filesUploaded,
                                     type: type,
                                     tabID: getTabSessionVar(),
+                                    private: private,
                                 };
                                 
                                 $.ajax ({
