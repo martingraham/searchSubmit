@@ -42,7 +42,8 @@ else {
                     ? array ("q" => $pSeqStr)
                     : array ("q" => $pSeqStr, "params" => [$_SESSION["user_id"]])
                 ,
-                "filenames" => array ("q" => "SELECT acq_id, name FROM run ORDER by acq_id DESC")
+                "filenames" => array ("q" => "SELECT acq_id, name FROM run ORDER by acq_id DESC"),
+                "username" => array ("q" => "SELECT user_name FROM users WHERE id = $1", "params" => [$_SESSION["user_id"]]),
             );
 
             foreach ($getFieldValues as $key => $value) {

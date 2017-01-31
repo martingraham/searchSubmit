@@ -244,6 +244,10 @@ CLMSUI.buildSubmitSearch = function () {
                 CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error);
             }
             else {     
+                // Add username
+                d3.select("#username").text(data.username[0].user_name);
+                
+                
                 // initialize blueimp file uploader bits. moved here cos we need userRights info
                 console.log ("submitter", submitter);
                 var uploadOptions = {

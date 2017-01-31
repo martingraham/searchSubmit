@@ -312,3 +312,7 @@ label.privacyLabel {
 label.privacyLabel:before {
     content: 'Set Upload as Private';
 }
+
+#username {
+    text-transform: capitalize;
+}
