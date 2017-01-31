@@ -24,7 +24,7 @@ else {
             $possibleValues = array();
             
             $seeAllCond = $canSeeAll ? "" : "users.id = $1 AND ";   // condition where only stuff for 1 user is returned (i.e. can't see other people's)
-            $privacyCond = $canSeeAll && !$isSuperUser ? "WHERE private = 'false' " : "";   // put a condition in where non-superusers don't see other users stuff marked as private
+            $privacyCond = $canSeeAll && !$isSuperUser ? "WHERE private = 'false' OR users.id = $1 " : "";   // put a condition in where non-superusers don't see other users stuff marked as private
             $pAcquiStr = "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User FROM acquisition JOIN users ON (".$seeAllCond."acquisition.uploadedby = users.id) ".$privacyCond."ORDER BY acquisition.id DESC";
             $pSeqStr = "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User, file_name as file FROM sequence_file JOIN users ON (".$seeAllCond."sequence_file.uploadedby = users.id) ".$privacyCond."ORDER BY upload_date DESC";
         
@@ -34,11 +34,11 @@ else {
                 "xlinkers" => array ("q" => "SELECT id, mass, name from crosslinker ORDER by name"),
                 "losses" => array ("q" => "SELECT id, name from loss ORDER by name"),
                 "modifications" => array ("q" => "SELECT id, name from modification ORDER by name"),
-                "previousAcqui" => $canSeeAll 
+                "previousAcqui" => $isSuperUser 
                     ? array ("q" => $pAcquiStr)
                     : array ("q" => $pAcquiStr, "params" => [$_SESSION["user_id"]])
                 ,
-                "previousSeq" => $canSeeAll 
+                "previousSeq" => $isSuperUser 
                     ? array ("q" => $pSeqStr)
                     : array ("q" => $pSeqStr, "params" => [$_SESSION["user_id"]])
                 ,
