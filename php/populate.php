@@ -56,6 +56,7 @@ else {
             
             // Add user rights so interface can provide appropriate labelling
             $possibleValues["userRights"] = $userRights;
+            $possibleValues["username"] = $possibleValues["username"][0]["user_name"];
             
             // Get basedir for file uploads
             $query = "SELECT setting FROM base_setting WHERE name='base_directory_path';";

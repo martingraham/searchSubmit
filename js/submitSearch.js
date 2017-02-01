@@ -245,7 +245,7 @@ CLMSUI.buildSubmitSearch = function () {
             }
             else {     
                 // Add username
-                d3.select("#username").text(data.username[0].user_name);
+                d3.select("#username").text(data.username);
                 
                 
                 // initialize blueimp file uploader bits. moved here cos we need userRights info
