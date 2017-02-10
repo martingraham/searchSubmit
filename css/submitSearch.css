@@ -97,7 +97,7 @@ div.row > span.fileNameExists {
     padding: 0.5em 0;
 }
 
-.paramSubmitReady {
+#todo.paramSubmitReady {
     background: #dfd;
     border: 1px solid #aca;
 }
