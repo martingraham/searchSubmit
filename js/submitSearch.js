@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    //console.disableLogging();
+    console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -399,7 +399,7 @@ CLMSUI.buildSubmitSearch = function () {
                     rowSel.selectAll("button.download")
                         .on ("click", function(d) {
                             d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
-                            console.log ("button pressed", d);
+                            //console.log ("button pressed", d);
                             if (d) {
                                 var fdata = {type: d.files ? "acq" : "seq", datum: d};
 
@@ -988,7 +988,7 @@ CLMSUI.buildSubmitSearch = function () {
             var hashlessDomID = domID.slice(1);
             var userAltered = CLMSUI.buildSubmitSearch.userAltered[hashlessDomID];
             var currentValue = $(domID).val();
-            console.log ("user altered", domID, userAltered, currentValue);
+            // console.log ("user altered", domID, userAltered, currentValue);
             // overwrite logic:
             // Happens When
             // 1. The new value is non-falsey OR if the emptyOverwrite option is set (so "" can be passed in)
