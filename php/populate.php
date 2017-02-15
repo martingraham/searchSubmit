@@ -23,8 +23,10 @@ else {
         } else {
             $possibleValues = array();
             
-            $seeAllCond = $canSeeAll ? "" : "users.id = $1 AND ";   // condition where only stuff for 1 user is returned (i.e. can't see other people's)
-            $privacyCond = $canSeeAll && !$isSuperUser ? "WHERE private = 'false' OR users.id = $1 " : "";   // put a condition in where non-superusers don't see other users stuff marked as private
+            // condition where only stuff for 1 user is returned (i.e. can't see other people's)
+            $seeAllCond = $canSeeAll ? "" : "users.id = $1 AND "; 
+            // put a condition in where non-superusers don't see other users stuff marked as private (or indeed anything from users who are hidden)
+            $privacyCond = $canSeeAll && !$isSuperUser ? "WHERE (private = 'false' AND COALESCE(users.hidden, FALSE) = FALSE) OR users.id = $1 " : "";
             $pAcquiStr = "SELECT acquisition.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User FROM acquisition JOIN users ON (".$seeAllCond."acquisition.uploadedby = users.id) ".$privacyCond."ORDER BY acquisition.id DESC";
             $pSeqStr = "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User, file_name as file FROM sequence_file JOIN users ON (".$seeAllCond."sequence_file.uploadedby = users.id) ".$privacyCond."ORDER BY upload_date DESC";
         
