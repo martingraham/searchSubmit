@@ -121,6 +121,10 @@ H3 {
     word-wrap: break-word;
 }
 
+[class*="col-"]:not(.paramSetting) > H3 {
+    border-top: 5px solid #ccc;
+}
+
 [class*="col-"]:not(.paramSetting) > H3:before {
     counter-increment: section;
     content: counter(section) ". ";
@@ -191,15 +195,31 @@ span.removable button {
     height: 1em;
 }
 
+.chosenFiles {
+    color: black;
+    counter-reset: chosenCount;
+    /*padding-top: 0.55em;*/
+}
+
+.chosenFiles span.removable::before {
+    counter-increment: chosenCount;
+    content: counter(chosenCount) ". ";
+}
+
+/* Multiple file upload not possible for sequences, so don't need to number those */
+#acquire .fileupload {
+    counter-reset: newFileCount;
+}
+
+#acquire .fileupload .name::before {
+    counter-increment: newFileCount;
+    content: counter(newFileCount) ". ";
+}
+
 
 .progress {
     line-height: 2em;
     padding-left: 0.2em;
-}
-
-.chosenFiles {
-    color: black;
-    padding-top: 0.55em;
 }
 
 .hiddenFromUser {
@@ -231,6 +251,11 @@ textarea.formPart.ui-state-default, input[type='text'] {
     overflow-x: hidden;
 }
 
+input:required:invalid {
+    background: #fee;
+    border: 1px solid red;
+}
+
 textarea[rows="1"] {
     line-height: 1.8em;
     height: 1.8em;
@@ -244,6 +269,11 @@ textarea[rows="1"] {
 
 input[type='number'], input[type='text'] {
     height: 1.75em;
+}
+
+/* Move placeholder and entered text away from sitting hard against input box border */
+.uploadTemplate input[type='text'] {
+    text-indent: 0.25em;
 }
 
 
