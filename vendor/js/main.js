@@ -32,7 +32,7 @@ submitter.upload = function (myOptions) {
             dropZone: $(this),
             //sequentialUploads: true,
             //acceptFileTypes: /(\.|\/)(zip)$/i,
-            processQueue: [{ action: 'validate', acceptFileTypes: r, maxFileSize: opts.maxFileSize}]
+            processQueue: [{ action: 'validate', acceptFileTypes: r, maxFileSize: opts.maxFileSize, maxNumberOfFiles: opts.maxNumberOfFiles || 1000}]
         });
     });
 

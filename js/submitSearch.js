@@ -40,8 +40,8 @@ CLMSUI.buildSubmitSearch = function () {
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
         var acqSeqTemplateData = [
-            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "sPronoun":"A", "partialId":"seq", "fileTypes":".fasta,.txt", "tabVal": getTabSessionVar()}},
-            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "sPronoun": "An", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip", "tabVal":getTabSessionVar()}},
+            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "sPronoun":"A", "partialId":"seq", "fileTypes":".fasta,.txt", "tabVal": getTabSessionVar(), addLabel: "Add File"}},
+            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "sPronoun": "An", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip", "tabVal":getTabSessionVar(), addLabel: "Add Files", multipleUpload: true}},
         ];
         acqSeqTemplateData.forEach (function (datum) {
             d3.select(datum.id)
@@ -251,7 +251,7 @@ CLMSUI.buildSubmitSearch = function () {
                 // initialize blueimp file uploader bits. moved here cos we need userRights info
                 console.log ("submitter", submitter);
                 var uploadOptions = {
-                    "seqfileupload": {"fileTypes":"fasta|txt", "maxFileSize": data.userRights.maxAAs || 1024},
+                    "seqfileupload": {"fileTypes":"fasta|txt", "maxFileSize": data.userRights.maxAAs || 1024, "maxNumberOfFiles": 1},
                     "acqfileupload": {"fileTypes":"mgf|msm|apl|zip", "maxFileSize": (data.userRights.maxSpectra * 2) || 100000}
                 };
                 // This was easier than waiting to initialise the acq/seq templates because of one extra bit of info

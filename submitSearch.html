@@ -97,13 +97,16 @@
          
         <script id="template-acqseq-section" type="text/x-tmpl">
              <div class="row">
-                <div class="col-2"><h3>Choose {%=o.pluralLabel%}</h3></div>
-                <div class="col-10"><p id="{%=o.partialId%}Selected" class="chosenFiles"></p></div>
+                <div class="col-12"><h3>Choose {%=o.pluralLabel%}</h3></div>
+                <!-- <div class="col-10"><p id="{%=o.partialId%}Selected" class="chosenFiles"></p></div> -->
+            </div>
+            <div class="row">
+                <div class="col-12"><p id="{%=o.partialId%}Selected" class="chosenFiles"></p></div>
             </div>
             <div class="row">
                 <div class="col-12">
                     <div id="{%=o.partialId%}Accordion">
-                        <h3>Upload New {%=o.pluralLabel%}</h3>
+                        <h3>Upload New {%=o.singleLabel%}</h3>
 
                         <div id="{%=o.partialId%}Upload">
                             <div class="row uploadLabels">
@@ -116,14 +119,16 @@
                                 <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
                                 <div class="row fileupload-buttonbar">
                                     <div class="fileupload-buttons">
-                                        <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="{%=o.sPronoun%} {%=o.singleLabel%} Name is Required" size="30" style="width:33%"></input>
+                                        <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="A Name is Required for this {%=o.singleLabel%}" size="30" style="width:33%" pattern=".{1,}" required></input>
                                         <!-- The fileinput-button span is used to style the file input field as button -->
                                         <span class="fileinput-button">
-                                            <span>Add Files</span>
+                                            <span>{%=o.addLabel%}</span>
                                             <input type="file" name="files[]" accept="{%=o.fileTypes%}" multiple>
                                         </span>
                                         <button type="submit" class="start">Start Upload</button>
-                                        <button type="reset" class="cancel">Remove All Files</button>
+                                        {% if (o.multipleUpload) { %}
+                                            <button type="reset" class="cancel">Remove All Files</button>
+                                        {% } %}
                                         <!-- <button type="button" class="delete">Delete</button> -->
                                         <!-- <input type="checkbox" class="toggle"> -->
                                         <!-- The global file processing state -->
