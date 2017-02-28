@@ -26,7 +26,7 @@ submitter.upload = function (myOptions) {
     $('.fileupload').each(function () {
         var id = d3.select(this).attr("id");
         var opts = myOptions[id];
-        console.log ("options", opts);
+        //console.log ("options", opts);
         var r = new RegExp ("(\.|\/)("+opts.fileTypes+")$", "i");
         $(this).fileupload({
             dropZone: $(this),

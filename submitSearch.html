@@ -122,8 +122,13 @@
                                         <input type="text" value="" id="new{%=o.partialId%}ID" name="new{%=o.partialId%}ID" placeholder="A Name is Required for this {%=o.singleLabel%}" size="30" style="width:33%" pattern=".{1,}" required></input>
                                         <!-- The fileinput-button span is used to style the file input field as button -->
                                         <span class="fileinput-button">
-                                            <span>{%=o.addLabel%}</span>
-                                            <input type="file" name="files[]" accept="{%=o.fileTypes%}" multiple>
+                                            {% if (o.multipleUpload) { %}
+                                                <span>Add Files</span>
+                                                <input type="file" name="files[]" accept="{%=o.fileTypes%}" multiple>
+                                            {% } else { %}
+                                                <span>Add File</span>
+                                                <input type="file" name="files" accept="{%=o.fileTypes%}">
+                                            {% } %} 
                                         </span>
                                         <button type="submit" class="start">Start Upload</button>
                                         {% if (o.multipleUpload) { %}
