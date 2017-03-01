@@ -457,7 +457,7 @@ CLMSUI.buildSubmitSearch = function () {
                 var setHeaderRow = function (tableSel, columnNames, autoWidths) {
                     var hrow = tableSel.select("thead tr");
                     columnNames.push("download");
-                    columnNames.push("selected");
+                    columnNames.push("choose");
                     var vcWidth = Math.floor (100.0 / Math.max (1, autoWidths.size()))+"%";
                     
                     hrow.selectAll("th").remove();
@@ -479,6 +479,9 @@ CLMSUI.buildSubmitSearch = function () {
                         "columnDefs": [
                             {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
                         ],
+                        "language": {
+                            search: "Find:",
+                        },
                     });
                 };
                 
@@ -889,7 +892,7 @@ CLMSUI.buildSubmitSearch = function () {
                     }
 
                     newRow.download = "<button class='download'/>";
-                    newRow.selected = "<input type='checkbox'>";    // add a checkbox as a html string for display in the table
+                    newRow.choose = "<input type='checkbox'>";    // add a checkbox as a html string for display in the table
                     
                     // keep field order same as existing table header if possible
                     var order = d3.select("#"+tableId+" thead").selectAll("th").data();
