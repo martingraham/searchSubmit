@@ -267,7 +267,7 @@ CLMSUI.buildSubmitSearch = function () {
                 // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                 // Multiple Selects need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
                 var populateOptionLists = [
-                    {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker", textFunc: function(d) { return d.name+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }},
+                    {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker <span class='xlinkerMassHead'>¦ Mass</span>", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker", textFunc: function(d) { return d.name+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }},
                     {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
                     {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications",},
                     {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications",},
@@ -276,7 +276,7 @@ CLMSUI.buildSubmitSearch = function () {
                 ];
                 populateOptionLists.forEach (function (poplist) {
                     var elem = d3.select(poplist.domid);
-                    elem.append("p").text(poplist.niceLabel);
+                    elem.append("p").html(poplist.niceLabel);
                     var baseId = poplist.domid.slice(1)+"Select";
                     var selElem = elem.append("select")
                         .attr("id", baseId)
