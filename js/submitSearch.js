@@ -482,12 +482,29 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                 };
                 
+                /* Very slow */
                 var makeJQUIButtons = function (id) {
+                    /*
                      $("#"+id+" button").button({
                         icons: { primary: "ui-icon-arrowthickstop-1-s"},
                         text: false,
                     });
-                }
+                    */
+                };
+                
+                /* Faster to set button classes directly, 20x faster in fact - 3840ms for makeJQUIButtons, 190ms for this routine */
+                var styleSingleDownloadButton = function () {
+                    var sel = d3.select(this);
+                    sel
+                        .attr("class", "download ui-button ui-widget ui-corner-all ui-state-default ui-button-icon-only")
+                        // hide button if no files (shouldn't happen but it can)
+                        .style("display", function(d) { return !d.files || d.files.length > 0 ? null : "none"; })
+                    ;
+                    sel.append ("span")
+                        .attr("class", "ui-button-icon-primary ui-icon ui-icon-arrowthickstop-1-s");
+                    sel.append("span")
+                        .attr("class", "ui-button-text");
+                };
                 
                 // Settings for tables of previous acquisitions / sequences
                 var previousSettings = {
@@ -521,13 +538,12 @@ CLMSUI.buildSubmitSearch = function () {
                         .call (addToolTipListeners)
                     ;
 
-                    newRows.append("td").append("button").attr("class", "download")
-                        // hide button if no files (shouldn't happen but it can)
-                        .style("display", function(d) { return !d.files || d.files.length > 0 ? null : "none"; })
+                    newRows.append("td").append("button")
+                        .each (styleSingleDownloadButton)
                     ;
                     newRows.append("td").append("input").attr("type", "checkbox");
                     
-                    makeJQUIButtons (baseId); 
+                    //makeJQUIButtons (baseId); 
                     makeDataTable (baseId); // add the DataTable bells n whistles to the DOM table
                     
                     // this stuffs a hidden input field in the main parameter search form
@@ -894,19 +910,22 @@ CLMSUI.buildSubmitSearch = function () {
                     var newRowD3 = d3.select(newRowNode)
                         .datum(newRow)  // set the row data on the new tr dom node as a d3 datum
                         //.call (addRowListeners, tableId)
+                    ;
                     newRowD3
-                        .selectAll("td").data(function(d) { return d3.entries(d); })    // Set individual data on cells from the row data
+                        .selectAll("td")
+                            .data(function(d) { return d3.entries(d); })    // Set individual data on cells from the row data
                             .filter (function(d) { return autoWidths.has(d.key); })  // filter using settings for accordions
                             .call (addToolTipListeners, tableId)
                     ;
-                    // jquery ui the download button
-                    makeJQUIButtons (tableId);
+                    
+                    //makeJQUIButtons (tableId);    // jquery ui the download button
                     newRowD3
                         .call (addRowListeners, tableId)    // add listeners to row
                         .selectAll("td")    // set download button to hold newrow object (same as in previous rows)
                             .filter(function(d) { return d.key === "download"; })
                             .select("button")
                             .datum (newRow)
+                            .each (styleSingleDownloadButton)   // replaces makeJQUIButtons
                     ;
                     newRow.isSelected = true;   // Set as selected in the datum, this will be pushed through to the checkbox and the selected area in the following code
                     prevTableClickFuncs[tableId] ();   // and we call the same func here as the checkbox is set pre-selected
