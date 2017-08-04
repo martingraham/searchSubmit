@@ -1,4 +1,4 @@
-/*jslint maxerr: 150*/
+/*jslint browser: true, white: true, bitwise: true, plusplus: true, stupid: true, maxerr: 150*/
 var CLMSUI = CLMSUI || {};
 
 CLMSUI.buildSubmitSearch = function () {
@@ -746,6 +746,18 @@ CLMSUI.buildSubmitSearch = function () {
                         var resetBlocked = (nonzeroes.filesAwaiting === 0);
                         buttons = $(formid+" button[type='reset']");
                         buttons.button ("option", "disabled", resetBlocked); 
+                        
+                        // disable single file upload inputs if a file is waiting to upload i.e. already selected
+                        // this is trickier because it's not a button, it's an input wrapped in a span with a button role
+                        var singleFileUploadOnly = !resetBlocked;
+                        buttons = $(formid+" input[name='files']");
+                        buttons.prop ("disabled", singleFileUploadOnly);
+                        var spans = buttons.parents(".fileinput-button");
+                        spans
+                            .toggleClass ("ui-button-disabled ui-state-disabled", singleFileUploadOnly)   // force span to look disabled
+                            .removeClass ("ui-state-hover")   // dunno why hover state doesn't switch off by itself, maybe because the button gets disabled?
+                        ;
+                        
                     };
                     this.buttonEnabler = enabler;
                     var uploadSuccess = true;
