@@ -23,6 +23,14 @@ submitter.upload = function (myOptions) {
     //        url: ''
     //    });
     
+    var perUploadRestriction = function () {
+        console.log ("children", this.filesContainer.children());
+        // previouslyUplaoded is class added in template-download
+        // with this query here it means previously uploaded files don't count towards the max_file_upload limit
+        // only the files in the current upload in preparation
+        return this.filesContainer.children().not('.processing').not('.previouslyUploaded').length;
+    };
+    
     $('.fileupload').each(function () {
         var id = d3.select(this).attr("id");
         var opts = myOptions[id];
@@ -32,7 +40,13 @@ submitter.upload = function (myOptions) {
             dropZone: $(this),
             //sequentialUploads: true,
             //acceptFileTypes: /(\.|\/)(zip)$/i,
-            processQueue: [{ action: 'validate', acceptFileTypes: r, maxFileSize: opts.maxFileSize, maxNumberOfFiles: opts.maxNumberOfFiles || 1000}]
+            processQueue: [{
+                action: 'validate', 
+                acceptFileTypes: r, 
+                maxFileSize: opts.maxFileSize, 
+                maxNumberOfFiles: opts.maxNumberOfFiles || 1000,
+            }],
+            getNumberOfFiles: opts.maxNumberOfFiles ? perUploadRestriction : undefined,
         });
     });
 
