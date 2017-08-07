@@ -4,20 +4,27 @@ if (empty ($_SESSION['session_name'])) {
     header("location: ../xi3/login.html");
 }
 else {    
-    $file = $_SESSION["baseDir"].$_GET["relPath"];
-    //error_log (print_r ($file, true));
-    if (file_exists($file)) {
-        //ini_set('memory_limit', '1024M'); 
-        header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename='.basename($file));
-        header('Pragma: no-cache');
-        header('Content-Length: '.filesize($file));
-        ob_clean();
-        flush();
-        //readfile($file);
-        readfile_chunked ($file);
+    $index = intval ($_GET["queueIndex"]);
+    
+    if (isset ($_SESSION['downloadQueue'])) {
+        $relPath = $_SESSION['downloadQueue'][$index];
+        $file = $_SESSION["baseDir"].$relPath;
+        //error_log (print_r ($file, true));
+        if ($relPath && file_exists($file)) {
+            //ini_set('memory_limit', '1024M'); 
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename='.basename($file));
+            header('Pragma: no-cache');
+            header('Content-Length: '.filesize($file));
+            ob_clean();
+            flush();
+            //readfile($file);
+            readfile_chunked ($file);
+        } else {
+            return array ("error" => "Sorry, the file cannot be found on the xi server", "errorType" => "File Error");
+        }
     } else {
-        return array ("error" => "Sorry, the file cannot be found on the xi server", "errorType" => "File Error");
+        return array ("error" => "No files queued for download", "errorType" => "Queue Empty");
     }
 }
 
