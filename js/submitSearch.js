@@ -492,14 +492,14 @@ CLMSUI.buildSubmitSearch = function () {
                 };
                 
                 /* Very slow */
+                /*
                 var makeJQUIButtons = function (id) {
-                    /*
                      $("#"+id+" button").button({
                         icons: { primary: "ui-icon-arrowthickstop-1-s"},
                         text: false,
                     });
-                    */
                 };
+                */
                 
                 /* Faster to set button classes directly, 20x faster in fact - 3840ms for makeJQUIButtons, 190ms for this routine */
                 var styleSingleDownloadButton = function () {
@@ -602,6 +602,29 @@ CLMSUI.buildSubmitSearch = function () {
                     }; 
 
                     newRows.call (addRowListeners, baseId);
+                });
+                
+                // dragover effect for drag'n'dropping files
+                // adapted from https://github.com/blueimp/jQuery-File-Upload/wiki/Drop-zone-effects
+                d3.select("body").on ("dragover", function () {
+                     var dropZones = $('.fileupload'),
+                        timeout = window.dropZoneTimeout;
+                    if (timeout) {
+                        // cancel any previous timeout if dragging still ongoing
+                        clearTimeout(timeout);
+                    } else {
+                        // otherwise highlight droppable areas on first go
+                        dropZones.addClass('in');
+                    }
+                    
+                    var hoveredDropZone = $(d3.event.target).closest(dropZones);
+                    dropZones.not(hoveredDropZone).removeClass('hover');
+                    hoveredDropZone.addClass('hover');
+                    // this clears the hover class once the drag action is no longer in effect
+                    window.dropZoneTimeout = setTimeout(function () {
+                        window.dropZoneTimeout = null;
+                        dropZones.removeClass('in hover');
+                    }, 100);                 
                 });
 
 

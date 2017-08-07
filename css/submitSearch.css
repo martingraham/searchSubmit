@@ -177,6 +177,11 @@ H3 {
     color: #888;
 }
 
+.uploadLabels div {
+    /* stop usual .cols-* bottom padding occurring within an uploadLabels area */
+    padding-bottom: 0;
+}
+
 span.removable {
     /*border: 1px solid #ba6;*/
     border-radius: 0.3em;
@@ -214,6 +219,23 @@ span.removable button {
 #acquire .fileupload .name::before {
     counter-increment: newFileCount;
     content: counter(newFileCount) ". ";
+}
+
+.fileupload {
+    /* make space for border to stop jumps */
+    border: 1px solid transparent;
+    padding: 0.5em;
+}
+
+.fileupload.hover, .fileupload.hover.in {
+    background: rgba(255, 255, 0, 0.4);
+    cursor: copy;
+    border: 1px solid grey;
+}
+
+.fileupload.in {
+    background: rgba(128, 128, 255, 0.4);
+    border: 1px solid grey;
 }
 
 
