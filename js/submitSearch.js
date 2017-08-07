@@ -251,7 +251,7 @@ CLMSUI.buildSubmitSearch = function () {
                 // initialize blueimp file uploader bits. moved here cos we need userRights info
                 console.log ("submitter", submitter);
                 var uploadOptions = {
-                    "seqfileupload": {"fileTypes":"fasta|txt", "maxFileSize": data.userRights.maxAAs || 1024, /*"maxNumberOfFiles": 1*/},
+                    "seqfileupload": {"fileTypes":"fasta|txt", "maxFileSize": data.userRights.maxAAs || 1024, maxNumberOfFiles: 1},
                     "acqfileupload": {"fileTypes":"mgf|msm|apl|zip", "maxFileSize": (data.userRights.maxSpectra * 2) || 100000}
                 };
                 // This was easier than waiting to initialise the acq/seq templates because of one extra bit of info
@@ -413,12 +413,18 @@ CLMSUI.buildSubmitSearch = function () {
                                         if (response.error) {
                                             CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
                                         } else if (response) {
+                                            var nonExistentFiles = response.filter (function (fileData) { return !fileData.exists; });
+                                            if (nonExistentFiles.length) {
+                                                CLMSUI.jqdialogs.errorDialog ("popErrorDialog", nonExistentFiles.length+" of the requested files cannot be found on the server<br>"+errorDateFormat (new Date()), "File Error");
+                                            }
                                             response.forEach (function (fileData, i) {
-                                                var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
-                                                if (i === 0) {
-                                                    window.location = url;
-                                                } else {
-                                                    window.open(url, "_blank");
+                                                if (fileData.exists) {
+                                                    var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
+                                                    if (i === 0) {
+                                                        window.location = url;
+                                                    } else {
+                                                        window.open(url, "_blank");
+                                                    }
                                                 }
                                             });
                                         }

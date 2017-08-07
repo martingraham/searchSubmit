@@ -15,7 +15,7 @@
         <link rel="stylesheet" href="css/submitSearch.css" />
         <link rel="stylesheet" href="css/tooltip.css" />
 
-        <script src="vendor/js/jquery-2.2.0.js"></script>
+        <script src="vendor/js/jquery-2.2.4.js"></script>
         <script src="vendor/js/jquery-ui.js"></script>
         <script src="vendor/js/d3.js"></script>
         <script src="vendor/js/jquery.dataTables.js"></script>
@@ -77,7 +77,7 @@
          
         <script id="template-download" type="text/x-tmpl">
             {% for (var i=0, file; file=o.files[i]; i++) { %}
-            <tr class="template-download fade">
+            <tr class="template-download fade previouslyUploaded">
                 <td>
                     {% if (!file.error) { %}
                         <span class="label">Uploaded </span>

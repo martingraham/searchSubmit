@@ -21,7 +21,7 @@
    // database connection needs to be open and user logged in for these functions to work
     function isSuperUser($dbconn, $userID) {
         $rights = getUserRights ($dbconn, $userID);
-        error_log (print_r ($rights, true));
+        //error_log (print_r ($rights, true));
         return $rights["isSuperUser"];
     }
 

@@ -10,7 +10,7 @@ else {
     include('../../connectionString.php');
 
     try {
-        throw new Exception ("Temporary feature embargo until xi3 release.", 403); // this line prevents file downloading
+        //throw new Exception ("Temporary feature embargo until xi3 release.", 403); // this line prevents file downloading
         //open connection
         $dbconn = pg_connect($connectionString);
         
@@ -36,6 +36,9 @@ else {
             }
             
             if ($canSeeAll || $files[0].uploadedby === $_SESSION["user_id"]) {
+                foreach ($files as &$file) {    // use & so $file is passed by reference, so modifications stick
+                    $file["exists"] = file_exists ($_SESSION["baseDir"].$file["file"]);
+                }
                 echo json_encode ($files);
             } else {
                 $date = date("d-M-Y H:i:s");
