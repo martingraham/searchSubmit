@@ -10,7 +10,11 @@ else {
     include('../../connectionString.php');
 
     try {
-        //throw new Exception ("Temporary feature embargo until xi3 release.", 403); // this line prevents file downloading
+        $type = $_POST["type"];
+        if ($type !== "seq") {
+            //throw new Exception ("Acquisiton file download currently disabled.", 403); // this line prevents acquisition file downloading
+        }
+        //throw new Exception ("Temporary feature embargo until xi3 release.", 403); // this line prevents any file downloading
         //open connection
         $dbconn = pg_connect($connectionString);
         
@@ -21,7 +25,6 @@ else {
         if (!$userRights["canAddNewSearch"]) {
             ajaxHistoryRedirect("You don't have permission to download this file due to your user role.");  // Shouldn't get here, but still... defensive coding
         } else {
-            $type = $_POST["type"];
             $datum = $_POST["datum"];
             //error_log (print_r ($datum, true));
 
