@@ -24,7 +24,6 @@ submitter.upload = function (myOptions) {
     //    });
     
     var perUploadRestriction = function () {
-        console.log ("children", this.filesContainer.children());
         // previouslyUplaoded is class added in template-download
         // with this query here it means previously uploaded files don't count towards the max_file_upload limit
         // only the files in the current upload in preparation

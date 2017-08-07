@@ -16,6 +16,8 @@ else {
         flush();
         //readfile($file);
         readfile_chunked ($file);
+    } else {
+        return array ("error" => "Sorry, the file cannot be found on the xi server", "errorType" => "File Error");
     }
 }
 

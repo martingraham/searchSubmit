@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    //console.disableLogging();
+    console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -413,12 +413,18 @@ CLMSUI.buildSubmitSearch = function () {
                                         if (response.error) {
                                             CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
                                         } else if (response) {
+                                            var nonExistentFiles = response.filter (function (fileData) { return !fileData.exists; });
+                                            if (nonExistentFiles.length) {
+                                                CLMSUI.jqdialogs.errorDialog ("popErrorDialog", nonExistentFiles.length+" of the requested files cannot be found on the server<br>"+errorDateFormat (new Date()), "File Error");
+                                            }
                                             response.forEach (function (fileData, i) {
-                                                var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
-                                                if (i === 0) {
-                                                    window.location = url;
-                                                } else {
-                                                    window.open(url, "_blank");
+                                                if (fileData.exists) {
+                                                    var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
+                                                    if (i === 0) {
+                                                        window.location = url;
+                                                    } else {
+                                                        window.open(url, "_blank");
+                                                    }
                                                 }
                                             });
                                         }
