@@ -42,6 +42,12 @@ else {
                 foreach ($files as &$file) {    // use & so $file is passed by reference, so modifications stick
                     $file["exists"] = file_exists ($_SESSION["baseDir"].$file["file"]);
                 }
+                $goodFiles = array_filter ($files, function ($var) { return $var["exists"]; });
+                $_SESSION["downloadQueue"] = array_column ($goodFiles, "file");
+                //error_log (print_r ($_SESSION["downloadQueue"], true));
+                foreach ($files as &$file) {    // wipe out filename data so it doesn't get returned to browser
+                    $file["file"] = "";
+                }
                 echo json_encode ($files);
             } else {
                 $date = date("d-M-Y H:i:s");
