@@ -544,7 +544,7 @@ CLMSUI.buildSubmitSearch = function () {
                     sel.select("table")
                         .attr("id", baseId)
                         .attr("class", "previousTable stripe")
-                        .attr("title", psetting.niceLabel)
+                        //.attr("title", psetting.niceLabel)    // removed as put annoying secondary tooltip on table
                     ;
                     
                     setHeaderRow (sel, d3.keys(psetting.data[0]), psetting.autoWidths);
