@@ -55,17 +55,24 @@ CLMSUI.buildSubmitSearch = function () {
         // Those with labeltag h3 can be accordion'ed later
         CLMSUI.buildSubmitSearch.userAltered = {};
         var textBoxData = [
-            {domid: "#paramNotes", niceLabel: "Search Notes", labelTag: "P", placeholderText: "Click here to add notes..."},
+            {domid: "#paramNotes", niceLabel: "Search Notes", labelTag: "label", placeholderText: "Click here to add notes..."},
             {domid: "#paramCustom", niceLabel: "Custom Settings", labelTag: "H3", placeholderText: "Click here to add custom settings..."},
-            {domid: "#paramSearchName", niceLabel: "New Search Name", labelTag: "P", placeholderText: "If left empty, the search name will be the acquisition names + timestamp", rows: 1, maxLength: 1000},
+            {domid: "#paramSearchName", niceLabel: "New Search Name", labelTag: "label", placeholderText: "If left empty, the search name will be the acquisition names + timestamp", rows: 1, maxLength: 1000},
         ];
         textBoxData.forEach (function (settings) {
             var elem = d3.select(settings.domid);
-            elem.append(settings.labelTag).text(settings.niceLabel);
+            var tid = settings.domid.slice(1)+"Value";
+            var label = elem.append(settings.labelTag).text(settings.niceLabel);
+            
             if (settings.labelTag === "H3") {
                 elem = elem.append("div");
+            } else {
+                label
+                    .attr ("class", "plike")
+                    .attr ("for", tid)   // for accessibility compliance, https://achecker.ca/checker/suggestion.php?id=95
+                ;
             }
-            var tid = settings.domid.slice(1)+"Value";
+
             elem.append("textarea")
                 .attr ({
                     class: "formPart",
@@ -75,7 +82,7 @@ CLMSUI.buildSubmitSearch = function () {
                     rows: settings.rows || 4,
                     id: tid,
                     name: tid,
-                    placeholder: settings.placeholderText
+                    placeholder: settings.placeholderText,
                 })
                 .classed ("ui-widget ui-state-default ui-corner-all", true)
                 .on ("keypress", function() {
@@ -93,8 +100,12 @@ CLMSUI.buildSubmitSearch = function () {
         ];
         numberInputSettings.forEach (function (settings) {
             var elem = d3.select(settings.domid);
-            elem.append("p").text(settings.niceLabel);
             var iid = settings.domid.slice(1)+"Value";
+            elem.append("label")    // label and for attr, for aria compliance, https://achecker.ca/checker/suggestion.php?id=95
+                .attr ("for", iid)  
+                .attr ("class", "plike")
+                .text(settings.niceLabel)
+            ;
             elem.append("input")
                 .attr ("type", "number")
                 .attr ("min", settings.min)
