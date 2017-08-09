@@ -2,6 +2,7 @@ body {
     counter-reset: section;
     box-sizing: border-box;
     line-height: 0.8em;
+    height: auto;
 }
 
 /* https://www.ventureharbour.com/form-design-best-practices/ */
@@ -18,22 +19,6 @@ body {
 .col-10 {width: 83.33%;}
 .col-11 {width: 91.66%;}
 .col-12 {width: 100%;}
-
-/*
-[class*="col-"] {
-    float: left;
-    padding: 0.3em 0.5em;
-    padding-top: 0.2em;
-}
-
-.row {}
-
-.row:after {
-    content: "";
-    clear: both;
-    display: block;
-}
-*/
 
 [class*="col-"] {
     display: table-cell;
@@ -67,11 +52,6 @@ body {
     margin: 0.2em 0.5em 0 0.5em;
 }
 
-/*
-#acqUpload, #acquisitions-browse, #seqUpload, #sequence-browse {
-    display: none;
-}
-*/
 
 .fileNameExists {
     display: none;
@@ -106,7 +86,7 @@ div.row > span.fileNameExists {
     display: inline-block;
 }
 
-P, H1, H3, span {
+P, H1, H3, span, label.plike {
     line-height: 1.4em;
 }
 
@@ -367,6 +347,11 @@ label.privacyLabel {
 
 label.privacyLabel:before {
     content: 'Set Upload as Private';
+}
+
+/* label that behaves like a paragraph */
+label.plike {
+    display: block;
 }
 
 #username {
