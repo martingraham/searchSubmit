@@ -424,26 +424,21 @@ CLMSUI.buildSubmitSearch = function () {
                                         if (response.error) {
                                             CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
                                         } else if (response) {
-                                            var nonExistentFiles = response.filter (function (fileData) { return !fileData.exists; });
-                                            if (nonExistentFiles.length) {
-                                                CLMSUI.jqdialogs.errorDialog ("popErrorDialog", nonExistentFiles.length+" of the requested files cannot be found on the server<br>"+errorDateFormat (new Date()), "File Error");
+                                            if (response.badFileCount) {
+                                                CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.badFileCount+" of the requested files cannot be found on the server<br>"+errorDateFormat (new Date()), "File Error");
                                             }
-                                            var goodIndex = 0;
-                                            response.forEach (function (fileData) {
-                                                if (fileData.exists) {
-                                                    // rather than bring back the file name to the server and send them to a php page, which could be well dodgy
-                                                    // (cos people could try filenames they shouldn't have access to, or get to know the filesystem setup etc)
-                                                    // we now build a queue of files server side in getFileDetails.php and call them by index
-                                                    //var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
-                                                    var url = "./php/downloadSeqAcq.php?queueIndex="+goodIndex;
-                                                    if (goodIndex === 0) {
-                                                        window.location = url;
-                                                    } else {
-                                                        window.open(url, "_blank");
-                                                    }
-                                                    goodIndex++;
+                                            for (var goodIndex = 0; goodIndex < response.goodFileCount; goodIndex++) {
+                                                // rather than bring back the file name to the server and send them to a php page, which could be well dodgy
+                                                // (cos people could try filenames they shouldn't have access to, or get to know the filesystem setup etc)
+                                                // we now build a queue of files server side in getFileDetails.php and call them by index
+                                                //var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
+                                                var url = "./php/downloadSeqAcq.php?queueIndex="+goodIndex;
+                                                if (goodIndex === 0) {
+                                                    window.location = url;
+                                                } else {
+                                                    window.open(url, "_blank");
                                                 }
-                                            });
+                                            }
                                         }
                                     },
                                     error: function () {

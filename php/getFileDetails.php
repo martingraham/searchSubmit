@@ -45,10 +45,8 @@ else {
                 $goodFiles = array_filter ($files, function ($var) { return $var["exists"]; });
                 $_SESSION["downloadQueue"] = array_column ($goodFiles, "file");
                 //error_log (print_r ($_SESSION["downloadQueue"], true));
-                foreach ($files as &$file) {    // wipe out filename data so it doesn't get returned to browser
-                    $file["file"] = "";
-                }
-                echo json_encode ($files);
+                $goodFileCount = count($goodFiles);
+                echo json_encode (array("goodFileCount"=>$goodFileCount, "badFileCount"=>(count($files)-$goodFileCount)));
             } else {
                 $date = date("d-M-Y H:i:s");
                 echo (json_encode (array ("error" => "You don't have permission to download this file(s)<br>".$date, "errorType" => "Permission Denied")));
