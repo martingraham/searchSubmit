@@ -500,6 +500,28 @@ CLMSUI.buildSubmitSearch = function () {
                         "language": {
                             search: "Find:",
                         },
+                        "fnDrawCallback" : function (oSettings) {
+                            var total_count = oSettings.fnRecordsTotal();
+                            var show_num = oSettings._iDisplayLength;
+                            var tbody = $(this).children('tbody');
+                            var tr_count = tbody.children('tr').length;
+                            var missing = show_num - tr_count;
+                            if (show_num < total_count && missing > 0) {
+                                // Wipe out any previously manually added margin-bottom values to the tables cells. This is done so
+                                // a) we don't get rows with previously applied big margin bottoms appearing in the middle of the table making the table too big
+                                // b) a row with a big margin bottoms isn't picked to calculate the row height which can throw the calculation waaayyy off course
+                                // ('' removes the manual value and padding-bottom is recalculated from applicable css styles)
+                                tbody.find("tr td").css ("padding-bottom", '');
+                                
+                                // now we can safely pick up the height for a row and make an appropriate padding-bottom value for the last row's cells
+                                // so table keeps the same height
+                                var lastRowHeight = tbody.find('tr:last-child').height();
+                                var lastRowCells = tbody.find('tr:last-child td');
+                                var existingPadding = parseFloat (lastRowCells.css ("padding-bottom"));
+                                //console.warn ("height", lastRowHeight, lastRowCells, existingPadding);
+                                lastRowCells.css ("padding-bottom", (existingPadding + (lastRowHeight * missing))+"px");
+                            }
+                        },
                     });
                 };
                 
