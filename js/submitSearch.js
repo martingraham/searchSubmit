@@ -424,26 +424,21 @@ CLMSUI.buildSubmitSearch = function () {
                                         if (response.error) {
                                             CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
                                         } else if (response) {
-                                            var nonExistentFiles = response.filter (function (fileData) { return !fileData.exists; });
-                                            if (nonExistentFiles.length) {
-                                                CLMSUI.jqdialogs.errorDialog ("popErrorDialog", nonExistentFiles.length+" of the requested files cannot be found on the server<br>"+errorDateFormat (new Date()), "File Error");
+                                            if (response.badFileCount) {
+                                                CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.badFileCount+" of the requested files cannot be found on the server<br>"+errorDateFormat (new Date()), "File Error");
                                             }
-                                            var goodIndex = 0;
-                                            response.forEach (function (fileData) {
-                                                if (fileData.exists) {
-                                                    // rather than bring back the file name to the server and send them to a php page, which could be well dodgy
-                                                    // (cos people could try filenames they shouldn't have access to, or get to know the filesystem setup etc)
-                                                    // we now build a queue of files server side in getFileDetails.php and call them by index
-                                                    //var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
-                                                    var url = "./php/downloadSeqAcq.php?queueIndex="+goodIndex;
-                                                    if (goodIndex === 0) {
-                                                        window.location = url;
-                                                    } else {
-                                                        window.open(url, "_blank");
-                                                    }
-                                                    goodIndex++;
+                                            for (var goodIndex = 0; goodIndex < response.goodFileCount; goodIndex++) {
+                                                // rather than bring back the file name to the server and send them to a php page, which could be well dodgy
+                                                // (cos people could try filenames they shouldn't have access to, or get to know the filesystem setup etc)
+                                                // we now build a queue of files server side in getFileDetails.php and call them by index
+                                                //var url = "./php/downloadSeqAcq.php?relPath="+fileData.file;
+                                                var url = "./php/downloadSeqAcq.php?queueIndex="+goodIndex;
+                                                if (goodIndex === 0) {
+                                                    window.location = url;
+                                                } else {
+                                                    window.open(url, "_blank");
                                                 }
-                                            });
+                                            }
                                         }
                                     },
                                     error: function () {
@@ -504,6 +499,29 @@ CLMSUI.buildSubmitSearch = function () {
                         ],
                         "language": {
                             search: "Find:",
+                        },
+                        "fnDrawCallback" : function (oSettings) {
+                            var total_count = oSettings.fnRecordsTotal();
+                            var show_num = oSettings._iDisplayLength;
+                            var tbody = $(this).children('tbody');
+                            var tr_count = tbody.children('tr').length;
+                            var missing = show_num - tr_count;
+                            
+                            // Wipe out any previously manually added margin-bottom values to the tables cells. This is done so
+                            // a) we don't get rows with previously applied big margin bottoms appearing in the middle of the table making the table too big
+                            // b) a row with a big margin bottoms isn't picked to calculate the row height which can throw the calculation waaayyy off course
+                            // ('' removes the manual value and padding-bottom is recalculated from applicable css styles)
+                            tbody.find("tr td").css ("padding-bottom", '');
+                            
+                            if (show_num < total_count && missing > 0) {
+                                // now we can safely pick up the height for a row and make an appropriate padding-bottom value for the last row's cells
+                                // so table keeps the same height
+                                var lastRowHeight = tbody.find('tr:last-child').height();
+                                var lastRowCells = tbody.find('tr:last-child td');
+                                var existingPadding = parseFloat (lastRowCells.css ("padding-bottom"));
+                                //console.warn ("height", lastRowHeight, lastRowCells, existingPadding);
+                                lastRowCells.css ("padding-bottom", (existingPadding + (lastRowHeight * missing))+"px");
+                            }
                         },
                     });
                 };
