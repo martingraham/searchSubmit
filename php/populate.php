@@ -8,8 +8,9 @@ else {
     
     $z = checkSufficientDiskSpace();
     if ($z < 4000000000) {
-        ajaxHistoryRedirect ("Sorry, there is insufficent space (<4GB) on the server to create a new search.");
-        exit();
+        // database now on different server to php so this doesn't work
+        //ajaxHistoryRedirect ("Sorry, there is insufficent space (<4GB) on the server to create a new search.");
+        //exit();
     }
 
     include('../../connectionString.php');
