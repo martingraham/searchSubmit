@@ -208,16 +208,14 @@ CLMSUI.buildSubmitSearch = function () {
     $(document).ready (function () {
         
         var waitDialogID = "databaseLoading";
-        var pbar = CLMSUI.jqdialogs.waitDialog (waitDialogID, "Please Wait...", "Populating Fields");
+        CLMSUI.jqdialogs.waitDialog (waitDialogID, "Please Wait...", "Populating Fields");
         $.ajax ({
             type: "GET",
             url: "./php/populate.php",
             dataType: "json",
             encode: true,
             complete: function () {
-                pbar.progressbar("destroy");
-                $("#"+waitDialogID).dialog("destroy");
-                d3.select("#"+waitDialogID).remove();
+                CLMSUI.jqdialogs.killWaitDialog (waitDialogID);
             },
             success: gotChoicesResponse,
             error: function (jqXhr, textStatus, errorThrown) {

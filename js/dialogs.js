@@ -40,6 +40,13 @@ CLMSUI.jqdialogs = {
         return $("#"+dialogID+"progress").progressbar({"value": false});
     },
     
+    killWaitDialog: function (waitDialogID) {
+        var pbar = $("#"+waitDialogID+"progress");
+        pbar.progressbar("destroy");
+        $("#"+waitDialogID).dialog("destroy");
+        d3.select("#"+waitDialogID).remove();    
+    },
+    
     redirectDialog: function (dialogID, redirectUrl, why) {
         var msg = why ? "<br>"+why+"<br>": "<br>You need to be logged in to use the Search Submission page.<br>Press 'OK' to access the Login page.<br>";
         CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, why ? "No New Search Permission" : "Login Required");
@@ -49,7 +56,7 @@ CLMSUI.jqdialogs = {
              window.location.replace (redirectUrl);  
         }
         
-        $("#"+dialogID).dialog({
+        return $("#"+dialogID).dialog({
             modal: true,
             dialogClass: "no-close",
             open: function () {
@@ -69,7 +76,7 @@ CLMSUI.jqdialogs = {
             modal:true,
         });
         
-        $("#"+dialogID).dialog('option', 'title', title || "Database Error"); // to change existing title
+        return $("#"+dialogID).dialog('option', 'title', title || "Database Error"); // to change existing title
     },
     
     areYouSureDialog: function (dialogID, msg, title, yesText, noText, yesFunc) {
@@ -84,7 +91,7 @@ CLMSUI.jqdialogs = {
             yesFunc();
         }
 
-        $("#"+dialogID).dialog({
+        return $("#"+dialogID).dialog({
             modal: true,
             open: function () {
                 $('.ui-dialog :button').blur(); // http://stackoverflow.com/questions/1793592/jquery-ui-dialog-button-focus
