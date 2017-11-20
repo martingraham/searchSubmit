@@ -181,6 +181,7 @@ CLMSUI.buildSubmitSearch = function () {
         var buttonData = [
             {id: "#startProcessing", type: "submit"},
             {id: "#backButton", type: "button"},
+            {id: "#helpButton", type: "button"},
             {id: "#useGlobalDefaults", type: "button"},
             {id: "#useLastSearchDefaults", type: "button"},
         ];
@@ -203,6 +204,7 @@ CLMSUI.buildSubmitSearch = function () {
         
         // Add action for back button
         d3.select("#backButton").on("click", function() { window.history.back(); });
+        d3.select("#helpButton").on("click", function() { window.open ("../../xidocs/html/searchSubmit/index.html", "_blank"); });
     }
 
     $(document).ready (function () {

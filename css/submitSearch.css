@@ -239,11 +239,11 @@ tr.template-download:nth-child(odd), tr.template-upload:nth-child(odd) {
 }
 
 
-#backButton {
+.topRight {
     float: right;
 }
 
-#backButton span {
+.topRight span {
     display: inline-block;
 }
 
