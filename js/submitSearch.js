@@ -297,12 +297,13 @@ CLMSUI.buildSubmitSearch = function () {
 					 	filter: true, required: true, multiple: true, placeHolder: "Select one or more Cross Linkers", 
 					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
 					 	clickFunc: function (jqSelectElem) {
-							console.log ("jq", jqSelectElem);
 							var crossLinkerCount = jqSelectElem.multipleSelect("getSelects").length;
 							d3.select("#paramCrossLinker").select(".beAware")
 								.text("! "+crossLinkerCount+" Cross-Linkers selected !")
 								.style ("display", crossLinkerCount > 1 ? null : "none")
 							;
+							var jqClearAllButton = $(d3.select("#paramCrossLinker").select(".clearAll").node());
+							jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disable");
 						},
 					 	addNew: true,
 					 	clearOption: true,
@@ -313,6 +314,7 @@ CLMSUI.buildSubmitSearch = function () {
                     {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion"},
                     {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses", addNew: true},
                 ];
+				
                 populateOptionLists.forEach (function (poplist) {
                     var elem = d3.select(poplist.domid);
                     elem.append("p").attr("class", "dropdownLabel").html(poplist.niceLabel);
@@ -357,7 +359,7 @@ CLMSUI.buildSubmitSearch = function () {
                         filter: poplist.filter, 
                         selectAll: false,
                         placeholder: poplist.placeHolder,
-                        multiple: true, // this is to show multiple options per row, not to do with multiple selections (that's single)
+                        multiple: true, // this is to show multiple options per row, not to do with multiple selections (that's 'single')
                         //width: 450,
                         multipleWidth: 200,
                         onClick: function () {
@@ -375,12 +377,6 @@ CLMSUI.buildSubmitSearch = function () {
                     elem.select("ul").selectAll("li:not(.ms-no-results)")
                         .attr ("title", function() { return d3.select(this).text(); })
                     ;
-                    // set widget to a relative rather than pixel width
-					/*
-                    elem.selectAll(".ms-parent")
-                        .style ("width", poplist.multiple ? "100%" : "70%")
-                    ;
-					*/
                     
                     // add a clear all option
                     if (poplist.clearOption) {
@@ -390,6 +386,7 @@ CLMSUI.buildSubmitSearch = function () {
                             .attr ("id", baseId+"ClearAll")
                             .text ("Unselect All")
 							.attr ("type", "button")
+							.attr ("class", "clearAll")
                             .on ("click", function() {
                                 $(selElem).multipleSelect("uncheckAll");
                             })
@@ -406,8 +403,6 @@ CLMSUI.buildSubmitSearch = function () {
 						
 						$(newButton.node()).button();
 					}
-					
-					selectionChanged ({baseid: "#"+baseId}, poplist.clickFunc);	// initialise things that change on click
                 });
 
 
@@ -1117,13 +1112,16 @@ CLMSUI.buildSubmitSearch = function () {
         var parts = d3.select("#parameterForm").selectAll(".formPart");
         console.log ("parts", parts);
         
-        var multiSelectSetFunc = function (domElem, mdata) {
+        var multiSelectSetFunc = function (domElem, mdata, options) {
             if (mdata instanceof Array) {
                 mdata = mdata.map (function (entry) { return d3.values(entry)[0]; });
             } else {
                 mdata = [mdata];
             }
             $(domElem).multipleSelect("setSelects", mdata);
+			if (options.postFunc) {
+				options.postFunc ($(domElem));
+			}
         };
         
         var numberSetFunc = function (domElem, value) {
@@ -1190,7 +1188,17 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramMissedCleavagesValue" : {field : "missed_cleavages", func: numberSetFunc},
             "#paramToleranceUnits" : {field : "ms_tol_unit", func: jquerySelectSetFunc},
             "#paramTolerance2Units" : {field : "ms2_tol_unit", func: jquerySelectSetFunc},
-            "#paramCrossLinkerSelect" : {field : "crosslinkers", func: multiSelectSetFunc},
+            "#paramCrossLinkerSelect" : {field : "crosslinkers", func: multiSelectSetFunc, options: {
+				postFunc: function (jqSelectElem) { 
+					var crossLinkerCount = jqSelectElem.multipleSelect("getSelects").length;
+					d3.select("#paramCrossLinker").select(".beAware")
+						.text("! "+crossLinkerCount+" Cross-Linkers selected !")
+						.style ("display", crossLinkerCount > 1 ? null : "none")
+					;
+					var jqClearAllButton = $(d3.select("#paramCrossLinker").select(".clearAll").node());
+					jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disable");
+				},
+			}},
             "#paramEnzymeSelect" : {field : "enzyme", func: multiSelectSetFunc},
             "#paramIonsSelect" : {field : "ions", func: multiSelectSetFunc},
             "#paramFixedModsSelect" : {field : "fixedMods", func: multiSelectSetFunc},
