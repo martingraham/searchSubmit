@@ -1119,7 +1119,7 @@ CLMSUI.buildSubmitSearch = function () {
                 mdata = [mdata];
             }
             $(domElem).multipleSelect("setSelects", mdata);
-			if (options.postFunc) {
+			if (options && options.postFunc) {
 				options.postFunc ($(domElem));
 			}
         };
