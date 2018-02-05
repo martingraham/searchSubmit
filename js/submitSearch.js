@@ -32,6 +32,20 @@ CLMSUI.buildSubmitSearch = function () {
         CLMSUI.jqdialogs.redirectDialog ("popErrorDialog", redirectUrl, why);
         //window.location.replace (loginUrl);    
     }
+	
+	function escapeHtml (html) {
+		var fn = function(tag) {
+			var charsToReplace = {
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&#34;',
+				"'": '&#27;',
+			};
+			return charsToReplace[tag] || tag;
+		};
+		return html ? html.replace(/[&<>"]/g, fn) : html;
+	};
     
     setTabSessionVar ();
     
@@ -278,22 +292,39 @@ CLMSUI.buildSubmitSearch = function () {
                 // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                 // Multiple Selects need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
                 var populateOptionLists = [
-                    {data: data.xlinkers, domid: "#paramCrossLinker", niceLabel: "Cross-Linker <span class='xlinkerMassHead'>¦ Mass</span>", filter: true, required: true, multiple: false, placeHolder: "Select A Cross Linker", textFunc: function(d) { return d.name+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }},
+                    {data: data.xlinkers, domid: "#paramCrossLinker", 
+					 	niceLabel: "Cross-Linker <span class='xlinkerMassHead'>¦ Mass</span><span class='beAware'></span>", 
+					 	filter: true, required: true, multiple: true, placeHolder: "Select one or more Cross Linkers", 
+					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
+					 	clickFunc: function (jqSelectElem) {
+							console.log ("jq", jqSelectElem);
+							var crossLinkerCount = jqSelectElem.multipleSelect("getSelects").length;
+							d3.select("#paramCrossLinker").select(".beAware")
+								.text("! "+crossLinkerCount+" Cross-Linkers selected !")
+								.style ("display", crossLinkerCount > 1 ? null : "none")
+							;
+						},
+					 	addNew: true,
+					 	clearOption: true,
+					},
                     {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
                     {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications",},
-                    {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications",},
+                    {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications", addNew: true},
                     {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion"},
-                    {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses",},
+                    {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses", addNew: true},
                 ];
                 populateOptionLists.forEach (function (poplist) {
                     var elem = d3.select(poplist.domid);
-                    elem.append("p").html(poplist.niceLabel);
+                    elem.append("p").attr("class", "dropdownLabel").html(poplist.niceLabel);
+					var flexBox = elem.append("div").attr("class", "horizontalFlex");
+					
                     var baseId = poplist.domid.slice(1)+"Select";
-                    var selElem = elem.append("select")
+                    var selElem = flexBox.append("select")
                         .attr("id", baseId)
                         .attr("name", baseId + (poplist.multiple ? "[]" : ""))  // magic. Need [] at end of name of elements that can submit multiple values
                         .attr("data-label", poplist.niceLabel)    
                         .classed("formPart", true)
+						.classed("flexExpand", true)
                         .property("multiple", poplist.multiple)
                         .property("required", poplist.required)
                         .each (function() {
@@ -312,8 +343,16 @@ CLMSUI.buildSubmitSearch = function () {
                         .attr("value", function(d) { return d.id; })
                         .html(function(d) { return poplist.textFunc ? poplist.textFunc(d) : d.name; })
                     ;
-
+					
+					var selectionChanged = function (selectionConfig, clickFunc) {
+						if (clickFunc) {
+							clickFunc($(selectionConfig.baseid));
+						}
+						dispatchObj.formInputChanged();   
+					};
+					
                     $("#"+baseId).multipleSelect({ 
+						baseid: "#"+baseId,
                         single: !poplist.multiple,
                         filter: poplist.filter, 
                         selectAll: false,
@@ -322,8 +361,11 @@ CLMSUI.buildSubmitSearch = function () {
                         //width: 450,
                         multipleWidth: 200,
                         onClick: function () {
-                            dispatchObj.formInputChanged();   
+							selectionChanged (this, poplist.clickFunc);
                         },
+						onUncheckAll: function () {
+							selectionChanged (this, poplist.clickFunc);
+						},
                     });
                     elem.selectAll(".ms-choice")
                         .classed("ui-widget", true)
@@ -334,9 +376,11 @@ CLMSUI.buildSubmitSearch = function () {
                         .attr ("title", function() { return d3.select(this).text(); })
                     ;
                     // set widget to a relative rather than pixel width
+					/*
                     elem.selectAll(".ms-parent")
                         .style ("width", poplist.multiple ? "100%" : "70%")
                     ;
+					*/
                     
                     // add a clear all option
                     if (poplist.clearOption) {
@@ -344,14 +388,26 @@ CLMSUI.buildSubmitSearch = function () {
                         options.insert("li", ":first-child")
                             .append("button")
                             .attr ("id", baseId+"ClearAll")
-                            .text("Unselect All")
-                            .on("click", function() {
+                            .text ("Unselect All")
+							.attr ("type", "button")
+                            .on ("click", function() {
                                 $(selElem).multipleSelect("uncheckAll");
-                                dispatchObj.formInputChanged();   
                             })
                         ;
                         $("#"+baseId+"ClearAll").button();       
                     }
+					
+					if (poplist.addNew) {
+						var newButton = flexBox.append("button")
+							.attr("type", "button")
+							.attr("class", "newButton flexRigid")
+							.text ("+ New")
+						;
+						
+						$(newButton.node()).button();
+					}
+					
+					selectionChanged ({baseid: "#"+baseId}, poplist.clickFunc);	// initialise things that change on click
                 });
 
 

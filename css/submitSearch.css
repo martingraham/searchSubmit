@@ -357,3 +357,29 @@ label.plike {
 #username {
     text-transform: capitalize;
 }
+
+.beAware {
+	background: #ffa;
+	margin-left: 0.3em;
+	border: 1px dashed orange;
+	color: #444;
+}
+
+.horizontalFlex {
+	display: flex;
+	flex-direction: row;
+}
+
+.flexExpand {
+	flex-grow: 1;
+	flex-shrink: 1;
+}
+
+.flexRigid {
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+.newButton {
+	margin-left: 0.5em;
+}
