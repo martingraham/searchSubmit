@@ -288,6 +288,18 @@ CLMSUI.buildSubmitSearch = function () {
                 
                 var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded", "newFileAdded");
 
+				
+				CLMSUI.buildSubmitSearch.controlClickFuncs = {};
+				CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"] = function (jqSelectElem) {
+					var crossLinkerCount = jqSelectElem.multipleSelect("getSelects").length;
+					d3.select("#paramCrossLinker").select(".beAware")
+						.text("! "+crossLinkerCount+" Cross-Linkers selected !")
+						.style ("display", crossLinkerCount > 1 ? null : "none")
+					;
+					var jqClearAllButton = $(d3.select("#paramCrossLinker").select(".clearAll").node());
+					jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disable");
+				}
+				
                 // Make combobox and multiple selection elements
                 // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                 // Multiple Selects need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
@@ -296,15 +308,7 @@ CLMSUI.buildSubmitSearch = function () {
 					 	niceLabel: "Cross-Linker <span class='xlinkerMassHead'>¦ Mass</span><span class='beAware'></span>", 
 					 	filter: true, required: true, multiple: true, placeHolder: "Select one or more Cross Linkers", 
 					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
-					 	clickFunc: function (jqSelectElem) {
-							var crossLinkerCount = jqSelectElem.multipleSelect("getSelects").length;
-							d3.select("#paramCrossLinker").select(".beAware")
-								.text("! "+crossLinkerCount+" Cross-Linkers selected !")
-								.style ("display", crossLinkerCount > 1 ? null : "none")
-							;
-							var jqClearAllButton = $(d3.select("#paramCrossLinker").select(".clearAll").node());
-							jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disable");
-						},
+					 	clickFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
 					 	addNew: true,
 					 	clearOption: true,
 					},
@@ -1189,15 +1193,7 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramToleranceUnits" : {field : "ms_tol_unit", func: jquerySelectSetFunc},
             "#paramTolerance2Units" : {field : "ms2_tol_unit", func: jquerySelectSetFunc},
             "#paramCrossLinkerSelect" : {field : "crosslinkers", func: multiSelectSetFunc, options: {
-				postFunc: function (jqSelectElem) { 
-					var crossLinkerCount = jqSelectElem.multipleSelect("getSelects").length;
-					d3.select("#paramCrossLinker").select(".beAware")
-						.text("! "+crossLinkerCount+" Cross-Linkers selected !")
-						.style ("display", crossLinkerCount > 1 ? null : "none")
-					;
-					var jqClearAllButton = $(d3.select("#paramCrossLinker").select(".clearAll").node());
-					jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disable");
-				},
+				postFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
 			}},
             "#paramEnzymeSelect" : {field : "enzyme", func: multiSelectSetFunc},
             "#paramIonsSelect" : {field : "ions", func: multiSelectSetFunc},
