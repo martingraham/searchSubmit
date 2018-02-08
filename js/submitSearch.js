@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -309,7 +309,7 @@ CLMSUI.buildSubmitSearch = function () {
 					 	filter: true, required: true, multiple: true, placeHolder: "Select one or more Cross Linkers", 
 					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
 					 	clickFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
-					 	addNew: true,
+					 	addNew: function () { CLMSUI.jqdialogs.addCrosslinkerDialog("popErrorDialog"); },
 					 	clearOption: true,
 					},
                     {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",},
@@ -403,6 +403,11 @@ CLMSUI.buildSubmitSearch = function () {
 							.attr("type", "button")
 							.attr("class", "newButton flexRigid")
 							.text ("+ New")
+							.on ("click", function () {
+								if (poplist.addNew !== true) {
+									poplist.addNew();
+								}
+							})
 						;
 						
 						$(newButton.node()).button();

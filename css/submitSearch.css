@@ -383,3 +383,17 @@ label.plike {
 .newButton {
 	margin-left: 0.5em;
 }
+
+.ui-dialog-content table input {
+	line-height: 1.2em;
+	height: 1.2em;
+}
+
+.ui-dialog-content table input:disabled {
+	color: #aaa;
+}
+
+
+.ui-dialog-content table tr.aaSelected {
+	background: #cfc;
+}
