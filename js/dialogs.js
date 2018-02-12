@@ -127,6 +127,15 @@ CLMSUI.jqdialogs = {
         });
 	},
 	
+	addLossDialog: function (dialogID) {
+		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Crosslinker", "Add", "Cancel");
+		console.log ("dialog", dialog);
+		
+		var dialogBox = d3.select(dialog[0]);
+		dialogBox.style ("user-select", "none");
+
+	},
+	
 	addCrosslinkerDialog: function (dialogID) {
 		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Crosslinker", "Add", "Cancel");
 		console.log ("dialog", dialog);
@@ -215,7 +224,6 @@ CLMSUI.jqdialogs = {
 		];
 		
 		var rowHelperFunc = function (d) {
-			console.log ("YYYY", this);
 			var chk = this.checked;
 			var row = d3.select(this.parentNode.parentNode.parentNode);
 			row.classed ("aaSelected", chk);
