@@ -382,19 +382,69 @@ label.plike {
 
 .newButton {
 	margin-left: 0.5em;
-	display: none;	/* hide for now */
+	/*display: none;*/	/* hide for now */
+}
+
+
+.ui-dialog-content label input {
+	margin-left: 0.5em;
+}
+
+.ui-dialog-content table label {
+	white-space: nowrap;
 }
 
 .ui-dialog-content table input {
 	line-height: 1.2em;
 	height: 1.2em;
+	vertical-align: middle;
 }
 
 .ui-dialog-content table input:disabled {
 	color: #aaa;
 }
 
+.ui-dialog-content table tr:nth-child(2n) {
+	background: #f8f8f8;
+}
 
 .ui-dialog-content table tr.aaSelected {
 	background: #cfc;
+}
+
+div.aminoAcids, div.givens {
+	padding-top: 0.5em;
+	display: flex;
+	align-items: flex-start;
+}
+
+div.symmetry, div.mods {
+	border: 2px solid #ddd;
+	display: flex;
+	flex-grow: 1;
+	flex-shrink: 1;
+}
+
+div.aminoAcids > div.symmetry {
+	margin-right: 0.5em;
+}
+
+div.aminoAcids > div.symmetry ~ div.symmetry {
+	margin-right: 0;
+}
+
+div.givens > label:first-of-type {
+	margin-right: 0.5em;
+}
+
+input.crosslinkerName {
+	width: 15em;
+}
+
+input.crosslinkerMass {
+	font-weight: normal;
+}
+
+.ui-dialog-content input:invalid {
+	background: pink;
 }

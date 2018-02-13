@@ -115,7 +115,7 @@ CLMSUI.jqdialogs = {
             yesFunc();
         }
 
-        return $("#"+dialogID).dialog({
+        var dialog = $("#"+dialogID).dialog({
             modal: true,
             open: function () {
                 $('.ui-dialog :button').blur(); // http://stackoverflow.com/questions/1793592/jquery-ui-dialog-button-focus
@@ -125,82 +125,178 @@ CLMSUI.jqdialogs = {
                 { text: noText, click: hardClose }
             ]
         });
+		console.log ("dialog", dialog);
+		
+		var dialogBox = d3.select(dialog[0]);
+		dialogBox.style ("user-select", "none");
+		
+		return dialog;
 	},
 	
 	addLossDialog: function (dialogID) {
-		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Crosslinker", "Add", "Cancel");
-		console.log ("dialog", dialog);
-		
-		var dialogBox = d3.select(dialog[0]);
-		dialogBox.style ("user-select", "none");
-
+		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Loss", "Add", "Cancel");
 	},
 	
-	addCrosslinkerDialog: function (dialogID) {
-		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Crosslinker", "Add", "Cancel");
-		console.log ("dialog", dialog);
+	addModificationDialog: function (dialogID) {
+		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Modification", "Add", "Cancel");
+	},
+	
+	addCrosslinkerDialog: function (dialogID, data) {
+		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "", "Add New Crosslinker", "Add", "Cancel");
 		dialog.dialog ("option", "width", 600);
-		
 		var dialogBox = d3.select(dialog[0]);
-		dialogBox.style ("user-select", "none");
 		
-		var textOutput = function () {
-			var asym = !dialogBox.select("input.isSymmetric").property("checked");
+		var submissionReadyOutput = function () {
+			
+			var crosslinker = {
+				name: dialogBox.select(".crosslinkerName").property("value"),
+				mass: dialogBox.select(".crosslinkerMass").property("value"),
+				is_decoy: dialogBox.select(".isDecoy").property("checked"),
+				is_default: false,
+			};
+			
+			var modifications = modDiv.select("tbody").selectAll("tr")
+				.filter (function () {
+					return d3.select(this).classed("aaSelected");
+				})
+				.data()
+				.map (function (d) {
+					return d.longName+","+d.mass;
+				})
+				.join(",")
+			;
+			
+			var isSym = dialogBox.select("input.isSymmetric").property("checked");
 			var outputs = [];
 			aminoTable
-				.filter (function (d,i) { return i === 0 || asym; })
-				.each (function (d,i) {
-					var rows = d3.select(this).selectAll("tr").filter (function (d,i) {
+				.filter (function (d,i) { return i === 0 || !isSym; })
+				.each (function () {
+					var rows = d3.select(this).selectAll("tr").filter (function () {
 						return d3.select(this).classed("aaSelected");	
 					});	
 					var vals = [];
+					var allFlag = false;
 					rows.each (function (d) {
 						var val = d3.select(this).select("input[type='number']").property("value");
-						vals.push (d.aminoAcid + (val != "" && val !== "1" ? "("+val+")" : ""));
+						if (d.aminoAcid === "X") {
+							vals = [];
+							vals.push (d.aminoAcid);
+							allFlag = true;
+						}
+						else if (!allFlag) {
+							vals.push (d.aminoAcid + (val != "" && val !== "1" ? "("+val+")" : ""));
+						}
 					});
 					outputs.push (vals.join(","));
 				})
 			;
-			dialogBox.select("input.cloutput").property("value", outputs.join(" "));
+			
+			var descriptionParts = [
+				"crosslinker:" + (isSym ? "Symetric" : "Asymetric") + "SingleAminoAcidRestrictedCrossLinker:Name:" +dialogBox.select(".crosslinkerName").property("value"),
+				"MASS:"+dialogBox.select(".crosslinkerMass").property("value"),
+				isSym ? "LINKEDAMINOACIDS:"+outputs[0] : "FIRSTLINKEDAMINOACIDS:"+outputs[0]+";SECONDLINKEDAMINOACIDS:"+outputs[1],
+			];
+			if (isSym && modifications.length) {
+				descriptionParts.push ("MODIFICATIONS:"+modifications);
+			}
+			crosslinker.description = descriptionParts.join(";");
+			
+			return crosslinker;
+		}
+		
+		var textOutput = function () {
+			var newCrosslinker = submissionReadyOutput();
+			console.log ("ncl", newCrosslinker);
+			dialogBox.select("input.cloutput").property("value", JSON.stringify(newCrosslinker));
 		};
 		
-		dialogBox.append("label")
-			.text("Symmetric")
+		
+		
+		var pbox = dialogBox.append("div").attr("class", "givens");
+		
+		pbox.append("label")
+			.text("Name")
+			.append ("input")
+			.attr ("type", "text")
+			.attr ("class", "crosslinkerName")
+			.attr ("placeholder", "Give a name")
+			.attr ("length", 15)
+			.attr ("pattern", "^(?!\s*$).+")
+			.on ("input", function() {
+				textOutput();
+			})
+		;
+		
+		pbox.append("label")
+			.text("Mass")
+			.append ("input")
+			.attr ("type", "number")
+			.attr ("class", "crosslinkerMass")
+			.attr ("placeholder", "Crosslinker Mass")
+			.attr ("length", 15)
+			.on ("input", function() {
+				textOutput();
+			})
+		;
+		
+		var pbox2 = dialogBox.append("div").attr("class", "givens");
+		pbox2.append("label")
+			.text("Cross-Linker is Symmetric")
 			.append ("input")
 			.attr ("type", "checkbox")
 			.attr ("class", "isSymmetric")
 			.on ("click", function() {
 				var chk = d3.select(this).property("checked");
+				// Swap second crosslinker selection and modification selection table dependent on symmetry selection
 				dialogBox.selectAll("div.symmetry")
 					.filter (function (d,i) {
 						return i > 0;
 					})
-					.style ("display", chk ? "none" : "flex")
+					.style ("display", chk ? "none" : null)
 				;
+				dialogBox.selectAll("div.mods").style ("display", chk ? null : "none")
 				textOutput();
 			})
 		;
 		
-		dialogBox.append("input").attr("type", "text").attr("class", "cloutput");
+		pbox2.append("label")
+			.text(", Decoy")
+			.append ("input")
+			.attr ("type", "checkbox")
+			.attr ("class", "isDecoy")
+			.on ("click", function() {
+				textOutput();
+			})
+		;
+		
+		dialogBox.append("div").attr("class", "givens").append("input").attr("type", "text").attr("class", "cloutput");
 		
 		var symmetries = ["Symmetric", "Asymmetric"];
-		var tableDiv = dialogBox.append("div").attr("class", "aminoAcids").style("display", "flex");
+		var tableDiv = dialogBox.append("div").attr("class", "aminoAcids");
 		var symmetryDivs = tableDiv.selectAll("div.symmetry").data(symmetries)
 			.enter()
 			.append("div")
 			.attr("class", "symmetry")
-			.style("display", "flex")
-			.style ("flex-grow", 1)
-			.style ("flex-shrink", 1)
-			.html("<table><thead><tr></tr></thead><tbody></tbody></table>")
+			.html(function(d,i) { 
+				return "<table><thead><tr><th colspan='3'>Linkable Acids "+(i+1)+"</th></tr><tr></tr></thead><tbody></tbody></table>"; 
+			})
 		;
 		
-		var aminoTable = symmetryDivs.select(".aminoAcids table");
+		var aminoTable = symmetryDivs
+			.select(".aminoAcids table")
+			.attr("tabindex", function (d,i) { return i; })
+		;
 		
-		var headers = ["Amino Acid", "Abbv", "Probability (1 if left empty)"];
-		aminoTable.select("thead tr").selectAll("th").data(headers).enter().append("th").text(function(d) { return d; });
+		var headers = ["Amino Acid", "Code", "Probability (1 if left empty)"];
+		aminoTable.select("thead tr:nth-child(2)").selectAll("th").data(headers).enter().append("th")
+			.text(function(d) { return d; })
+			.attr("title", function(d) { return d; })
+		;
 		
 		var aa = [
+			{"aminoAcid": "X", "monoisotopicMass": undefined, "longName":"Everything"},
+			{"aminoAcid": "NTERM", "monoisotopicMass": undefined, "longName":"N-Terminus"},
+			{"aminoAcid": "CTERM", "monoisotopicMass": undefined, "longName":"C-Terminus"},
 			{"aminoAcid": "A", "monoisotopicMass": 71.03711, "longName":"Alanine"},
 			{"aminoAcid": "R", "monoisotopicMass": 156.10111, "longName":"Arginine"},
 			{"aminoAcid": "N", "monoisotopicMass": 114.04293, "longName":"Aspargine"},
@@ -223,11 +319,11 @@ CLMSUI.jqdialogs = {
 			{"aminoAcid": "V", "monoisotopicMass": 99.06841, "longName":"Valine"}
 		];
 		
-		var rowHelperFunc = function (d) {
+		var rowHelperFunc = function () {
 			var chk = this.checked;
 			var row = d3.select(this.parentNode.parentNode.parentNode);
 			row.classed ("aaSelected", chk);
-			row.select("input[type='number']").property("disabled", !chk);
+			row.select("input[type='number']").property("disabled", !chk).style("display", chk ? null : "none");
 		};
 		
 		var rows = aminoTable.select("tbody").selectAll("tr").data(aa)
@@ -251,19 +347,52 @@ CLMSUI.jqdialogs = {
 			.on ("input", textOutput)
 		;
 		
-		aminoTable.on ("keydown", function () {
-			console.log ("evt", d3.event);
-			var key = d3.event.key.toLowerCase();
-			d3.select(this).selectAll("input[type='checkbox']")
-				.filter (function (d,i) {
-					return d.aminoAcid.toLowerCase() === key;
-				})
-				.each (function () {
-					this.click();	// simulate click on input checkbox
-				})
-			;
-		});
-
+		aminoTable
+			.on ("mouseover", function () {
+				this.focus();
+			})
+			.on ("keydown", function () {
+				var key = d3.event.key.toLowerCase();
+				d3.select(this).selectAll("input[type='checkbox']")
+					.filter (function (d,i) {
+						return d.aminoAcid.toLowerCase() === key;
+					})
+					.each (function () {
+						this.click();	// simulate click on input checkbox
+					})
+				;
+			})
+		;
+		
+		// Make modification table
+		var mods = [
+			{"modification": "L", "mass": 0, "longName":"Loop"},
+			{"modification": "N", "mass": 17.026549105, "longName":"NH2"},
+			{"modification": "O", "mass": 18.0105647, "longName":"OH"},
+			{"modification": "T", "mass": 121.073893275, "longName":"TRIS"},
+		];
+		
+		var modDiv = tableDiv
+			.append("div")
+			.attr("class", "mods")
+			.html("<table><thead><tr><th>Modifications</th></tr></thead><tbody></tbody></table>")
+			.style ("display", "none")
+		;
+		
+		var rows = modDiv.select("tbody").selectAll("tr").data(mods)
+			.enter()
+			.append("tr")
+			.html(function(d) { 
+				return "<td><label><input type='checkbox'></input>"+d.longName+"</label></td>";
+			})
+		;
+		rows.select("input[type='checkbox']")
+			.on ("click", function (d) {
+				rowHelperFunc.call (this, d);
+				textOutput();
+			})
+			.each (rowHelperFunc)
+		;
 	}
 	
 	
