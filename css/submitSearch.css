@@ -386,7 +386,7 @@ label.plike {
 }
 
 
-.ui-dialog-content label input {
+.ui-dialog-content label input, .ui-dialog-content label .ms-parent {
 	margin-left: 0.5em;
 }
 
@@ -395,13 +395,22 @@ label.plike {
 }
 
 .ui-dialog-content table input {
-	line-height: 1.2em;
-	height: 1.2em;
+	line-height: 1em;
+	height: 0.9em;
 	vertical-align: middle;
+}
+
+.ui-dialog-content table th {
+	height: 1.5em;
 }
 
 .ui-dialog-content table input:disabled {
 	color: #aaa;
+}
+
+.ui-dialog-content input:required:invalid {
+    background: #fee;
+    border: 2px solid red;
 }
 
 .ui-dialog-content table tr:nth-child(2n) {
@@ -409,7 +418,7 @@ label.plike {
 }
 
 .ui-dialog-content table tr.aaSelected {
-	background: #cfc;
+	background: #ccf;
 }
 
 div.aminoAcids, div.givens {
@@ -447,4 +456,16 @@ input.crosslinkerMass {
 
 .ui-dialog-content input:invalid {
 	background: pink;
+}
+
+.ui-dialog-content table thead.invalidTableSelection tr:first-child {
+	background: pink;
+}
+
+.ui-dialog-content table thead.invalidTableSelection tr:first-child th:after {
+	content: ", Need a Selection";
+}
+
+.cloutput {
+	display: none;
 }

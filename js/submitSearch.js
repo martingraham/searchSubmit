@@ -263,7 +263,7 @@ CLMSUI.buildSubmitSearch = function () {
         }
         
 		
-		// Make just the multiple-slect.js widget portion of a select mechanism
+		// Make just the multiple-select.js widget portion of a select mechanism
 		function makeMultipleSelectionWidget (baseId, singlePopulateOptionList) {
 			var poplist = singlePopulateOptionList;
 			var elem = d3.select(poplist.domid);
@@ -444,7 +444,7 @@ CLMSUI.buildSubmitSearch = function () {
 					 	filter: true, required: true, multiple: true, maskAsSingle: true, placeHolder: "Select one or more Cross Linkers", 
 					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
 					 	clickFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
-					 	addNew: function () { CLMSUI.jqdialogs.addCrosslinkerDialog("popErrorDialog", data); },
+					 	addNew: function () { CLMSUI.jqdialogs.addCrosslinkerDialog ("popErrorDialog", data); },
 					 	clearOption: true,
 					},
                     {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme"},
