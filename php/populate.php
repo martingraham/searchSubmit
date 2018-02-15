@@ -22,6 +22,7 @@ else {
         // Get user rights from database
         $userRights = getUserRights ($dbconn, $_SESSION["user_id"]);
         $_SESSION["canAddNewSearch"] = $userRights["canAddNewSearch"];
+		$_SESSION["canSeeAll"] = $userRights["canSeeAll"];
         $canSeeAll = $userRights["canSeeAll"];
         $isSuperUser = $userRights["isSuperUser"];
         

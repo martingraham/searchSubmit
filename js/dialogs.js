@@ -78,16 +78,26 @@ CLMSUI.jqdialogs = {
         
         return $("#"+dialogID).dialog('option', 'title', title || "Database Error"); // to change existing title
     },
+	
+	simpleDialog: function (dialogID, msg, title) {
+        CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, title || "Message");
+
+        $("#"+dialogID).dialog({
+            modal:true,
+        });
+        
+        return $("#"+dialogID).dialog('option', 'title', title || "Message"); // to change existing title
+    },
     
     areYouSureDialog: function (dialogID, msg, title, yesText, noText, yesFunc) {
         CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, title || "Confirm");
         
-        function hardClose () {
-             $(this).dialog("close").dialog("destroy").remove();
+        function close () {
+             $(this).dialog("close");
         }
         
-        function yesAndHardClose () {
-            hardClose.call (this);  // need to do it this way to pass on 'this' context
+        function yesAndClose () {
+            close.call (this);  // need to do it this way to pass on 'this' context
             yesFunc();
         }
 
@@ -96,37 +106,19 @@ CLMSUI.jqdialogs = {
             open: function () {
                 $('.ui-dialog :button').blur(); // http://stackoverflow.com/questions/1793592/jquery-ui-dialog-button-focus
             },
+			close: function (event, ui) {
+				$(this).dialog("destroy").remove();
+			},
             buttons: [
-                { text: yesText, click: yesAndHardClose },
-                { text: noText, click: hardClose }
-            ]
+                { text: yesText, click: yesAndClose, class: "addButton" },
+                { text: noText, click: close }
+            ],
+			position: { my: "center", at: "top" },
         });
     },
 	
 	addStuffDialog: function (dialogID, msg, title, yesText, noText, yesFunc) {
-		CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, title || "Add");
-        
-        function hardClose () {
-             $(this).dialog("close").dialog("destroy").remove();
-        }
-        
-        function yesAndHardClose () {
-            hardClose.call (this);  // need to do it this way to pass on 'this' context
-            yesFunc();
-        }
-
-        var dialog = $("#"+dialogID).dialog({
-            modal: true,
-            open: function () {
-                $('.ui-dialog :button').blur(); // http://stackoverflow.com/questions/1793592/jquery-ui-dialog-button-focus
-            },
-            buttons: [
-                { text: yesText, click: yesAndHardClose, class: "addButton" },
-                { text: noText, click: hardClose }
-            ],
-			position: { my: "center", at: "top" },
-        });
-		console.log ("dialog", dialog);
+		var dialog = CLMSUI.jqdialogs.areYouSureDialog (dialogID, msg, title || "Add", yesText, noText, yesFunc);
 		
 		var dialogBox = d3.select(dialog[0]);
 		dialogBox.style ("user-select", "none");
@@ -141,8 +133,4 @@ CLMSUI.jqdialogs = {
 	addModificationDialog: function (dialogID) {
 		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Modification", "Add", "Cancel");
 	},
-	
-
-	
-	
 };
