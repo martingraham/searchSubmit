@@ -14,6 +14,15 @@
         return $str;
     }
 
+	function normalizeString2 ($str = '') {
+        $str = filter_var ($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+        $str = preg_replace('/[\"\/\<\>\?\'\|]+/', ' ', $str);
+        $str = html_entity_decode ($str, ENT_QUOTES, "utf-8" );
+        $str = htmlentities($str, ENT_QUOTES, "utf-8");
+        $str = preg_replace("/(&)([a-z])([a-z]+;)/i", '$2', $str);
+        return $str;
+    }
+
     function getNiceDate () {
         return date("d-M-Y H:i:s");
     }

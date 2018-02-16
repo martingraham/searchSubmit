@@ -261,20 +261,32 @@ CLMSUI.buildSubmitSearch = function () {
                 acq["#"] = acq.files.length;
             });
         }
-        
 		
-		// Make just the multiple-slect.js widget portion of a select mechanism
+		
+		// This rebuilds a multiple selection widget from scratch
+		// Needed if switching between single and multiple selection capabilities
+		function relaunchMultipleSelectionWidget (poplist, elem, selElem) {
+			// remove current multiple select, remove jquery data gubbins, add new multiple select with amended details for crosslinker selection
+			elem.select(".ms-parent").remove();
+			$(selElem.node()).removeData();
+			makeMultipleSelectionWidget (selElem.attr("id"), poplist);	
+		};
+        
+		// when item in multiple selection picked/unpicked (or everything unclicked) then
+		// 1. run an optional post click function (needs supplied)
+		// 2. inform the dispatch obj the form input has changed, to see if it alters validity of the entire form
+		function selectionChanged (jqNode, clickFunc) {
+			if (clickFunc) {
+				clickFunc (jqNode);
+			}
+			dispatchObj.formInputChanged();   
+		};
+		
+		// Make just the multiple-select.js widget portion of a select mechanism
 		function makeMultipleSelectionWidget (baseId, singlePopulateOptionList) {
 			var poplist = singlePopulateOptionList;
 			var elem = d3.select(poplist.domid);
 			var selElem = d3.select("#"+baseId);
-			
-			var selectionChanged = function (selectionConfig, clickFunc) {
-				if (clickFunc) {
-					clickFunc($(selectionConfig.baseid));
-				}
-				dispatchObj.formInputChanged();   
-			};
 			
 			var singleSelect = !poplist.multiple || poplist.maskAsSingle;
 			
@@ -289,10 +301,10 @@ CLMSUI.buildSubmitSearch = function () {
 				multipleWidth: 200,
 				isOpen: poplist.isOpen,
 				onClick: function () {
-					selectionChanged (this, poplist.clickFunc);
+					selectionChanged ($(selElem.node()), poplist.clickFunc);
 				},
 				onUncheckAll: function () {
-					selectionChanged (this, poplist.clickFunc);
+					selectionChanged ($(selElem.node()), poplist.clickFunc);
 				},
 			});
 
@@ -328,12 +340,9 @@ CLMSUI.buildSubmitSearch = function () {
 					.text ("Allow Multiple Selections")
 					.attr ("type", "button")
 					.on ("click", function () {
-						// remove current multiple select, remove jquery data gubbins, add new multiple select with amended details for crosslinker selection
-						elem.select(".ms-parent").remove();
-						$("#"+baseId).removeData();
 						poplist.maskAsSingle = false;
 						poplist.isOpen = true;
-						makeMultipleSelectionWidget (baseId, poplist);
+						relaunchMultipleSelectionWidget (poplist, elem, selElem)
 						setTimeout (function () {
 							elem.select("button.ms-choice").node().click();	// open it by click in a timeout, cos neither isOpen nor immediate click() seemed to work
 						}, 0);
@@ -343,9 +352,23 @@ CLMSUI.buildSubmitSearch = function () {
 			}
 		}
 		
+		// this updates the options found under a poplist's id with the data items in that poplist
+		function updateOptionList (poplist, autoSelectNewItems) {
+			var selElem = d3.select(poplist.domid).select("select");
+
+			var dataJoin = selElem.selectAll("option")
+				.data(poplist.data, function(d) { return d.id; })
+			;
+			dataJoin.enter().append("option")
+				.attr("value", function(d) { return d.id; })
+				.html(function(d) { return poplist.textFunc ? poplist.textFunc(d) : d.name; })
+				.property ("selected", autoSelectNewItems)
+			;	
+		};
+		
 		// construct select elements and then make multiple select dropdowns (using multiple-select.js) from supplied data (populationOptionLists)
 		// Multiple Select elements need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
-		function makeMultipleSelectionElements (populateOptionLists) {
+		function makeMultipleSelectionElements (populateOptionLists, newButtonsShouldBeVisible) {
 			populateOptionLists.forEach (function (poplist) {
 				var elem = d3.select(poplist.domid);
 				elem.append("p").attr("class", "dropdownLabel").html(poplist.niceLabel);
@@ -367,15 +390,8 @@ CLMSUI.buildSubmitSearch = function () {
 					})
 
 				;
-
-				var dataJoin = selElem.selectAll("option")
-					.data(poplist.data, function(d) { return d.id; })
-				;
-
-				dataJoin.enter().append("option")
-					.attr("value", function(d) { return d.id; })
-					.html(function(d) { return poplist.textFunc ? poplist.textFunc(d) : d.name; })
-				;
+				
+				updateOptionList (poplist, false);
 				
 				makeMultipleSelectionWidget (baseId, poplist);
 
@@ -394,7 +410,28 @@ CLMSUI.buildSubmitSearch = function () {
 					$(newButton.node()).button();
 				}
 			});
+			
+			d3.selectAll(".newButton").style ("display", newButtonsShouldBeVisible ? null : "none");
 		}
+		
+		
+		// this updates options in a select element (calls function above) and then rebuilds the multiple selection widget
+		// data, dom id etc taken from poplist object
+		// Generally used in the add dialog functions when just added a new crosslinker, modification etc
+		function newPopListDataAdded (poplist) {
+			updateOptionList (poplist, true);
+			var elem = d3.select(poplist.domid);
+			var selElem = elem.select("select");
+			
+			if (poplist.maskAsSingle !== undefined) {
+				poplist.maskAsSingle = selElem.selectAll("option:checked").size() <= 1;
+			}
+			
+			relaunchMultipleSelectionWidget (poplist, elem, selElem);
+			selectionChanged ($(selElem.node()), poplist.clickFunc);
+		}
+		
+		
 		
         // http://stackoverflow.com/questions/23740548/how-to-pass-variables-and-data-from-php-to-javascript
         function gotChoicesResponse (data, textStatus, jqXhr) {
@@ -444,16 +481,17 @@ CLMSUI.buildSubmitSearch = function () {
 					 	filter: true, required: true, multiple: true, maskAsSingle: true, placeHolder: "Select one or more Cross Linkers", 
 					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
 					 	clickFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
-					 	addNew: function () { CLMSUI.jqdialogs.addCrosslinkerDialog("popErrorDialog"); },
+					 	addNew: function () { CLMSUI.jqdialogs.addCrosslinkerDialog ("popErrorDialog", data, populateOptionLists[0], newPopListDataAdded); },
 					 	clearOption: true,
 					},
                     {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme"},
-                    {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications",},
-                    {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications", addNew: true},
-                    {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion"},
-                    {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses", addNew: true},
+                    {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications", clearOption: true},
+                    {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications", addNew: false, clearOption: true},
+                    {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion", clearOption: true},
+                    {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses", addNew: false, clearOption: true},
                 ];
-				makeMultipleSelectionElements (populateOptionLists);	// call the function that does the multiple select setting-up
+				makeMultipleSelectionElements (populateOptionLists, data.userRights.canSeeAll);	// call the function that does the multiple select setting-up
+				
 
                 // Make previous acquisition and sequence tables
                 

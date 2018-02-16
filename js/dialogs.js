@@ -78,16 +78,32 @@ CLMSUI.jqdialogs = {
         
         return $("#"+dialogID).dialog('option', 'title', title || "Database Error"); // to change existing title
     },
+	
+	simpleDialog: function (dialogID, msg, title) {
+        CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, title || "Message");
+
+        $("#"+dialogID).dialog({
+            modal:true,
+			buttons: [{
+			  text: "OK",
+			  click: function() {
+				$(this).dialog("close");
+			  }
+			}],
+        });
+        
+        return $("#"+dialogID).dialog('option', 'title', title || "Message"); // to change existing title
+    },
     
     areYouSureDialog: function (dialogID, msg, title, yesText, noText, yesFunc) {
         CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, title || "Confirm");
         
-        function hardClose () {
-             $(this).dialog("close").dialog("destroy").remove();
+        function close () {
+             $(this).dialog("close");
         }
         
-        function yesAndHardClose () {
-            hardClose.call (this);  // need to do it this way to pass on 'this' context
+        function yesAndClose () {
+            close.call (this);  // need to do it this way to pass on 'this' context
             yesFunc();
         }
 
@@ -96,175 +112,31 @@ CLMSUI.jqdialogs = {
             open: function () {
                 $('.ui-dialog :button').blur(); // http://stackoverflow.com/questions/1793592/jquery-ui-dialog-button-focus
             },
+			close: function (event, ui) {
+				$(this).dialog("destroy").remove();
+			},
             buttons: [
-                { text: yesText, click: yesAndHardClose },
-                { text: noText, click: hardClose }
-            ]
+                { text: yesText, click: yesAndClose, class: "addButton" },
+                { text: noText, click: close }
+            ],
+			position: { my: "center", at: "top" },
         });
     },
 	
 	addStuffDialog: function (dialogID, msg, title, yesText, noText, yesFunc) {
-		CLMSUI.jqdialogs.constructDialogMessage (dialogID, msg, title || "Add");
-        
-        function hardClose () {
-             $(this).dialog("close").dialog("destroy").remove();
-        }
-        
-        function yesAndHardClose () {
-            hardClose.call (this);  // need to do it this way to pass on 'this' context
-            yesFunc();
-        }
-
-        return $("#"+dialogID).dialog({
-            modal: true,
-            open: function () {
-                $('.ui-dialog :button').blur(); // http://stackoverflow.com/questions/1793592/jquery-ui-dialog-button-focus
-            },
-            buttons: [
-                { text: yesText, click: yesAndHardClose },
-                { text: noText, click: hardClose }
-            ]
-        });
+		var dialog = CLMSUI.jqdialogs.areYouSureDialog (dialogID, msg, title || "Add", yesText, noText, yesFunc);
+		
+		var dialogBox = d3.select(dialog[0]);
+		dialogBox.style ("user-select", "none");
+		
+		return dialog;
 	},
 	
 	addLossDialog: function (dialogID) {
-		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Crosslinker", "Add", "Cancel");
-		console.log ("dialog", dialog);
-		
-		var dialogBox = d3.select(dialog[0]);
-		dialogBox.style ("user-select", "none");
-
+		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Loss", "Add", "Cancel");
 	},
 	
-	addCrosslinkerDialog: function (dialogID) {
-		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Crosslinker", "Add", "Cancel");
-		console.log ("dialog", dialog);
-		dialog.dialog ("option", "width", 600);
-		
-		var dialogBox = d3.select(dialog[0]);
-		dialogBox.style ("user-select", "none");
-		
-		var textOutput = function () {
-			var asym = !dialogBox.select("input.isSymmetric").property("checked");
-			var outputs = [];
-			aminoTable
-				.filter (function (d,i) { return i === 0 || asym; })
-				.each (function (d,i) {
-					var rows = d3.select(this).selectAll("tr").filter (function (d,i) {
-						return d3.select(this).classed("aaSelected");	
-					});	
-					var vals = [];
-					rows.each (function (d) {
-						var val = d3.select(this).select("input[type='number']").property("value");
-						vals.push (d.aminoAcid + (val != "" && val !== "1" ? "("+val+")" : ""));
-					});
-					outputs.push (vals.join(","));
-				})
-			;
-			dialogBox.select("input.cloutput").property("value", outputs.join(" "));
-		};
-		
-		dialogBox.append("label")
-			.text("Symmetric")
-			.append ("input")
-			.attr ("type", "checkbox")
-			.attr ("class", "isSymmetric")
-			.on ("click", function() {
-				var chk = d3.select(this).property("checked");
-				dialogBox.selectAll("div.symmetry")
-					.filter (function (d,i) {
-						return i > 0;
-					})
-					.style ("display", chk ? "none" : "flex")
-				;
-				textOutput();
-			})
-		;
-		
-		dialogBox.append("input").attr("type", "text").attr("class", "cloutput");
-		
-		var symmetries = ["Symmetric", "Asymmetric"];
-		var tableDiv = dialogBox.append("div").attr("class", "aminoAcids").style("display", "flex");
-		var symmetryDivs = tableDiv.selectAll("div.symmetry").data(symmetries)
-			.enter()
-			.append("div")
-			.attr("class", "symmetry")
-			.style("display", "flex")
-			.style ("flex-grow", 1)
-			.style ("flex-shrink", 1)
-			.html("<table><thead><tr></tr></thead><tbody></tbody></table>")
-		;
-		
-		var aminoTable = symmetryDivs.select(".aminoAcids table");
-		
-		var headers = ["Amino Acid", "Abbv", "Probability (1 if left empty)"];
-		aminoTable.select("thead tr").selectAll("th").data(headers).enter().append("th").text(function(d) { return d; });
-		
-		var aa = [
-			{"aminoAcid": "A", "monoisotopicMass": 71.03711, "longName":"Alanine"},
-			{"aminoAcid": "R", "monoisotopicMass": 156.10111, "longName":"Arginine"},
-			{"aminoAcid": "N", "monoisotopicMass": 114.04293, "longName":"Aspargine"},
-			{"aminoAcid": "D", "monoisotopicMass": 115.02694, "longName":"Aspartic Acid"},
-			{"aminoAcid": "C", "monoisotopicMass": 103.00919, "longName":"Cysteine"},
-			{"aminoAcid": "E", "monoisotopicMass": 129.04259, "longName":"Glutamic Acid"},
-			{"aminoAcid": "Q", "monoisotopicMass": 128.05858, "longName":"Glutamine"},
-			{"aminoAcid": "G", "monoisotopicMass": 57.02146, "longName":"Glycine"},
-			{"aminoAcid": "H", "monoisotopicMass": 137.05891, "longName":"Histidine"},
-			{"aminoAcid": "I", "monoisotopicMass": 113.08406, "longName":"Isoleucine"},
-			{"aminoAcid": "L", "monoisotopicMass": 113.08406, "longName":"Leucine"},
-			{"aminoAcid": "K", "monoisotopicMass": 128.09496, "longName":"Lysine"},
-			{"aminoAcid": "M", "monoisotopicMass": 131.04049, "longName":"Methionine"},
-			{"aminoAcid": "F", "monoisotopicMass": 147.06841, "longName":"Phenylalanine"},
-			{"aminoAcid": "P", "monoisotopicMass": 97.05276, "longName":"Proline"},
-			{"aminoAcid": "S", "monoisotopicMass": 87.03203, "longName":"Serine"},
-			{"aminoAcid": "T", "monoisotopicMass": 101.04768, "longName":"Threonine"},
-			{"aminoAcid": "W", "monoisotopicMass": 186.07931, "longName":"Tryptophan"},
-			{"aminoAcid": "Y", "monoisotopicMass": 163.06333, "longName":"Tyrosine"},
-			{"aminoAcid": "V", "monoisotopicMass": 99.06841, "longName":"Valine"}
-		];
-		
-		var rowHelperFunc = function (d) {
-			var chk = this.checked;
-			var row = d3.select(this.parentNode.parentNode.parentNode);
-			row.classed ("aaSelected", chk);
-			row.select("input[type='number']").property("disabled", !chk);
-		};
-		
-		var rows = aminoTable.select("tbody").selectAll("tr").data(aa)
-			.enter()
-			.append("tr")
-			.html(function(d) { 
-				return "<td><label><input type='checkbox'></input>"+d.longName+"</label></td>"
-					+"<td>"+d.aminoAcid+"</td><td><input type='number' step='0.1' min='0' max='1'></td>"
-				;
-			})
-		;
-		rows.select("input[type='checkbox']")
-			.on ("click", function (d) {
-				rowHelperFunc.call (this, d);
-				textOutput();
-			})
-			.each (rowHelperFunc)
-		;
-		rows.select("input[type='number']")
-			.on ("click", textOutput)
-			.on ("input", textOutput)
-		;
-		
-		aminoTable.on ("keydown", function () {
-			console.log ("evt", d3.event);
-			var key = d3.event.key.toLowerCase();
-			d3.select(this).selectAll("input[type='checkbox']")
-				.filter (function (d,i) {
-					return d.aminoAcid.toLowerCase() === key;
-				})
-				.each (function () {
-					this.click();	// simulate click on input checkbox
-				})
-			;
-		});
-
-	}
-	
-	
+	addModificationDialog: function (dialogID) {
+		var dialog = CLMSUI.jqdialogs.addStuffDialog (dialogID, "Select Items", "Add New Modification", "Add", "Cancel");
+	},
 };

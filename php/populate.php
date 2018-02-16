@@ -22,6 +22,7 @@ else {
         // Get user rights from database
         $userRights = getUserRights ($dbconn, $_SESSION["user_id"]);
         $_SESSION["canAddNewSearch"] = $userRights["canAddNewSearch"];
+		$_SESSION["canSeeAll"] = $userRights["canSeeAll"];
         $canSeeAll = $userRights["canSeeAll"];
         $isSuperUser = $userRights["isSuperUser"];
         
@@ -40,7 +41,7 @@ else {
             $getFieldValues = array (
                 "enzymes" => array ("q" => "SELECT id, name from enzyme ORDER by name"),
                 "ions" => array ("q" => "SELECT id, name from ion ORDER by name"),
-                "xlinkers" => array ("q" => "SELECT id, mass, name from crosslinker ORDER by name"),
+                "xlinkers" => array ("q" => "SELECT id, mass, is_decoy, description, name from crosslinker ORDER by name"),
                 "losses" => array ("q" => "SELECT id, name from loss ORDER by name"),
                 "modifications" => array ("q" => "SELECT id, name from modification ORDER by name"),
                 "previousAcqui" => $isSuperUser 
