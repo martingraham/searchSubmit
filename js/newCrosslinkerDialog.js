@@ -205,8 +205,9 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist,
 				tr.select("input[type='number']").property("value", hit && hit.prob ? hit.prob : null);
 				rowHelperFunc.call (tr.select("input[type='checkbox']").node());
 			});
-			tablesAtLeastOneChecked (d3.select(this).select("table"));
 		});
+		
+		tablesAtLeastOneChecked (dialogBox.selectAll("div.symmetry table"));
 		
 		var modSet = d3.set (descriptionProps.mods ? descriptionProps.mods.map (function (str) { return str.toLowerCase(); }) : []);
 		dialogBox.select("div.mods").selectAll("tbody tr input[type='checkbox']")
