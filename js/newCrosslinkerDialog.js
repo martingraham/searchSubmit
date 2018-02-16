@@ -110,11 +110,7 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist,
 		props.acids1 = acids1.map (function (aa) {
 			var aaParts = aa.match(aaRegex);
 			if (aaParts) {
-				var z = {"AA": aaParts[1]};
-				if (aaParts[2]) {
-					z.prob = aaParts[2].slice(1, aaParts[2].length - 1);
-				}
-				return z;
+				return {"AA": aaParts[1], "prob": aaParts[2] ? aaParts[2].slice(1, aaParts[2].length - 1) : undefined};
 			}
 			return null;
 		}).filter (function (aaParts) {
@@ -202,7 +198,7 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist,
 				var tr = d3.select(this);
 				var hit = acidMap.get (d.aminoAcid.toLowerCase());
 				tr.select("input[type='checkbox']").property("checked", hit ? true : false);
-				tr.select("input[type='number']").property("value", hit && hit.prob ? hit.prob : null);
+				tr.select("input[type='number']").property("value", hit && hit.prob ? hit.prob : "");
 				rowHelperFunc.call (tr.select("input[type='checkbox']").node());
 			});
 		});
