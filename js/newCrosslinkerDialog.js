@@ -280,7 +280,7 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist,
 		var linkers = data.xlinkers.slice().filter (function (linker) {
 			return linker.description.indexOf ("ymetric") > -1;	// get rid of non standard linkers
 		});
-		linkers.unshift ({name: "Empty", mass: "", id: "0", description: "c:sym:Name:Empty;MASS:;LAO:;MODS:"});
+		linkers.unshift ({name: "Start from Empty", mass: "", id: "0", description: "c:sym:Name:Empty;MASS:;LAO:;MODS:"});
 		baseSelect.selectAll("option").data(linkers)
 			.enter()
 			.append("option")
@@ -368,7 +368,7 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist,
 	;
 
 	pbox2.append("label")
-		.text(", Decoy")
+		.text(" A Decoy")
 		.append ("input")
 		.attr ("type", "checkbox")
 		.attr ("class", "isDecoy")
