@@ -1,6 +1,6 @@
 CLMSUI.jqdialogs.errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
 
-CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, poplist) {
+CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist, updateFunction) {
 	
 	var ajaxSubmit = function () {
 		$.ajax ({
@@ -13,23 +13,14 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, poplist) {
 				if (response.error) {
 					CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
 				} else if (response) {
-					//console.log ("success repsosne", response);
+					//console.log ("success response", response);
 					var result = response.result;
 					CLMSUI.jqdialogs.simpleDialog ("popErrorDialog", "Success! Crosslinker "+result.name+" (ID: "+result.id+") Added", "Crosslinker Added");
 					
-					data.xlinkers.push (result);
-					var selElem = d3.select(poplist.domid).select("select");
-					var dataJoin = selElem.selectAll("option")
-						.data(data.xlinkers, function(d) { return d.id; })
-					;
-					dataJoin.enter().append("option")
-						.attr("value", function(d) { return d.id; })
-						.html(function(d) { return poplist.textFunc ? poplist.textFunc(d) : d.name; })
-						.property ("selected", true)
-					;
-
-					// need to set to single/multiple and add multiple/uncheck buttons as per setup
-					$(selElem.node()).multipleSelect("refresh");
+					linkerPoplist.data.push (result);	// linkerPoplist.data IS data.xlinkers
+					linkerPoplist.isOpen = false;
+					// update the associated multiple select widget 
+					updateFunction (linkerPoplist);
 				}
 			},
 			error: function () {

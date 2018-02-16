@@ -84,6 +84,12 @@ CLMSUI.jqdialogs = {
 
         $("#"+dialogID).dialog({
             modal:true,
+			buttons: [{
+			  text: "OK",
+			  click: function() {
+				$(this).dialog("close");
+			  }
+			}],
         });
         
         return $("#"+dialogID).dialog('option', 'title', title || "Message"); // to change existing title
