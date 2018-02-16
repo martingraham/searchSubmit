@@ -131,11 +131,7 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist,
 			props.acids2 = acids2.map (function (aa) {
 				var aaParts = aa.match(aaRegex);
 				if (aaParts) {
-					var z = {"AA": aaParts[1]};
-					if (aaParts[2]) {
-						z.prob = aaParts[2].slice(1, aaParts[2].length - 1);
-					}
-					return z;
+					return {"AA": aaParts[1], "prob": aaParts[2] ? aaParts[2].slice(1, aaParts[2].length - 1) : undefined};
 				}
 				return null;
 			}).filter (function (aaParts) {
@@ -281,7 +277,9 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist,
 			.attr("id", "newCrosslinkerSelect")
 		;
 
-		var linkers = data.xlinkers.slice();
+		var linkers = data.xlinkers.slice().filter (function (linker) {
+			return linker.description.indexOf ("ymetric") > -1;	// get rid of non standard linkers
+		});
 		linkers.unshift ({name: "Empty", mass: "", id: "0", description: "c:sym:Name:Empty;MASS:;LAO:;MODS:"});
 		baseSelect.selectAll("option").data(linkers)
 			.enter()
