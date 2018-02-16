@@ -398,7 +398,7 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist,
 			.attr("tabindex", function (d,i) { return i; })
 		;
 
-		var headers = ["Amino Acid", "Code", "Probability (1 if left empty)"];
+		var headers = ["Amino Acid", "Press", "Probability (1 if left empty)"];
 		aminoTable.select("thead tr:nth-child(2)").selectAll("th").data(headers).enter().append("th")
 			.text(function (d) { return d; })
 			.attr("title", function (d) { return d; })
