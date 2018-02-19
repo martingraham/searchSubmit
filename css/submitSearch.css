@@ -471,6 +471,6 @@ input.crosslinkerMass {
 
 /* overwrite datatable jquery-ui default style */
 table.dataTable tbody td {
-	padding-top: 0.25em;
-	padding-bottom: 0.25em;
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
 }

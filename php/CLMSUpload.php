@@ -16,7 +16,7 @@ if (empty ($_SESSION['session_name'])) {
     exit();
 } else {
 
-    include '../../../php/utils.php';
+    include 'utils.php';
 
     // make a timestamp in the session to use in filepaths and name entries (so db php routines can use it) 
     date_default_timezone_set ('Europe/Berlin');
@@ -59,7 +59,7 @@ if (empty ($_SESSION['session_name'])) {
     $options = array('upload_dir' => $folder, 'upload_url' => $folder);
 
     error_reporting(E_ALL | E_STRICT);
-    require('UploadHandler.php');
+    require('../vendor/server/php/UploadHandler.php');
     try {
         if ($_SESSION["canAddNewSearch"]) {
             $upload_handler = new UploadHandler ($options);
