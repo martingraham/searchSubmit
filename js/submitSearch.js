@@ -799,36 +799,6 @@ CLMSUI.buildSubmitSearch = function () {
                     }, 100);                 
                 });
 
-
-
-                // Make checkbox/radio choice controls - not currently used
-                /*
-                var buttonGroups = [
-                    //{domid: "#paramIons", choices: data.ions, type: "radio", nameFunc: function(d) { return d.name; },},
-                    //{domid: "#paramLosses", choices: data.losses, type: "radio", nameFunc: function(d) { return d.name; },},
-                ];
-                buttonGroups.forEach (function (buttonGroup) {
-                    var elem = d3.select (buttonGroup.domid);
-                    elem.attr ("class", "formPart");
-                    var baseId = buttonGroup.domid.slice(1)+"Choice";
-                    var choiceJoin = elem.selectAll("input").data(buttonGroup.choices);
-                    choiceJoin.enter()
-                        .append ("label")
-                        .attr ("for", function(d,i) { return baseId+i; })
-                        .text (buttonGroup.nameFunc)
-                    ;
-                    choiceJoin.enter()
-                        .append("input")
-                        .attr ("type", buttonGroup.type)
-                        .attr ("id", function(d,i) { return baseId+i; })
-                        .attr ("name", buttonGroup.type === "radio" ? baseId : null)
-                    ;
-
-                    $(buttonGroup.domid).buttonset();
-                });
-                */
-
-
                 // Sections to control availability of main submit button and explain why disabled if so
                 d3.select("#todo").selectAll("span").data(["ui-icon","notice"])
                     .enter()
