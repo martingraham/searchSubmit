@@ -307,7 +307,7 @@ input[type='number'], input[type='text'] {
 }
 
 .ui-spinner {
-    vertical-align: baseline;
+    vertical-align: top;
     width: 5em;
 }
 
@@ -467,4 +467,10 @@ input.crosslinkerMass {
 
 .cloutput {
 	display: none;
+}
+
+/* overwrite datatable jquery-ui default style */
+table.dataTable tbody td {
+	padding-top: 0.25em;
+	padding-bottom: 0.25em;
 }
