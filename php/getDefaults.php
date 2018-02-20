@@ -1,6 +1,4 @@
 <?php  
-    include ('utils.php');
-
     function getLastSearchID ($dbconn) {
         pg_prepare ($dbconn, "getLastSearchID", "SELECT id FROM search WHERE uploadedby = $1 AND (hidden ISNULL or hidden = 'f') ORDER BY id DESC LIMIT 1");
         $result = pg_execute($dbconn, "getLastSearchID", array($_SESSION['user_id']));

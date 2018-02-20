@@ -2,10 +2,10 @@
     //include('../../connectionString.php');
 
     // from http://stackoverflow.com/questions/2021624/string-sanitizer-for-filename
-    function normalizeString ($str = '') {
-        $str = filter_var ($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+    function normalizeString($str = '') {
+        $str = filter_var($str, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
         $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
-        $str = html_entity_decode ($str, ENT_QUOTES, "utf-8" );
+        $str = html_entity_decode($str, ENT_QUOTES, "utf-8");
         $str = htmlentities($str, ENT_QUOTES, "utf-8");
         $str = preg_replace("/(&)([a-z])([a-z]+;)/i", '$2', $str);
         $str = str_replace(' ', '-', $str);
@@ -27,10 +27,9 @@
         return date("d-M-Y H:i:s");
     }
 
-   // database connection needs to be open and user logged in for these functions to work
+    // database connection needs to be open and user logged in for these functions to work
     function isSuperUser($dbconn, $userID) {
         $rights = getUserRights ($dbconn, $userID);
-        //error_log (print_r ($rights, true));
         return $rights["isSuperUser"];
     }
 
@@ -38,12 +37,11 @@
         pg_prepare($dbconn, "user_rights", "SELECT * FROM users WHERE id = $1");
         $result = pg_execute ($dbconn, "user_rights", [$userID]);
         $row = pg_fetch_assoc ($result);
-        //error_log (print_r ($row, true));
         
-        $canSeeAll = (isset($row["see_all"]) && $row["see_all"] === 't');  // 1 if see_all flag is true or if that flag doesn't exist in the database 
-        $canAddNewSearch = (isset($row["can_add_search"]) && $row["can_add_search"] === 't');  // 1 if can_add_search flag is true or if that flag doesn't exist in the database 
-        $isSuperUser = (isset($row["super_user"]) && $row["super_user"] === 't');  // 1 if super_user flag is present AND true
-        $maxAAs = 0; //isset($row["max_aas"]) ? (int)$row["max_aas"] : 0;   // now rely on maxAA and maxSpectra values from user_groups table
+        $canSeeAll = (isset($row["see_all"]) && isTrue($row["see_all"]));  // 1 if see_all flag is present and true
+        $canAddNewSearch = (isset($row["can_add_search"]) && isTrue($row["can_add_search"]));  // 1 if can_add_search flag is present and true 
+        $isSuperUser = (isset($row["super_user"]) && isTrue($row["super_user"]));  // 1 if super_user flag is present AND true
+        $maxAAs = 0; //isset($row["max_aas"]) ? (int)$row["max_aas"] : 0;   // max aas and spectra now decided by user groups table
         $maxSpectra = 0; //isset($row["max_spectra"]) ? (int)$row["max_spectra"] : 0;
         $maxSearchCount = 10000;
         $maxSearchLifetime = 1000;
@@ -61,16 +59,15 @@
             WHERE users.id = $1");
             $result = pg_execute ($dbconn, "user_rights2", [$userID]);
             $row = pg_fetch_assoc ($result);
-            error_log (print_r ($row, true));
             
             $maxSearchCount = (int)$row["max_search_count"];
             $maxSearchLifetime = (int)$row["max_search_lifetime"];
             $maxSearchesPerDay = (int)$row["max_searches_per_day"];
             $maxAAs = max($maxAAs, (int)$row["max_aas"]);
             $maxSpectra = max($maxSpectra, (int)$row["max_spectra"]);
-            $canSeeAll = $canSeeAll || ((!isset($row["see_all"]) || (int)$row["see_all"] === 1));
-            $canAddNewSearch = $canAddNewSearch || (!isset($row["can_add_search"]) || (int)$row["can_add_search"] === 1);
-            $isSuperUser = $isSuperUser || (isset($row["super_user"]) && (int)$row["super_user"] === 1); 
+            $canSeeAll = $canSeeAll || (!isset($row["see_all"]) || isTrue($row["see_all"]));
+            $canAddNewSearch = $canAddNewSearch || (!isset($row["can_add_search"]) || isTrue($row["can_add_search"]));
+            $isSuperUser = $isSuperUser || (isset($row["super_user"]) && isTrue($row["super_user"])); 
             
             if ($canAddNewSearch) {
                 $userSearches = countUserSearches ($dbconn, $userID);
@@ -91,8 +88,19 @@
             $maxAAs = max($maxAAs, 1000);
             $maxSpectra = max($maxSpectra, 1000000);
         }
+        
+        // Test if searchSubmit exists as a sibling project
+        $doesSearchSubmitExist = file_exists ("../../searchSubmit/");
+        if ($doesSearchSubmitExist === false) {
+            $canAddNewSearch = false;
+        }
+        
+        // Test if userGUI exists as a sibling project
+        $doesUserGUIExist = file_exists ("../../userGUI/");
           
-        return array ("canSeeAll"=>$canSeeAll, "canAddNewSearch"=>$canAddNewSearch, "isSuperUser"=>$isSuperUser, "maxAAs"=>$maxAAs, "maxSpectra"=>$maxSpectra, "maxSearchLifetime"=>$maxSearchLifetime, "maxUserSearches"=>$maxSearchCount, "maxUserSearchesToday"=>$maxSearchesPerDay, "searchDenyReason"=>$searchDenyReason);
+        $userRights = array ("canSeeAll"=>$canSeeAll, "canAddNewSearch"=>$canAddNewSearch, "isSuperUser"=>$isSuperUser, "maxAAs"=>$maxAAs, "maxSpectra"=>$maxSpectra, "maxSearchLifetime"=>$maxSearchLifetime, "maxUserSearches"=>$maxSearchCount, "maxUserSearchesToday"=>$maxSearchesPerDay, "searchDenyReason"=>$searchDenyReason, "doesUserGUIExist"=>$doesUserGUIExist);
+		
+		return $userRights;
     }
 
     // Number of searches by a particular user performed today
@@ -115,7 +123,7 @@
         pg_prepare($dbconn, "doesColExist", "SELECT COUNT(column_name) FROM information_schema.columns WHERE table_name=$1 AND column_name=$2");
         $result = pg_execute ($dbconn, "doesColExist", [$tableName, $columnName]);
         $row = pg_fetch_assoc ($result);
-        return ((int)$row["count"] === 1);
+        return isTrue($row["count"]);
     }
 
     // Turn result set into array of objects
@@ -126,22 +134,33 @@
         }
 
         // free resultset
-        pg_free_result ($result);
+        pg_free_result($result);
 
         return $arr;
     }
 
-    function checkSufficientDiskSpace () {
+	function isTrue ($pgBooleanReturn) {
+		$trueArray = array ("TRUE", "true", "t", "yes", "y", "1", 1);
+		return in_array ($pgBooleanReturn, $trueArray);
+	}
+
+ 	function checkSufficientDiskSpace () {
         return disk_free_space (".");
     }
-
-    function ajaxLoginRedirect () {
-        // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
-         echo (json_encode (array ("redirect" => "../xi3/login.html")));
-    }
-
     function ajaxHistoryRedirect ($why) {
         // from http://stackoverflow.com/questions/199099/how-to-manage-a-redirect-request-after-a-jquery-ajax-call
          echo (json_encode (array ("redirect" => "../history/history.html", "why" => $why."<br>Press the button below to go to the Xi history page.")));
+    }
+
+    function ajaxBootOut () {
+        if (!isset($_SESSION['session_name'])) {
+            // https://github.com/Rappsilber-Laboratory/xi3-issue-tracker/issues/94
+            // Within an ajax call, calling php header() just returns the contents of login.html, not redirect to it.
+            // And since we're usually requesting a json object returning html will cause an error anyways.
+            // Thus we return a simple json object with a redirect field for the ajax javascript call to handle
+            echo json_encode ((object) ['redirect' => '../xi3/login.html']);
+            //header("location:../../xi3/login.html");
+            exit;
+        }
     }
 ?>
