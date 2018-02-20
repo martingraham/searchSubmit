@@ -196,6 +196,7 @@ CLMSUI.buildSubmitSearch = function () {
             {id: "#startProcessing", type: "submit"},
             {id: "#backButton", type: "button"},
             {id: "#helpButton", type: "button"},
+			{id: "#logoutButton", type: "button"},
             {id: "#useGlobalDefaults", type: "button"},
             {id: "#useLastSearchDefaults", type: "button"},
         ];
@@ -216,9 +217,10 @@ CLMSUI.buildSubmitSearch = function () {
         });
         
         
-        // Add action for back button
+        // Add actions for top-rightbutton
         d3.select("#backButton").on("click", function() { window.history.back(); });
         d3.select("#helpButton").on("click", function() { window.open ("../../xidocs/html/searchSubmit/index.html", "_blank"); });
+		d3.select("#logoutButton").on("click", function() { window.location.href = "../../userGUI/php/logout.php"; });
     }
 
 	// populating elements that rely on getting data back from database
@@ -446,7 +448,7 @@ CLMSUI.buildSubmitSearch = function () {
             else {     
                 // Add username
                 d3.select("#username").text(data.username);
-                
+				d3.selectAll("#logoutButton").style("display", data.userRights["doesUserGUIExist"] ? null : "none")
                 
                 // initialize blueimp file uploader bits. moved here cos we need userRights info
                 console.log ("submitter", submitter);	// submitter is defined in main.js in blueimp folder
@@ -830,7 +832,8 @@ CLMSUI.buildSubmitSearch = function () {
                             todoList.add (d3.select(this).attr("data-label") || d3.select(this).attr("name"));
                         }
                     });
-                    $("#startProcessing").button("option", "disabled", !todoList.empty() || data.noSearchAllowed);
+
+                    $("#startProcessing").button("option", "disabled", !todoList.empty() || (data.noSearchAllowed === true));
                     happyToDo (todoList.empty());
                     toDoMessage (todoList.empty() ? "Ready to Submit" : "To enable Submit, selections are required for:<br>"+todoList.values().join(", "));
                 });
@@ -1218,7 +1221,7 @@ CLMSUI.buildSubmitSearch = function () {
                 mdata = [mdata];
             }
             var mset = d3.set (mdata);
-            
+            console.log ("mdata", mdata);
             var dataTable = $(domElem).DataTable();  
             
             /*
@@ -1235,6 +1238,8 @@ CLMSUI.buildSubmitSearch = function () {
                     return mset.has(d.id);
                 })
             ;
+			
+			// the below line pretty much undoes anything in the block above, probably not worth calling...
             prevTableClickFuncs[domElem.slice(1)]();
         };
         
@@ -1256,8 +1261,9 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, options: 
                                         {emptyOverwrite: true, postFunc: function() { $("#paramCustom").accordion("option", "active", 0); },},
                                 },
-            "#acqPreviousTable" : {field : "acquisitions", func: dynamicTableSetFunc},
-            "#seqPreviousTable" : {field : "sequences", func: dynamicTableSetFunc},
+			// acq/seq table selections aren't updated by search params
+            //"#acqPreviousTable" : {field : "acquisitions", func: dynamicTableSetFunc},
+            //"#seqPreviousTable" : {field : "sequences", func: dynamicTableSetFunc},
         };
         
         d3.entries(elementMap).forEach (function (entry) {
