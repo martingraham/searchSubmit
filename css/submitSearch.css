@@ -288,10 +288,20 @@ input[type='number'], input[type='text'] {
     -moz-box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
     box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
     border: 1px solid #444;
-    -webkit-user-select: all;  /* Chrome all / Safari all */
+}
+
+.ui-dialog > * {
+	-webkit-user-select: all;  /* Chrome all / Safari all */
     -moz-user-select: all;     /* Firefox all */
     -ms-user-select: all;      /* IE 10+ */
-    user-select: all;          /* Likely future */  
+    user-select: all;          /* Likely future */ 
+}
+
+.noSelect {
+	-webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+    user-select: none;          /* Likely future */ 
 }
 
 .ui-dialog P:last-child {
@@ -433,6 +443,10 @@ div.symmetry, div.mods {
 	flex-shrink: 1;
 }
 
+div.symmetry:focus-within {	/* this seems moz specific */
+	border: 2px solid #bbf;
+}
+
 div.aminoAcids > div.symmetry {
 	margin-right: 0.5em;
 }
@@ -455,6 +469,10 @@ input.crosslinkerMass {
 
 .ui-dialog-content input:invalid {
 	background: pink;
+}
+
+.ui-dialog-content table input[type='number'] {
+	width: 4em;
 }
 
 .ui-dialog-content table thead.invalidTableSelection tr:first-child {
