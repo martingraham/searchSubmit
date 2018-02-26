@@ -460,6 +460,9 @@ CLMSUI.jqdialogs.addCrosslinkerDialog = function (dialogID, data, linkerPoplist,
 			.on ("mouseover", function () {
 				this.focus();
 			})
+			.on ("mouseleave", function () {
+				this.blur();
+			})
 			.on ("keydown", function () {
 				var key = d3.event.key.toLowerCase();
 				d3.select(this).selectAll("input[type='checkbox']")

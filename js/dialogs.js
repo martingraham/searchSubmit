@@ -127,7 +127,7 @@ CLMSUI.jqdialogs = {
 		var dialog = CLMSUI.jqdialogs.areYouSureDialog (dialogID, msg, title || "Add", yesText, noText, yesFunc);
 		
 		var dialogBox = d3.select(dialog[0]);
-		dialogBox.style ("user-select", "none");
+		dialogBox.classed ("noSelect", true);	// stop text selection in this dialog
 		
 		return dialog;
 	},
