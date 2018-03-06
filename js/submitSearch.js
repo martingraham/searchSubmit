@@ -691,12 +691,13 @@ CLMSUI.buildSubmitSearch = function () {
                 
                 // Settings for tables of previous acquisitions / sequences
                 var previousSettings = {
-                    acq: {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"])},
-                    seq: {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", autoWidths: d3.set(["file", "name"]),},
+                    acq: {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"]), types: {id: "numeric"}},
+                    seq: {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", autoWidths: d3.set(["file", "name"]), types: {id: "numeric"}},
                 };
                 d3.values(previousSettings).forEach (function (psetting) {
                     var sel = d3.select (psetting.domid);
-                    var baseId = psetting.domid.slice(1)+"Table";
+					 var baseId = psetting.domid.slice(1)+"Table";
+					/*
                     sel.html ("<TABLE><THEAD><TR></TR></THEAD><TBODY></TBODY></TABLE>");
                     sel.select("table")
                         .attr("id", baseId)
@@ -728,6 +729,70 @@ CLMSUI.buildSubmitSearch = function () {
                     
                     //makeJQUIButtons (baseId); 
                     makeDataTable (baseId); // add the DataTable bells n whistles to the DOM table
+					*/
+					
+					console.log ("pd", psetting);
+					
+					var columnMetaData = [];
+					if (psetting.data[0]) {
+						columnMetaData = d3.keys(psetting.data[0]).map (function (field) {
+							return {name: field, id: field, type: psetting.types[field] || "alpha", visible: true, removable: true, tooltip: ""}
+						})
+					}
+					
+					var cellStyles = {};
+					psetting.autoWidths.values().forEach (function (key) {
+						cellStyles[key] = "varWidthCell";
+					});
+					
+					var tooltips = {};
+					
+					var modifiers = {};
+					
+					var headerEntries = columnMetaData.map (function (cmd) { return {key: cmd.id, value: cmd}; });
+					var d3tab = sel.append("div").attr("class", "d3tableContainer")
+						.datum({
+							data: psetting.data, 
+							headerEntries: headerEntries, 
+							cellStyles: cellStyles,
+							tooltips: tooltips,
+							columnOrder: headerEntries.map (function (hentry) { return hentry.key; }),
+						})
+					;
+					var table = CLMSUI.d3Table ();
+					table (d3tab);
+					//applyHeaderStyling (d3tab.selectAll("thead tr:first-child").selectAll("th"));
+					console.log ("table", table);
+
+					// set initial filters
+					var keyedFilters = {};
+					headerEntries.forEach (function (hentry) {
+						var findex = table.getColumnIndex (hentry.key);
+						//console.log (hentry, "ind", findex, initialValues.filters);
+						keyedFilters[hentry.key] = {value: null /*initialValues.filters[findex]*/, type: hentry.value.type}	
+					});
+					//console.log ("keyedFilters", keyedFilters);
+
+					var empowerRows = function () {};
+					table
+						.filter(keyedFilters)
+						.dataToHTMLModifiers (modifiers)
+						.postUpdateFunc (empowerRows)
+					;
+
+					// set initial sort
+					/*
+					if (initialValues.sort && initialValues.sort.column) {
+						table
+							.orderKey (headerEntries[initialValues.sort.column].key)
+							.orderDir (initialValues.sort.sortDesc ? "desc" : "asc")
+							.sort()
+						;
+					}
+					*/
+					table.pageSize(10);
+					table.update();
+					
                     
                     // this stuffs a hidden input field in the main parameter search form
                     d3.select("#parameterForm").append("input")
@@ -775,7 +840,7 @@ CLMSUI.buildSubmitSearch = function () {
                         dispatchObj.formInputChanged();
                     }; 
 
-                    newRows.call (addRowListeners, baseId);
+                    //newRows.call (addRowListeners, baseId);
                 });
                 
                 // dragover effect for drag'n'dropping files
