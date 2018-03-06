@@ -499,12 +499,7 @@ CLMSUI.buildSubmitSearch = function () {
                 
                 // Helper functions
                 var prevTableClickFuncs = {}; // so we can keep these for later
-                // Routine for sorting datatable column of checkboxes via dom element values
-                $.fn.dataTable.ext.order['dom-checkbox'] = function ( settings, col ) {
-                    return this.api().column(col, {order:'index'}).nodes().map (function (td) {
-                        return $('input', td).prop('checked') ? '1' : '0';
-                    });
-                };
+				var d3Tables = {};
                 
                 // Maintains labels that appear next to sequence / acquisition headers to show state of current selection. Removeable by clicking close icon.
                 var makeRemovableLabels = function (domid, baseId, oids) {
@@ -517,7 +512,9 @@ CLMSUI.buildSubmitSearch = function () {
                             .append ("button")
                             .text (function(d) { return "De-select "+d.id; })
                             .on ("click", function(d) {
-                                d.isSelected = false;
+                                d.selected = false;
+								var d3table = d3Tables[baseId];
+								addSelectionListeners (d3table.getAllRowsSelection(), baseId);
                                 prevTableClickFuncs[baseId]();
                             })
                     ;
@@ -531,22 +528,38 @@ CLMSUI.buildSubmitSearch = function () {
                 };
    
                 // Mouse listeners; listens to mouse click on table rows and on checkbox within those rows to (un)select seqs/acqs
-                var addRowListeners = function (rowSel, baseId) {
-                    // row selection listeners
-                    rowSel
+				
+				var addWholeRowListeners = function (rowSel, baseId) {
+					rowSel
                         .on("click", function (d) {
-                            d.isSelected = !!!d.isSelected;
+							console.log ("whole row d", d, baseId, this);
+                            d.selected = !!!d.selected;
+							d3.select(this)
+								.select("input[type=checkbox]")
+								.property ("checked", function (d) { return d.selected; })
+							;
                             prevTableClickFuncs[baseId]();
                         })
                     ;
-                    rowSel.selectAll("input[type=checkbox]")
+				}
+				
+				var addSelectionListeners = function (rowSel, baseId) {
+					rowSel.select("input[type=checkbox]")
+						.property ("checked", function (d) { return d.selected; })
                         .on ("click", function(d) {
                             d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
-                            d.isSelected = !!!d.isSelected;
+                            d.selected = !!!d.selected;
+							d3.select(this)
+								.property ("checked", function (d) { return d.selected; })
+							;
                             prevTableClickFuncs[baseId]();
                         })
                     ; 
-                    rowSel.selectAll("button.download")
+				}
+				
+				var addDownloadListeners = function (rowSel) {
+					rowSel.select("button.download")
+						.each (styleSingleDownloadButton)
                         .on ("click", function(d) {
                             d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
                             //console.log ("button pressed", d);
@@ -588,7 +601,7 @@ CLMSUI.buildSubmitSearch = function () {
                             }
                         })
                     ;
-                };
+				}
                 
                 var addToolTipListeners = function (cellSel) {
                     function enumerateText (arr) {
@@ -610,72 +623,8 @@ CLMSUI.buildSubmitSearch = function () {
                     ;
                 };
                 
-                // Add header row to table using an array of column names. Autowidths is d3 set containing which column names are auto-sized.
-                var setHeaderRow = function (tableSel, columnNames, autoWidths) {
-                    var hrow = tableSel.select("thead tr");
-                    columnNames.push("download");
-                    columnNames.push("choose");
-                    var vcWidth = Math.floor (100.0 / Math.max (1, autoWidths.size()))+"%";
-                    
-                    hrow.selectAll("th").remove();
-                    hrow.selectAll("th").data(columnNames).enter()
-                        .append("th")
-                        .text(function(d) { return d; })
-                        .filter (function(d) { return autoWidths.has(d); })
-                        .classed ("varWidthCell", true)
-                        .style ("width", vcWidth)
-                    ;
-                };
-                
-                var makeDataTable = function (tableId) {
-                    return $("#"+tableId).dataTable ({
-                        "paging": true,
-                        "jQueryUI": true,
-                        "ordering": true,
-                        "order": [[ 0, "desc" ]],   // order by first column
-                        "columnDefs": [
-                            {"orderDataType": "dom-checkbox", "targets": [-1],} // -1 = last column (checkbox column)
-                        ],
-                        "language": {
-                            search: "Find:",
-                        },
-                        "fnDrawCallback" : function (oSettings) {
-                            var total_count = oSettings.fnRecordsTotal();
-                            var show_num = oSettings._iDisplayLength;
-                            var tbody = $(this).children('tbody');
-                            var tr_count = tbody.children('tr').length;
-                            var missing = show_num - tr_count;
-                            
-                            // Wipe out any previously manually added margin-bottom values to the tables cells. This is done so
-                            // a) we don't get rows with previously applied big margin bottoms appearing in the middle of the table making the table too big
-                            // b) a row with a big margin bottoms isn't picked to calculate the row height which can throw the calculation waaayyy off course
-                            // ('' removes the manual value and padding-bottom is recalculated from applicable css styles)
-                            tbody.find("tr td").css ("padding-bottom", '');
-                            
-                            if (show_num < total_count && missing > 0) {
-                                // now we can safely pick up the height for a row and make an appropriate padding-bottom value for the last row's cells
-                                // so table keeps the same height
-                                var lastRowHeight = tbody.find('tr:last-child').height();
-                                var lastRowCells = tbody.find('tr:last-child td');
-                                var existingPadding = parseFloat (lastRowCells.css ("padding-bottom"));
-                                //console.warn ("height", lastRowHeight, lastRowCells, existingPadding);
-                                lastRowCells.css ("padding-bottom", (existingPadding + (lastRowHeight * missing))+"px");
-                            }
-                        },
-                    });
-                };
-                
-                /* Very slow */
-                /*
-                var makeJQUIButtons = function (id) {
-                     $("#"+id+" button").button({
-                        icons: { primary: "ui-icon-arrowthickstop-1-s"},
-                        text: false,
-                    });
-                };
-                */
-                
                 /* Faster to set button classes directly, 20x faster in fact - 3840ms for makeJQUIButtons, 190ms for this routine */
+				/* 6/3/18: above applied when table was made for entire dataset, not just a few rows */
                 var styleSingleDownloadButton = function () {
                     var sel = d3.select(this);
                     sel
@@ -688,54 +637,35 @@ CLMSUI.buildSubmitSearch = function () {
                     sel.append("span")
                         .attr("class", "ui-button-text");
                 };
+				
+				var applyHeaderStyling = function (headerSel, autoWidths) {
+					var vcWidth = Math.floor (100.0 / Math.max (1, autoWidths.size() + 1))+"%";
+                    
+                    headerSel
+						.classed ("ui-state-default", true)
+                        .filter (function(d) { return autoWidths.has(d.key); })
+                        .classed ("varWidthCell", true)
+                        .style ("width", vcWidth)
+                    ;
+				};
                 
                 // Settings for tables of previous acquisitions / sequences
                 var previousSettings = {
-                    acq: {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"]), types: {id: "numeric"}},
-                    seq: {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", autoWidths: d3.set(["file", "name"]), types: {id: "numeric"}},
+                    acq: {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"]), types: {id: "numeric", "#": "numeric", selected: "boolean", download: "none"}},
+                    seq: {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", autoWidths: d3.set(["file", "name"]), types: {id: "numeric", "#":"numeric", selected: "boolean", download: "none"}},
                 };
                 d3.values(previousSettings).forEach (function (psetting) {
                     var sel = d3.select (psetting.domid);
-					 var baseId = psetting.domid.slice(1)+"Table";
-					/*
-                    sel.html ("<TABLE><THEAD><TR></TR></THEAD><TBODY></TBODY></TABLE>");
-                    sel.select("table")
-                        .attr("id", baseId)
-                        .attr("class", "previousTable stripe")
-                        //.attr("title", psetting.niceLabel)    // removed as put annoying secondary tooltip on table
-                    ;
-                    
-                    setHeaderRow (sel, d3.keys(psetting.data[0]), psetting.autoWidths);
-                    
-                    var vcWidth = Math.floor (100.0 / Math.max (1, psetting.autoWidths.size()))+"%";
-                    var tbody = sel.select("tbody");
-                    var rowJoin = tbody.selectAll("tr").data(psetting.data, function(d) { return d.name; });
-                    var newRows = rowJoin.enter().append("tr");
-
-                    var cellJoin = newRows.selectAll("td").data (function(d) { return d3.entries(d); });
-                    cellJoin.enter().append("td")
-                        .text(function(d) { return d.value; })
-                        // stuff for variable width cells, including adding tooltips
-                        .filter (function(d) { return psetting.autoWidths.has(d.key); })
-                        .classed ("varWidthCell", true)
-                        .style ("width", vcWidth) 
-                        .call (addToolTipListeners)
-                    ;
-
-                    newRows.append("td").append("button")
-                        .each (styleSingleDownloadButton)
-                    ;
-                    newRows.append("td").append("input").attr("type", "checkbox");
-                    
-                    //makeJQUIButtons (baseId); 
-                    makeDataTable (baseId); // add the DataTable bells n whistles to the DOM table
-					*/
+					var baseId = psetting.domid.slice(1)+"Table";
 					
 					console.log ("pd", psetting);
 					
 					var columnMetaData = [];
 					if (psetting.data[0]) {
-						columnMetaData = d3.keys(psetting.data[0]).map (function (field) {
+						var columnKeys = d3.keys(psetting.data[0]);
+						columnKeys.push("download");
+						columnKeys.push("selected");
+						columnMetaData = columnKeys.map (function (field) {
 							return {name: field, id: field, type: psetting.types[field] || "alpha", visible: true, removable: true, tooltip: ""}
 						})
 					}
@@ -747,7 +677,14 @@ CLMSUI.buildSubmitSearch = function () {
 					
 					var tooltips = {};
 					
-					var modifiers = {};
+					var modifiers = {
+						selected: function(d) {
+							return "<input type='checkbox'></input>"
+						},
+						download: function (d) {
+							return "<button class='download'></button";
+						}
+					};
 					
 					var headerEntries = columnMetaData.map (function (cmd) { return {key: cmd.id, value: cmd}; });
 					var d3tab = sel.append("div").attr("class", "d3tableContainer")
@@ -760,8 +697,10 @@ CLMSUI.buildSubmitSearch = function () {
 						})
 					;
 					var table = CLMSUI.d3Table ();
+					d3Tables[baseId] = table;
 					table (d3tab);
-					//applyHeaderStyling (d3tab.selectAll("thead tr:first-child").selectAll("th"));
+					d3tab.select("table").classed("previousTable", true);
+					applyHeaderStyling (d3tab.selectAll("thead tr:first-child").selectAll("th"), psetting.autoWidths);
 					console.log ("table", table);
 
 					// set initial filters
@@ -769,29 +708,22 @@ CLMSUI.buildSubmitSearch = function () {
 					headerEntries.forEach (function (hentry) {
 						var findex = table.getColumnIndex (hentry.key);
 						//console.log (hentry, "ind", findex, initialValues.filters);
-						keyedFilters[hentry.key] = {value: null /*initialValues.filters[findex]*/, type: hentry.value.type}	
+						keyedFilters[hentry.key] = {value: "" /*initialValues.filters[findex]*/, type: hentry.value.type}	
 					});
 					//console.log ("keyedFilters", keyedFilters);
 
-					var empowerRows = function () {};
+					var empowerRows = function (rowSelection) {
+						addWholeRowListeners (rowSelection, baseId);
+						addSelectionListeners (rowSelection, baseId);
+						addDownloadListeners (rowSelection);
+					};
 					table
 						.filter(keyedFilters)
 						.dataToHTMLModifiers (modifiers)
 						.postUpdateFunc (empowerRows)
+						.pageSize(10)
+						.update()
 					;
-
-					// set initial sort
-					/*
-					if (initialValues.sort && initialValues.sort.column) {
-						table
-							.orderKey (headerEntries[initialValues.sort.column].key)
-							.orderDir (initialValues.sort.sortDesc ? "desc" : "asc")
-							.sort()
-						;
-					}
-					*/
-					table.pageSize(10);
-					table.update();
 					
                     
                     // this stuffs a hidden input field in the main parameter search form
@@ -813,23 +745,9 @@ CLMSUI.buildSubmitSearch = function () {
                     // on a selection in the table, we then smuggle the current selection set of ids into the hidden form
                     // where they can be picked up on the parameter form submit, and show the current selection to the user
                     prevTableClickFuncs[baseId] = function () {
-                        var dtRows = $("#"+baseId).DataTable().rows().nodes(); // loads of tr dom nodes
-                        var allRows = d3.selectAll(dtRows);
-                    
-                        var selectedRows = allRows.filter(function(d) { return d.isSelected; });
-                        selectedRows
-                            .classed ("selected", true)
-                            .select("input")
-                                .property("checked", true)
-                        ;
-                        var unselectedRows = allRows.filter(function(d) { return ! d.isSelected; });
-                        unselectedRows
-                            .classed ("selected", false)
-                            .select("input")
-                                .property ("checked", false)
-                        ;
-                        
-                        var checkedData = selectedRows.data();
+                        var checkedData = psetting.data.filter (function (d) {
+							return d.selected;
+						});
                         var ids = checkedData.map (function(d) { return +d.id; });
                         d3.select("#"+baseId+"Hidden").property("value", "["+ids.join(",")+"]");  // Put the ids in the hidden form element
 
@@ -839,8 +757,6 @@ CLMSUI.buildSubmitSearch = function () {
                         console.log ("change form");
                         dispatchObj.formInputChanged();
                     }; 
-
-                    //newRows.call (addRowListeners, baseId);
                 });
                 
                 // dragover effect for drag'n'dropping files
@@ -1109,79 +1025,41 @@ CLMSUI.buildSubmitSearch = function () {
                 // which may indicate user can re-use old data
                 dispatchObj.on ("newFileAdded", function (type, fileName) {
                     var uploadPanel = d3.select("#"+type+"Upload");
-                    var table = d3.select("#"+type+"PreviousTable");
-                    var dataTable = $(table.node()).DataTable();
-                    var oldSearch = dataTable.search();
-
-                    dataTable.search(fileName);
+					var psetting = previousSettings[type];
+                    var data = psetting.data;
+					var sel = d3.select (psetting.domid);
+					var baseId = psetting.domid.slice(1)+"Table";
                     var hits = 0;
                     
                     if (fileName) {
-                        hits = dataTable.$('tr', {"filter":"applied"}).length; //dataTable.rows().count();
+						var d3table = d3Tables[baseId];
+						var oldFilter = d3table.filter();
+						var newFilter = $.extend ({}, oldFilter);
+						$.each (newFilter, function (key) {
+							newFilter[key].value = "";
+						});
+						newFilter[type === "seq" ? "file" : "files"] = {value: fileName, type: "alpha"};
+						d3table.filter (newFilter);
+                        hits = d3table.getFilteredSize();
+						
                         if (hits > 0) { // alert user if possible matches in linked previous table
                             uploadPanel.select(".dynamicFileExistsInfo").text("Filename "+fileName+" is present in "+hits);
+							d3table.update();
                         } else { // restore old search if no hits
-                            dataTable.search(oldSearch);
+                            d3table.filter(oldFilter);
                         }
                     } 
-                    dataTable.draw();
                     uploadPanel.select(".fileNameExists").style("display", hits ? "inline" : null);
                 });
 
                 // if new row added, then add it to the correct table of previous results
                 dispatchObj.on ("newEntryUploaded", function (type, newRow) {
                     var tableId = type+"PreviousTable";
-                    var dataTable = $("#"+tableId).DataTable();
-                    var autoWidths =  previousSettings[type].autoWidths;
+					newRow.selected = true;
+					var d3table = d3Tables[tableId];
+					d3table.getData().push (newRow);
+					d3table.filter(d3table.filter()).update();
 
-                    // With a hitherto empty table, it's easier to remake it than try and add in new columns
-                    if (!dataTable.data().count()) {
-                        dataTable.destroy();
-                        setHeaderRow (d3.select("#"+tableId), d3.keys(newRow), autoWidths);
-                        makeDataTable (tableId);
-                        dataTable = $("#"+tableId).DataTable();
-                    }
-
-                    newRow.download = "<button class='download'/>";
-                    newRow.choose = "<input type='checkbox'>";    // add a checkbox as a html string for display in the table
-                    
-                    // keep field order same as existing table header if possible
-                    var order = d3.select("#"+tableId+" thead").selectAll("th").data();
-                    if (order) {
-                        var reorderedRow = {};
-                        order.forEach (function (field) {
-                            reorderedRow[field] = newRow[field];
-                        });
-                        newRow = reorderedRow;
-                    }
-                    var newVals = order ? order.map (function(field) { return newRow[field]; }) : d3.values(newRow);
-                    
-                    var newRowNode = dataTable.row
-                        .add(newVals) // push the newrow as new table row data
-                        .draw()                 // redraw the table
-                        .node()                 // return the tr dom node for further manipulation
-                    ;
-                    var newRowD3 = d3.select(newRowNode)
-                        .datum(newRow)  // set the row data on the new tr dom node as a d3 datum
-                        //.call (addRowListeners, tableId)
-                    ;
-                    newRowD3
-                        .selectAll("td")
-                            .data(function(d) { return d3.entries(d); })    // Set individual data on cells from the row data
-                            .filter (function(d) { return autoWidths.has(d.key); })  // filter using settings for accordions
-                            .call (addToolTipListeners, tableId)
-                    ;
-                    
-                    //makeJQUIButtons (tableId);    // jquery ui the download button
-                    newRowD3
-                        .call (addRowListeners, tableId)    // add listeners to row
-                        .selectAll("td")    // set download button to hold newrow object (same as in previous rows)
-                            .filter(function(d) { return d.key === "download"; })
-                            .select("button")
-                            .datum (newRow)
-                            .each (styleSingleDownloadButton)   // replaces makeJQUIButtons
-                    ;
-                    newRow.isSelected = true;   // Set as selected in the datum, this will be pushed through to the checkbox and the selected area in the following code
                     prevTableClickFuncs[tableId] ();   // and we call the same func here as the checkbox is set pre-selected
                 });
 

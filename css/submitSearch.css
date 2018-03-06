@@ -115,14 +115,37 @@ H3 {
     table-layout: auto;
 }
 
-.previousTable td, .previousTable th {
+TABLE.d3table.previousTable {
+	font-size: 1em;
+	table-layout: auto;
+	border: 1px solid #ccc;
+}
+
+.d3table.previousTable td, .d3table.previousTable td.varWidthCell, .d3table.previousTable th {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
+TABLE.previousTable.d3table thead th:not(:first-child) span {
+	border-left-color: #ccc;
+}
+
 .previousTable th {
     text-transform: capitalize;
+}
+
+.previousTable tr {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.previousTable tr:nth-child(2n) {
+	background: #eee;
+}
+
+TABLE.d3table.previousTable tbody tr td {
+	color: #333;
 }
 
 .varWidthCell {
@@ -491,4 +514,12 @@ input.crosslinkerMass {
 table.dataTable tbody td {
 	padding-top: 0.5em;
 	padding-bottom: 0.5em;
+}
+
+.chosenLabel {
+	color: #888;
+}
+
+.chosenLabel:before {
+	content: "Chosen:";
 }

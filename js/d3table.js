@@ -28,7 +28,7 @@ CLMSUI.d3Table = function () {
 	};
 	
 	function toBoolean (val, nullIsFalse) {
-		return (val === "1" || val === "t" || val === "true") ? true : ((val === "0" || val === "f" || val === "false" || (val === null && nullIsFalse)) ? false : null);
+		return (val === "1" || val === "t" || val === "true" || val === true) ? true : ((val === "0" || val === "f" || val === "false" || val === false || (val === null && nullIsFalse)) ? false : null);
 	}
 	
 	function my (mySelection) {	// data in selection should be 2d-array [[]]
@@ -232,10 +232,26 @@ CLMSUI.d3Table = function () {
 			var pass = true;
 			for (var n = 0; n < ko.length; n++) {
 				var key = ko[n];
-				if (filterRegexes[key] != undefined && indexedFilterTypeFuncs[n](rowdata[key], filterRegexes[key])) {
-					pass = false;
-					break;
+				var regex = filterRegexes[key];
+				if (regex != undefined) {
+					// If array
+					var datum = rowdata[key];
+					if (Array.isArray(datum)) {
+						pass = false;
+						// just need 1 element in array to not be filtered out to pass
+						for (var m = 0; m < datum.length; m++) {
+							if (!indexedFilterTypeFuncs[n](datum[m], regex)) {
+								pass = true;
+								break;
+							}
+						}
+					} else {
+						if (indexedFilterTypeFuncs[n](datum, regex)) {
+							pass = false;
+						}
+					}
 				}
+				if (!pass) break;
 			}
 			return pass;
 		});
@@ -336,6 +352,18 @@ CLMSUI.d3Table = function () {
 	
 	my.getColumnIndex = function (key) {
 		return my.columnOrder().indexOf(key);	
+	};
+	
+	my.getFilteredSize = function () {
+		return filteredData.length;	
+	};
+	
+	my.getData = function () {
+		return selection.datum().data;
+	};
+	
+	my.getAllRowsSelection = function () {
+		return selection.selectAll("tbody tr");
 	};
 	
 	my.showHeaderFilter = function (key, show) {
