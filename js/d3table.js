@@ -16,7 +16,7 @@ CLMSUI.d3Table = function () {
 	var dispatch, cellStyles, tooltips, eventHooks;
 	
 	var filterTypeFuncs = {
-		alpha: function (datum, regex) { return datum.search(regex) < 0; },
+		alpha: function (datum, regex) { return regex.test(datum) === false; /* return datum.search(regex) < 0; */ },
 		numeric: function (datum, regex) { return regex.length <= 1 ? +datum !== regex[0] : (datum < regex[0] || datum > regex[1]); },
 		boolean: function (datum, regex) { return toBoolean (datum, true) !== regex; }													   
 	};
@@ -227,7 +227,7 @@ CLMSUI.d3Table = function () {
 					}
 					else if (filterType === "alpha") {
 						var parts = filterVal ? filterVal.split(" ").map (function (part) { return "(?=.*"+part+")"; }) : [];
-						filterRegexes[key] = parts.length > 1 ? parts.join("") : filterVal;
+						filterRegexes[key] = new RegExp (parts.length > 1 ? parts.join("") : filterVal, "i");
 					}
 				}
 			}
