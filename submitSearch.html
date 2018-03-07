@@ -7,19 +7,17 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
         <link rel="stylesheet" href="vendor/css/jquery-ui.css" />
-        <link rel="stylesheet" href="vendor/css/dataTables.jqueryui.css" />
         <link rel="stylesheet" href="vendor/css/jquery.fileupload.css" />
         <link rel="stylesheet" href="vendor/css/jquery.fileupload-ui.css" />
         <link rel="stylesheet" href="vendor/css/multiple-select.css" />
         <link rel="stylesheet" href="../xi3/css/common.css" />
         <link rel="stylesheet" href="css/submitSearch.css" />
         <link rel="stylesheet" href="css/tooltip.css" />
+		<link rel="stylesheet" href="css/d3table.css" />
 
         <script src="vendor/js/jquery-3.3.1.js"></script>
         <script src="vendor/js/jquery-ui.js"></script>
         <script src="vendor/js/d3.js"></script>
-        <script src="vendor/js/jquery.dataTables.js"></script>
-		<script src="vendor/js/dataTables.jqueryui.js"></script>
         <script src="vendor/js/multiple-select.js"></script>
 
         <!-- The Templates plugin is included to render the upload/download listings -->
@@ -41,6 +39,7 @@
         <script src="js/tooltip.js"></script>
         <script src="js/dialogs.js"></script>
 		<script src="js/newCrosslinkerDialog.js"></script>
+		<script src="js/d3table.js"></script>
         <script src="js/submitSearch.js"></script>
      </head>
     
@@ -103,7 +102,7 @@
                 <!-- <div class="col-10"><p id="{%=o.partialId%}Selected" class="chosenFiles"></p></div> -->
             </div>
             <div class="row">
-                <div class="col-12"><p id="{%=o.partialId%}Selected" class="chosenFiles"></p></div>
+                <div class="col-12"><p id="{%=o.partialId%}Selected" class="chosenFiles"><span class="chosenLabel"></span><span class="noneChosen"></span></p></div>
             </div>
             <div class="row">
                 <div class="col-12">
