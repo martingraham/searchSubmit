@@ -726,7 +726,7 @@ CLMSUI.buildSubmitSearch = function () {
 					d3Tables[baseId] = table;
 					table (d3tab);
 					d3tab.select("table").classed("previousTable", true);
-					applyHeaderStyling (d3tab.selectAll("thead tr:first-child").selectAll("th"), psetting.autoWidths);
+					applyHeaderStyling (table.getHeaderCells(), psetting.autoWidths);
 					//console.log ("table", table);
 
 					// set initial filters
@@ -1057,7 +1057,8 @@ CLMSUI.buildSubmitSearch = function () {
                     if (fileName) {
 						var d3table = d3Tables[baseId];
 						var oldFilter = d3table.filter();
-						var newFilter = $.extend ({}, oldFilter);
+						// true = deep copy, 'cos elements in oldFilter are objects themselves that will be directly changed otherwise (and thus oldfilter won't work)
+						var newFilter = $.extend (true, {}, oldFilter);
 						$.each (newFilter, function (key) {
 							newFilter[key].value = "";
 						});
@@ -1067,10 +1068,10 @@ CLMSUI.buildSubmitSearch = function () {
 						
                         if (hits > 0) { // alert user if possible matches in linked previous table
                             uploadPanel.select(".dynamicFileExistsInfo").text("Filename "+fileName+" is present in "+hits);
-							d3table.update();
                         } else { // restore old search if no hits
                             d3table.filter(oldFilter);
                         }
+						d3table.update();
                     } 
                     uploadPanel.select(".fileNameExists").style("display", hits ? "inline" : null);
                 });
@@ -1081,7 +1082,7 @@ CLMSUI.buildSubmitSearch = function () {
 					newRow.selected = true;
 					var d3table = d3Tables[tableId];
 					d3table.getData().push (newRow);
-					d3table.filter(d3table.filter()).update();
+					d3table.refilter().update();
 
                     prevTableClickFuncs[tableId] ();   // and we call the same func here as the checkbox is set pre-selected
                 });

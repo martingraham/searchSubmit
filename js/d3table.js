@@ -272,7 +272,7 @@ CLMSUI.d3Table = function () {
 		my.page(1);
 		
 		// update filter inputs with new filters
-		var filterCells = selection.select("thead tr:nth-child(2)").selectAll("th");
+		var filterCells = this.getFilterCells();
 		filterCells.select("input").property("value", function (d) {
 			return filter[d.key] ? filter[d.key].value : "";	
 		});
@@ -282,6 +282,11 @@ CLMSUI.d3Table = function () {
 		});
 		dispatch.filtering (filter2);
 		
+		return my;
+	};
+	
+	my.refilter = function () {
+		this.filter (this.filter());
 		return my;
 	};
 	
@@ -375,8 +380,16 @@ CLMSUI.d3Table = function () {
 		return selection.selectAll("tbody tr");
 	};
 	
+	my.getHeaderCells = function () {
+		return selection.select("thead tr:first-child").selectAll("th")
+	};
+	
+	my.getFilterCells = function () {
+		return selection.select("thead tr:nth-child(2)").selectAll("th")
+	};
+	
 	my.showHeaderFilter = function (key, show) {
-		selection.select("thead tr:nth-child(2)").selectAll("th > div")
+		this.getFilterCells.selectAll("div")
 			.filter (function (d) { return d.key === key; })
 			.style ("display", show ? null : "none")
 		;	
