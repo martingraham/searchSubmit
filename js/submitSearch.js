@@ -525,14 +525,15 @@ CLMSUI.buildSubmitSearch = function () {
                             text: false,    // jquery-ui will use existing text as tooltip
                         });
                     });
+					
+					d3.select(domid).select("span.noneChosen").style("display", labels.empty() ? null : "none");	
                 };
    
                 // Mouse listeners; listens to mouse click on table rows and on checkbox within those rows to (un)select seqs/acqs
-				
+				// need base id as well so can't send as eventHooks to d3 table
 				var addWholeRowListeners = function (rowSel, baseId) {
 					rowSel
                         .on("click", function (d) {
-							console.log ("whole row d", d, baseId, this);
                             d.selected = !!!d.selected;
 							d3.select(this)
 								.select("input[type=checkbox]")
@@ -546,6 +547,7 @@ CLMSUI.buildSubmitSearch = function () {
 				var addSelectionListeners = function (rowSel, baseId) {
 					rowSel.select("input[type=checkbox]")
 						.property ("checked", function (d) { return d.selected; })
+						.classed ("verticalCentred", true)
                         .on ("click", function(d) {
                             d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
                             d.selected = !!!d.selected;
@@ -557,12 +559,30 @@ CLMSUI.buildSubmitSearch = function () {
                     ; 
 				}
 				
+				
+				/* Faster to set button classes directly, 20x faster in fact - 3840ms for makeJQUIButtons, 190ms for this routine */
+				/* 6/3/18: above applied when table was made for entire dataset, not just a few rows */
+                var styleSingleDownloadButton = function () {
+                    var sel = d3.select(this);
+                    sel
+                        .attr("class", "download ui-button ui-widget ui-corner-all ui-state-default ui-button-icon-only")
+                        // hide button if no files (shouldn't happen but it can)
+                        .style("display", function(d) { 
+							if (d.value) { d = d.value; };
+							return !d.files || d.files.length > 0 ? null : "none"; 
+						})
+                    ;
+                    sel.append("span").attr("class", "ui-button-icon-primary ui-icon ui-icon-arrowthickstop-1-s");
+                    sel.append("span").attr("class", "ui-button-text");
+                };
+				
 				var addDownloadListeners = function (rowSel) {
 					rowSel.select("button.download")
 						.each (styleSingleDownloadButton)
                         .on ("click", function(d) {
                             d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
-                            //console.log ("button pressed", d);
+							if (d.value) { d = d.value; };	// if selection based on cells rather than rows then format will be d:{key:k,value:data} not d:data
+						
                             if (d) {
                                 var fdata = {type: d.files ? "acq" : "seq", datum: d};
 
@@ -613,7 +633,8 @@ CLMSUI.buildSubmitSearch = function () {
                     
                     cellSel
                         .on ("mouseover", function(d) {
-                            var text = $.isArray(d.value) ? enumerateText(d.value) : d.value;
+							var datum = d.value[d.key];
+                            var text = $.isArray(datum) ? enumerateText(datum) : datum;
                             CLMSUI.tooltip
                                 .updateText (d.key, text)
                                 .updatePosition (d3.event)
@@ -622,21 +643,7 @@ CLMSUI.buildSubmitSearch = function () {
                         .on ("mouseleave", CLMSUI.tooltip.setToFade)
                     ;
                 };
-                
-                /* Faster to set button classes directly, 20x faster in fact - 3840ms for makeJQUIButtons, 190ms for this routine */
-				/* 6/3/18: above applied when table was made for entire dataset, not just a few rows */
-                var styleSingleDownloadButton = function () {
-                    var sel = d3.select(this);
-                    sel
-                        .attr("class", "download ui-button ui-widget ui-corner-all ui-state-default ui-button-icon-only")
-                        // hide button if no files (shouldn't happen but it can)
-                        .style("display", function(d) { return !d.files || d.files.length > 0 ? null : "none"; })
-                    ;
-                    sel.append ("span")
-                        .attr("class", "ui-button-icon-primary ui-icon ui-icon-arrowthickstop-1-s");
-                    sel.append("span")
-                        .attr("class", "ui-button-text");
-                };
+				
 				
 				var applyHeaderStyling = function (headerSel, autoWidths) {
 					var vcWidth = Math.floor (100.0 / Math.max (1, autoWidths.size() + 1))+"%";
@@ -649,10 +656,35 @@ CLMSUI.buildSubmitSearch = function () {
                     ;
 				};
                 
+				var cellEventHooks = {
+					file: addToolTipListeners,
+					files: addToolTipListeners,
+					name: addToolTipListeners,
+					download: addDownloadListeners,
+				}
+				
                 // Settings for tables of previous acquisitions / sequences
                 var previousSettings = {
-                    acq: {domid: "#acqPrevious", data: data.previousAcqui, niceLabel: "Acquisitions", required: true, selectSummaryid: "#acqSelected", autoWidths: d3.set(["files", "name"]), types: {id: "numeric", "#": "numeric", selected: "boolean", download: "none"}},
-                    seq: {domid: "#seqPrevious", data: data.previousSeq, niceLabel: "Sequences", required: true, selectSummaryid: "#seqSelected", autoWidths: d3.set(["file", "name"]), types: {id: "numeric", "#":"numeric", selected: "boolean", download: "none"}},
+                    acq: {domid: "#acqPrevious", 
+						  data: data.previousAcqui, 
+						  niceLabel: "Acquisitions", 
+						  required: true, 
+						  selectSummaryid: "#acqSelected", 
+						  columns: ["id", "name", "date", "user", "files", "#", "download", "selected"], 
+						  autoWidths: d3.set(["files", "name"]), 
+						  hide: {download: false},
+						  types: {id: "numeric", "#": "numeric", selected: "boolean", download: "none"}
+					},
+                    seq: {domid: "#seqPrevious", 
+						  data: data.previousSeq, 
+						  niceLabel: "Sequences", 
+						  required: true, 
+						  selectSummaryid: "#seqSelected", 						  
+						  columns: ["id", "name", "date", "user", "file", "download", "selected"], 
+						  autoWidths: d3.set(["file", "name"]), 
+						  hide: {},
+						  types: {id: "numeric", "#":"numeric", selected: "boolean", download: "none"}
+					},
                 };
                 d3.values(previousSettings).forEach (function (psetting) {
                     var sel = d3.select (psetting.domid);
@@ -660,28 +692,22 @@ CLMSUI.buildSubmitSearch = function () {
 					
 					console.log ("pd", psetting);
 					
-					var columnMetaData = [];
-					if (psetting.data[0]) {
-						var columnKeys = d3.keys(psetting.data[0]);
-						columnKeys.push("download");
-						columnKeys.push("selected");
-						columnMetaData = columnKeys.map (function (field) {
-							return {name: field, id: field, type: psetting.types[field] || "alpha", visible: true, removable: true, tooltip: ""}
-						})
-					}
+					var names = {selected: "chosen"};
+					var columnMetaData = psetting.columns.map (function (field) {
+						var visible = psetting.hide[field] !== undefined ? psetting.hide[field] : true;
+						return {name: names[field] || field, id: field, type: psetting.types[field] || "alpha", visible: visible, removable: true, tooltip: ""}
+					});
 					
-					var cellStyles = {};
+					var cellStyles = {selected: "centreContent", download: "centreContent"};
 					psetting.autoWidths.values().forEach (function (key) {
 						cellStyles[key] = "varWidthCell";
 					});
 					
-					var tooltips = {};
-					
 					var modifiers = {
-						selected: function(d) {
+						selected: function () {
 							return "<input type='checkbox'></input>"
 						},
-						download: function (d) {
+						download: function () {
 							return "<button class='download'></button";
 						}
 					};
@@ -692,7 +718,7 @@ CLMSUI.buildSubmitSearch = function () {
 							data: psetting.data, 
 							headerEntries: headerEntries, 
 							cellStyles: cellStyles,
-							tooltips: tooltips,
+							eventHooks: cellEventHooks,
 							columnOrder: headerEntries.map (function (hentry) { return hentry.key; }),
 						})
 					;
@@ -701,24 +727,21 @@ CLMSUI.buildSubmitSearch = function () {
 					table (d3tab);
 					d3tab.select("table").classed("previousTable", true);
 					applyHeaderStyling (d3tab.selectAll("thead tr:first-child").selectAll("th"), psetting.autoWidths);
-					console.log ("table", table);
+					//console.log ("table", table);
 
 					// set initial filters
 					var keyedFilters = {};
 					headerEntries.forEach (function (hentry) {
-						var findex = table.getColumnIndex (hentry.key);
-						//console.log (hentry, "ind", findex, initialValues.filters);
-						keyedFilters[hentry.key] = {value: "" /*initialValues.filters[findex]*/, type: hentry.value.type}	
+						keyedFilters[hentry.key] = {value: "", type: hentry.value.type}	
 					});
-					//console.log ("keyedFilters", keyedFilters);
 
 					var empowerRows = function (rowSelection) {
 						addWholeRowListeners (rowSelection, baseId);
 						addSelectionListeners (rowSelection, baseId);
-						addDownloadListeners (rowSelection);
 					};
+					
 					table
-						.filter(keyedFilters)
+						.filter (keyedFilters)
 						.dataToHTMLModifiers (modifiers)
 						.postUpdateFunc (empowerRows)
 						.pageSize(10)
@@ -1155,35 +1178,6 @@ CLMSUI.buildSubmitSearch = function () {
                     options.postFunc();
                 }
             }
-        };
-        
-        var dynamicTableSetFunc = function (domElem, mdata) {
-            if (mdata instanceof Array) {
-                mdata = mdata.map (function (entry) { return d3.values(entry)[0]; });
-            } else {
-                mdata = [mdata];
-            }
-            var mset = d3.set (mdata);
-            console.log ("mdata", mdata);
-            var dataTable = $(domElem).DataTable();  
-            
-            /*
-            dataTable.rows().every (function () {
-                var sel = mset.has(this.data()[0]);
-                d3.select(this.node()).select("input[type=checkbox]").property("checked", sel);
-            });
-            */
-            
-            // we added the data to the table rows via d3 earlier so we can access it like this too.
-            d3.selectAll(dataTable.rows().nodes())
-                .selectAll("input[type=checkbox]")
-                .property("checked", function(d) {
-                    return mset.has(d.id);
-                })
-            ;
-			
-			// the below line pretty much undoes anything in the block above, probably not worth calling...
-            prevTableClickFuncs[domElem.slice(1)]();
         };
         
         var elementMap = {

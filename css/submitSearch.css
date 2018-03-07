@@ -116,7 +116,7 @@ H3 {
 }
 
 TABLE.d3table.previousTable {
-	font-size: 1em;
+	font-size: 0.9em;
 	table-layout: auto;
 	border: 1px solid #ccc;
 }
@@ -146,6 +146,10 @@ TABLE.previousTable.d3table thead th:not(:first-child) span {
 
 TABLE.d3table.previousTable tbody tr td {
 	color: #333;
+}
+
+TABLE.d3table.previousTable tbody tr:hover td {
+	color: #fff;
 }
 
 .varWidthCell {
@@ -511,15 +515,33 @@ input.crosslinkerMass {
 }
 
 /* overwrite datatable jquery-ui default style */
-table.dataTable tbody td {
-	padding-top: 0.5em;
-	padding-bottom: 0.5em;
+.previousTable tr {
+	line-height: 2em;
 }
 
 .chosenLabel {
 	color: #888;
+	height: 1.5em;
+	padding-right: 0.5em;
+}
+
+.download {
+	width: 3em;
+	height: 1.5em;
 }
 
 .chosenLabel:before {
-	content: "Chosen:";
+	content: "Currently Chosen:";
+}
+
+.noneChosen:before {
+	content: "None";
+}
+
+td.centreContent {
+	text-align: center;
+}
+
+.verticalCentred {
+	vertical-align: middle;
 }
