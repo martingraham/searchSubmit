@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -1126,8 +1126,38 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                 });
                 
-                // programmatic click on global default button, load fields with those defaults
-                $("#useGlobalDefaults").click();
+
+				var urlParams = {};
+				location.search.substr(1).split("&").forEach (function (item) {
+					var keyValue = item.split("=");
+					urlParams[keyValue[0]] = keyValue[1];
+				});
+				console.log (urlParams);
+				if (urlParams.base) {
+					$.ajax ({
+						type: "POST",
+						url: "./php/getSpecificDefaults.php",
+						data: {sid: urlParams.base},
+						dataType: "json",
+						encode: true,
+						success: function (data, textStatus, jqXhr) {
+							console.log ("fdfdfd", data);
+							if (data.error) {
+								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], data.errorType);
+								$("#useGlobalDefaults").click();
+							} else if (data) {
+								updateFieldsWithValues (data, prevTableClickFuncs);
+                                dispatchObj.formInputChanged();
+							}
+						},
+						error: function () {
+							$("#useGlobalDefaults").click();
+						},
+					});
+				} else {
+					// programmatic click on global default button, load fields with those defaults
+                	$("#useGlobalDefaults").click();
+				}
             }
         }
     });
