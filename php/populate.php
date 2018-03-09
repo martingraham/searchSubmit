@@ -37,7 +37,7 @@ try {
 		$pSeqStr = "SELECT sequence_file.id, name AS Name, to_char(upload_date, 'YYYY-MM-DD HH24:MI') AS Date, users.user_name AS User, file_name as file FROM sequence_file JOIN users ON (".$seeAllCond."sequence_file.uploadedby = users.id) ".$privacyCond."ORDER BY upload_date DESC";
 
 		$getFieldValues = array (
-			"xiversions" => array ("q" => "SELECT id, version from xiversions ORDER by id"),
+			"xiversions" => array ("q" => "SELECT id, version as name from xiversions ORDER by id desc"),
 			"enzymes" => array ("q" => "SELECT id, name from enzyme ORDER by name"),
 			"ions" => array ("q" => "SELECT id, name from ion ORDER by name"),
 			"xlinkers" => array ("q" => "SELECT id, mass, is_decoy, description, name from crosslinker ORDER by name"),

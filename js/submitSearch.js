@@ -491,6 +491,7 @@ CLMSUI.buildSubmitSearch = function () {
                     {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications", addNew: false, clearOption: true},
                     {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion", clearOption: true},
                     {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses", addNew: false, clearOption: true},
+					{data: data.xiversions, domid: "#paramXiVersion", niceLabel: "Xi Version", required: true, multiple: false, filter: true, placeHolder: "Select Xi Version", addNew: false, clearOption: false}
                 ];
 				makeMultipleSelectionElements (populateOptionLists, data.userRights.canSeeAll);	// call the function that does the multiple select setting-up
 				
@@ -1195,6 +1196,7 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramFixedModsSelect" : {field : "fixedMods", func: multiSelectSetFunc},
             "#paramVarModsSelect" : {field : "varMods", func: multiSelectSetFunc},
             "#paramLossesSelect" : {field : "losses", func: multiSelectSetFunc},
+			"#paramXiVersionSelect": {field : "xiversion", func: multiSelectSetFunc},
             "#paramNotesValue" : {field : "notes", func: textAreaSetFunc, options: {emptyOverwrite: false},},
             "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, options: 
                                         {emptyOverwrite: true, postFunc: function() { $("#paramCustom").accordion("option", "active", 0); },},
