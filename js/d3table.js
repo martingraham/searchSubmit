@@ -389,7 +389,7 @@ CLMSUI.d3Table = function () {
 	};
 	
 	my.showHeaderFilter = function (key, show) {
-		this.getFilterCells.selectAll("div")
+		this.getFilterCells().selectAll("div")
 			.filter (function (d) { return d.key === key; })
 			.style ("display", show ? null : "none")
 		;	
