@@ -11,7 +11,7 @@
 
 
     function getDefaults ($dbconn, $searchID) {
-        pg_prepare($dbconn, "getParamSettings", "SELECT * from parameter_set WHERE parameter_set.id = (SELECT paramset_id FROM search WHERE search.id = $1)");
+        pg_prepare($dbconn, "getParamSettings", "SELECT parameter_set.*, search.xiversion from parameter_set, search WHERE parameter_set.id = (SELECT paramset_id FROM search WHERE search.id = $1)");
         $result = pg_execute($dbconn, "getParamSettings", array($searchID));
         $paramSettings = resultsAsArray($result);
         $defaults = array ();
@@ -31,6 +31,7 @@
                 "ms2_tol_unit" => $pSettings["ms2_tol_unit"],
                 "missed_cleavages" => $pSettings["missed_cleavages"],
                 "enzyme" => $pSettings["enzyme_chosen"],
+				"xiversion" => $pSettings["xiversion"],
                 "customsettings" => $pSettings["customsettings"]
             );
 
@@ -92,6 +93,7 @@
         );
         
         $getMultiOptions = array (
+			"xiversion" => "SELECT id FROM xiversions WHERE isdefault = TRUE", /* different spelling isdefault */
             "enzyme" => "SELECT id FROM enzyme WHERE is_default = TRUE",
             "ions" => "SELECT id FROM ion WHERE is_default = TRUE",
             "crosslinkers" => "SELECT id FROM crosslinker WHERE is_default = TRUE",
