@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -1094,39 +1094,51 @@ CLMSUI.buildSubmitSearch = function () {
                 [seqFormActions, acqFormActions].forEach (function(formAct) { formAct.buttonEnabler(); });
                 
                 
+				// function to return default settings from php (global, lastSearch, or specificSearch)
+				var loadDefaults = function (phpScript, postData, isGlobalDefaults, buttonName) {
+					$.ajax ({
+						type: "POST",
+						url: "./php/"+phpScript,
+						data: postData,
+						dataType: "json",
+						encode: true,
+						success: function (data, textStatus, jqXhr) {
+							console.log ("defaults return", data, textStatus, jqXhr);
+							if (data.redirect) {	// success but redirect to other page
+								redirector (data.redirect);    // redirect if server php passes this field (should be to login page)        
+							}
+							else if (data.error) {	// success error (i.e. one we've identified, not a php/data format error)
+								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], data.errorType || "No Last Search Exists");
+								if (!isGlobalDefaults) {
+									$("#useGlobalDefaults").click();
+								}
+							} else {	// success success, what we want to happen
+								updateFieldsWithValues (data, prevTableClickFuncs);
+								dispatchObj.formInputChanged();
+							}
+						},
+						error: function (jqXhr, textStatus, errorThrown) {	// error error, something in php has happened we can't control
+							CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "An Error occurred when trying to access the database for "+buttonName+"<br>"+errorDateFormat (new Date()), "Connection Error");
+							if (!isGlobalDefaults) {
+								$("#useGlobalDefaults").click();
+							}
+						},
+					});
+				};
+				
                 // Make default loader buttons
                 var defaultButtonMap = [
-                    {id: "#useLastSearchDefaults", php: "getLastDefaults.php"},
-                    {id: "#useGlobalDefaults", php: "getGlobalDefaults.php"},
+                    {id: "#useLastSearchDefaults", php: "getLastDefaults.php", isGlobal: false},
+                    {id: "#useGlobalDefaults", php: "getGlobalDefaults.php", isGlobal: true},
                 ];
                 defaultButtonMap.forEach (function (defaultButton) {
                     d3.select(defaultButton.id).on("click", function() {
-                        $.ajax ({
-                            type: "GET",
-                            url: "./php/"+defaultButton.php,
-                            dataType: "json",
-                            encode: true,
-                            success: function (data, textStatus, jqXhr) {
-                                console.log ("defaults return", data, textStatus, jqXhr);
-                                if (data.redirect) {
-                                    redirector (data.redirect);    // redirect if server php passes this field (should be to login page)        
-                                }
-                                else if (data.error) {
-                                    CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], "No Last Search Exists");
-                                } else {
-                                    updateFieldsWithValues (data, prevTableClickFuncs);
-                                    dispatchObj.formInputChanged();
-                                }
-                            },
-                            error: function (jqXhr, textStatus, errorThrown) {
-                                var type = d3.select(defaultButton.id).text();
-                                CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "An Error occurred when trying to access the database for "+type+"<br>"+errorDateFormat (new Date()), "Connection Error");
-                            },
-                        });
+						loadDefaults (defaultButton.php, null, defaultButton.isGlobal, d3.select(defaultButton.id).text());
                     });
                 });
                 
 
+				// load in search params according to url 'base' parameter or, if not present, load in global defaults
 				var urlParams = {};
 				location.search.substr(1).split("&").forEach (function (item) {
 					var keyValue = item.split("=");
@@ -1134,25 +1146,7 @@ CLMSUI.buildSubmitSearch = function () {
 				});
 				console.log (urlParams);
 				if (urlParams.base) {
-					$.ajax ({
-						type: "POST",
-						url: "./php/getSpecificDefaults.php",
-						data: {sid: urlParams.base},
-						dataType: "json",
-						encode: true,
-						success: function (data, textStatus, jqXhr) {
-							if (data.error) {
-								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], data.errorType);
-								$("#useGlobalDefaults").click();
-							} else if (data) {
-								updateFieldsWithValues (data, prevTableClickFuncs);
-                                dispatchObj.formInputChanged();
-							}
-						},
-						error: function () {
-							$("#useGlobalDefaults").click();
-						},
-					});
+					loadDefaults ("getSpecificDefaults.php", {sid: urlParams.base}, false, "Specific Defaults");
 				} else {
 					// programmatic click on global default button, load fields with those defaults
                 	$("#useGlobalDefaults").click();

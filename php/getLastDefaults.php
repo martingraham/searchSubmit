@@ -11,11 +11,11 @@
 
 	if ($sid != null) {
 		$defaults = getDefaults ($dbconn, $sid);
-		pg_close($dbconn);
 		echo json_encode ($defaults);
 	} else {
-		pg_close($dbconn);
 		$date = date("d-M-Y H:i:s");
 		echo json_encode (array("error" => array ("You have made no previous searches", $date)));
 	}
+
+	pg_close($dbconn);
 ?>
