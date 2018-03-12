@@ -29,6 +29,8 @@ $paramLinkTableMap = array (
 	"paramLossesSelect" => array ("required" => false, "validate" => FILTER_VALIDATE_INT),
 );
 
+//error_log (print_r ($_POST, true));
+
 
 $allUserFieldsMap = array_merge ($paramFieldNameMap, $paramLinkTableMap);
 
@@ -84,7 +86,7 @@ if ($allGood) {
 		"paramCrossLinkerSelect" => "INSERT INTO chosen_crosslinker (paramset_id, crosslinker_id) VALUES ($1, $2)",
 		"acqPreviousTable" => "SELECT name FROM acquisition WHERE id = ANY ($1::int[])",
 		"getUserGroups" => "SELECT group_id FROM user_in_group WHERE user_id = $1",
-		"newSearch" => "INSERT INTO search (paramset_id, visible_group, name, uploadedby, notes, private, status, completed, is_executing) VALUES ($1, $2, $3, $4, $5, $6, 'queuing', FALSE, FALSE) RETURNING id",
+		"newSearch" => "INSERT INTO search (paramset_id, visible_group, name, uploadedby, notes, private, xiversion, status, completed, is_executing) VALUES ($1, $2, $3, $4, $5, $6, $7, 'queuing', FALSE, FALSE) RETURNING id",
 		"newSearchSeqLink" => "INSERT INTO search_sequencedb (search_id, seqdb_id) VALUES($1, $2)",
 		"getRuns" => "SELECT acq_id, run_id FROM run WHERE acq_id = ANY($1::int[])",
 		"newSearchAcqLink" => "INSERT INTO search_acquisition (search_id, acq_id, run_id) VALUES($1, $2, $3)"
@@ -146,7 +148,7 @@ if ($allGood) {
 			// Make search name timestamped list of acquisitions if not explicitly provided
 			$searchName = ($_POST["paramSearchNameValue"] ? $_POST["paramSearchNameValue"] : $paramName);
 			$searchInsert = pg_prepare ($dbconn, "searchInsert", $preparedStatementTexts["newSearch"]);
-			$result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $_POST["paramNotesValue"], $privacy]);
+			$result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $_POST["paramNotesValue"], $privacy, $_POST["paramXiVersionSelect"]]);
 			$searchRow = pg_fetch_assoc ($result); // get the newly added search id
 			$searchid = $searchRow["id"];
 

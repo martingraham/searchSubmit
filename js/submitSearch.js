@@ -491,6 +491,7 @@ CLMSUI.buildSubmitSearch = function () {
                     {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications", addNew: false, clearOption: true},
                     {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion", clearOption: true},
                     {data: data.losses, domid: "#paramLosses", niceLabel: "Losses", required: false, multiple: true, filter: false, placeHolder: "Select Any Losses", addNew: false, clearOption: true},
+					{data: data.xiversions, domid: "#paramXiVersion", niceLabel: "Xi Version", required: true, multiple: false, filter: true, placeHolder: "Select Xi Version", addNew: false, clearOption: false}
                 ];
 				makeMultipleSelectionElements (populateOptionLists, data.userRights.canSeeAll);	// call the function that does the multiple select setting-up
 				
@@ -690,7 +691,7 @@ CLMSUI.buildSubmitSearch = function () {
                     var sel = d3.select (psetting.domid);
 					var baseId = psetting.domid.slice(1)+"Table";
 					
-					console.log ("pd", psetting);
+					//console.log ("pd", psetting);
 					
 					var names = {selected: "chosen"};
 					var columnMetaData = psetting.columns.map (function (field) {
@@ -1125,8 +1126,37 @@ CLMSUI.buildSubmitSearch = function () {
                     });
                 });
                 
-                // programmatic click on global default button, load fields with those defaults
-                $("#useGlobalDefaults").click();
+
+				var urlParams = {};
+				location.search.substr(1).split("&").forEach (function (item) {
+					var keyValue = item.split("=");
+					urlParams[keyValue[0]] = keyValue[1];
+				});
+				console.log (urlParams);
+				if (urlParams.base) {
+					$.ajax ({
+						type: "POST",
+						url: "./php/getSpecificDefaults.php",
+						data: {sid: urlParams.base},
+						dataType: "json",
+						encode: true,
+						success: function (data, textStatus, jqXhr) {
+							if (data.error) {
+								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], data.errorType);
+								$("#useGlobalDefaults").click();
+							} else if (data) {
+								updateFieldsWithValues (data, prevTableClickFuncs);
+                                dispatchObj.formInputChanged();
+							}
+						},
+						error: function () {
+							$("#useGlobalDefaults").click();
+						},
+					});
+				} else {
+					// programmatic click on global default button, load fields with those defaults
+                	$("#useGlobalDefaults").click();
+				}
             }
         }
     });
@@ -1195,6 +1225,7 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramFixedModsSelect" : {field : "fixedMods", func: multiSelectSetFunc},
             "#paramVarModsSelect" : {field : "varMods", func: multiSelectSetFunc},
             "#paramLossesSelect" : {field : "losses", func: multiSelectSetFunc},
+			"#paramXiVersionSelect": {field : "xiversion", func: multiSelectSetFunc},
             "#paramNotesValue" : {field : "notes", func: textAreaSetFunc, options: {emptyOverwrite: false},},
             "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, options: 
                                         {emptyOverwrite: true, postFunc: function() { $("#paramCustom").accordion("option", "active", 0); },},

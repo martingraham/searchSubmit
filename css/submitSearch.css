@@ -32,10 +32,18 @@ body {
     margin-top: -1px;   /* collapses borders on vertically neighbouring rows */
 }
 
+.rowDiff {
+	/*border-top : 2px solid #ccc;*/
+}
+
 .paramSetting {
     background: #eee;
     border: 1px solid #ccc;
     border-right: 0;
+}
+
+.paramSetting.rowDiff {
+	/*border-top : 3px solid #ccc;*/
 }
 
 .paramSetting P {
@@ -538,7 +546,7 @@ input.crosslinkerMass {
 	content: "None";
 }
 
-td.centreContent {
+.centreContent {
 	text-align: center;
 }
 
