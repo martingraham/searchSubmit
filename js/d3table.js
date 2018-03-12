@@ -24,7 +24,10 @@ CLMSUI.d3Table = function () {
 	var comparators = {
 		alpha: function (a, b) { return a.localeCompare(b); },
 		numeric: function (a, b) { return a - b; },
-		boolean: function (a, b) { return a.localeCompare(b); }
+		boolean: function (a, b) { 
+			var aBool = toBoolean(a); 
+			return aBool === toBoolean(b) ? 0 : (aBool ? 1 : -1); 
+		}
 	};
 	
 	function toBoolean (val, nullIsFalse) {
@@ -159,6 +162,8 @@ CLMSUI.d3Table = function () {
 		var ko = this.columnOrder();
 		var modifiers = this.dataToHTMLModifiers();
 		
+		selection.selectAll(".pageTotal").text(pageCount);
+		
 		var rows = selection.select("tbody").selectAll("tr").data(pageData);
 		rows.exit().remove();
 		rows.enter().append("tr");
@@ -176,7 +181,7 @@ CLMSUI.d3Table = function () {
 			.filter (function(d) { return tooltips[d.key]; })
 			.attr ("title", function(d) {
 				var v = tooltips[d.key](d);
-				return v ? d.value.id+": "+v : "";
+				return v ? v : "";
 			})
 		;	
 		
@@ -268,7 +273,6 @@ CLMSUI.d3Table = function () {
 		this.sort();
 		
 		doPageCount();
-		selection.selectAll(".pageTotal").text(pageCount);
 		my.page(1);
 		
 		// update filter inputs with new filters

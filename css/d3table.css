@@ -85,12 +85,6 @@ TABLE.d3table svg.arrow:hover path {
 	fill: black
 }
 
-
-span.pageInfo {
-	margin-right: 0.5em;
-	border-right: 1px solid grey;
-	padding-right: 0.5em;
-}
 span.pageInput:before {
     content: "Page Number ";
 }
