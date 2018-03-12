@@ -33,7 +33,7 @@ body {
 }
 
 .rowDiff {
-	border-top : 2px solid #ccc;
+	/*border-top : 2px solid #ccc;*/
 }
 
 .paramSetting {
@@ -43,7 +43,7 @@ body {
 }
 
 .paramSetting.rowDiff {
-	border-top : 3px solid #ccc;
+	/*border-top : 3px solid #ccc;*/
 }
 
 .paramSetting P {
