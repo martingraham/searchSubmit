@@ -89,7 +89,7 @@ CLMSUI.d3Table = function () {
 			.append("th")
 			.filter (function (d) { return passTypes.has (d.value.type); })
 			.each (function () {
-				var filterHeader = d3.select(this).append("div");
+				var filterHeader = d3.select(this).append("div").attr("class", "flex-header");
 				filterHeader.append("input")
 					.attr("class", "filterInput")
 					.attr("type", "text")

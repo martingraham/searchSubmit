@@ -553,3 +553,14 @@ input.crosslinkerMass {
 .verticalCentred {
 	vertical-align: middle;
 }
+
+TABLE.d3table tbody tr td.varWidthCell, TABLE.d3table tr th.varWidthCell {
+    width: 45%;
+    min-width: 5em;
+    /*max-width: 5em;*/
+    white-space: normal;
+}
+
+TABLE.d3table thead th:not(:first-child) span {
+    padding: 5px;
+}

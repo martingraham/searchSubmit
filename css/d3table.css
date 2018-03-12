@@ -8,7 +8,7 @@ TABLE.d3table a, tbody tr td .unviewableSearch, tbody tr td .fauxLink {
     color:#091D42;
 }
 
-TABLE.d3table tbody tr td, .tableContainer tr th {
+TABLE.d3table tbody tr td, TABLE.d3table tr th {
      color:#aaa;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -17,22 +17,7 @@ TABLE.d3table tbody tr td, .tableContainer tr th {
     vertical-align: top;
 }
 
-TABLE.d3table tbody tr td.varWidthCell, TABLE.d3table tr th.varWidthCell {
-    width: 45%;
-    min-width: 5em;
-    /*max-width: 5em;*/
-    white-space: normal;
-}
-
-TABLE.d3table tbody tr td.varWidthCell2, TABLE.d3table tr th.varWidthCell2 {
-    width: 15%;
-    min-width: 2em;
-    /*max-width: 5em;*/
-    white-space: nowrap;
-}
-
 TABLE.d3table thead input {
-	width: calc(100% - 20px);
 	line-height: 1.2em;
 	vertical-align: top;
 }
@@ -58,15 +43,6 @@ TABLE.d3table thead th:not(:first-child) {
     padding-left: 0;
     padding-right: 0;
 } 
-
-TABLE.d3table thead th:not(:first-child) span {
-    border-left: 1px solid #091d42;
-    padding: 5px;
-}
-
-TABLE.d3table thead th.dottedBorder span {
-    border-left: 1px dashed #091d42;
-}
 
 TABLE.d3table tr.hiddenSearch {
     background-color: #ddd;  
@@ -95,17 +71,17 @@ TABLE.d3table svg.arrow:hover, TABLE.d3table SVG.arrow.active:hover {
 	border-color: #444;
 }
 
-TABLE.d3table svg.arrow PATH {
+TABLE.d3table svg.arrow path {
 	stroke: none;
 	fill: darkgrey;
 	shape-rendering: crispedges;
 }
 
-TABLE.d3table svg.arrow.active PATH {
+TABLE.d3table svg.arrow.active path {
 	fill: black
 }
 
-TABLE.d3table svg.arrow:hover PATH {
+TABLE.d3table svg.arrow:hover path {
 	fill: black
 }
 
@@ -128,4 +104,25 @@ span.pageInput:after {
 
 .d3tableControls, .d3table input {
 	font-size: 0.9rem;
+}
+
+.d3tableControls input[type='number'] {
+    max-width: 3.5em;
+	font-size: 1em;
+}
+
+.flex-header {
+	display: flex;
+	flex-direction: row;
+}
+
+.flex-header input.filterInput {
+	flex-shrink: 1;
+	flex-grow: 1;
+	min-width: 0;	/* https://bugzilla.mozilla.org/show_bug.cgi?id=1088586 */
+}
+
+.flex-header svg {
+	flex-shrink: 0;
+	flex-grow: 0;
 }
