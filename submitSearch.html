@@ -188,20 +188,21 @@
             <div class="lrmargin">
                 <div class="row">
                     <div class="col-8 paramSetting" id="paramSearchName"></div>
-                    <div class="col-2 paramSetting"><button id="useGlobalDefaults">Use Default Parameters</button></div>
-                    <div class="col-2 paramSetting"><button id="useLastSearchDefaults">Use Your Last Search Params</button></div>
+					<div class="col-2 paramSetting" id="paramXiVersion"></div>
+                    <div class="col-2 paramSetting centreContent verticalCentred"><button id="useGlobalDefaults">Restore Default Parameters</button></div>
+                    <!-- <div class="col-2 paramSetting"><button id="useLastSearchDefaults">Use Your Last Search Params</button></div> -->
                 </div>
                 
-                <div class="row">
-                    <div class="col-6 paramSetting" id="paramCrossLinker"></div>
+                <div class="row rowDiff">
                     <div class="col-6 paramSetting" id="paramEnzyme"></div>
+					<div class="col-6 paramSetting" id="paramMissedCleavages"></div>
                 </div>
 
-                <div class="row">
+                <div class="row rowDiff">
+					<div class="col-6 paramSetting" id="paramCrossLinker"></div>
                     <div class="col-3 paramSetting" id="paramTolerance"></div>
                     <div class="col-3 paramSetting" id="paramTolerance2"></div>
-                    <div class="col-3 paramSetting" id="paramMissedCleavages"></div>
-					<div class="col-3 paramSetting" id="paramXiVersion"></div>
+
                 </div>
 
                 <div class="row"> 
@@ -229,7 +230,7 @@
                         </div>
                     </div>
                     
-                    <div class="col-6 paramSetting" id="paramNotes"></div>
+                    <div class="col-6 paramSetting rowDiff" id="paramNotes"></div>
                 </div>
 
                 <div class="row">

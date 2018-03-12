@@ -15,7 +15,7 @@ try {
 	$username = $_SESSION['session_name'];
 
 	$newPOST = array_map ('normalizeString2', $_POST);
-	error_log (print_r ($newPOST, true));
+	//error_log (print_r ($newPOST, true));
 
 	$preparedStatementTexts = array (
 		"addCrosslinker" => "INSERT INTO crosslinker (name, mass, is_decoy, description, is_default) VALUES ($1, $2, $3, $4, FALSE) RETURNING id",

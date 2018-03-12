@@ -13,13 +13,11 @@
 		pg_prepare ($dbconn, "getRandomString", "SELECT id, random_id FROM search WHERE id = $1");
         $result = pg_execute($dbconn, "getRandomString", array($searchID));
         $arr = resultsAsArray($result);
-		error_log (print_r ($arr, true));
-			
 		return $arr[0]["random_id"];
 	}
 
     function getDefaults ($dbconn, $searchID) {
-        pg_prepare($dbconn, "getParamSettings", "SELECT parameter_set.*, search.xiversion from parameter_set, search WHERE parameter_set.id = (SELECT paramset_id FROM search WHERE search.id = $1)");
+        pg_prepare($dbconn, "getParamSettings", "SELECT parameter_set.*, xiversion FROM search join parameter_set on parameter_set.id = search.paramset_id WHERE search.id = $1");
         $result = pg_execute($dbconn, "getParamSettings", array($searchID));
         $paramSettings = resultsAsArray($result);
         $defaults = array ();

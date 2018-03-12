@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    //console.disableLogging();
+    console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -691,7 +691,7 @@ CLMSUI.buildSubmitSearch = function () {
                     var sel = d3.select (psetting.domid);
 					var baseId = psetting.domid.slice(1)+"Table";
 					
-					console.log ("pd", psetting);
+					//console.log ("pd", psetting);
 					
 					var names = {selected: "chosen"};
 					var columnMetaData = psetting.columns.map (function (field) {
@@ -1141,7 +1141,6 @@ CLMSUI.buildSubmitSearch = function () {
 						dataType: "json",
 						encode: true,
 						success: function (data, textStatus, jqXhr) {
-							console.log ("fdfdfd", data);
 							if (data.error) {
 								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], data.errorType);
 								$("#useGlobalDefaults").click();

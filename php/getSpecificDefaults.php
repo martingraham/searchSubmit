@@ -10,7 +10,7 @@
 	$sidPlusRandom = $_POST["sid"];
 
 	$sindex = strpos($sidPlusRandom, "-");
-	error_log (print_r ($sindex, true));
+	//error_log (print_r ($sindex, true));
 
 	if ($sindex !== false){
 		$sid = substr ($sidPlusRandom, 0, $sindex);
