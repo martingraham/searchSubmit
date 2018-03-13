@@ -657,12 +657,50 @@ CLMSUI.buildSubmitSearch = function () {
                     ;
 				};
                 
-				var cellEventHooks = {
+				var cellD3Hooks = {
 					file: addToolTipListeners,
 					files: addToolTipListeners,
 					name: addToolTipListeners,
 					download: addDownloadListeners,
-				}
+				};
+				
+				
+				// for sorting / filtering column of multiple acquisitions
+				var alphaArrayTypeSettings = {
+					preprocessFunc: function (filterVal) {
+						return this.typeSettings("alpha").preprocessFunc (filterVal);
+					},
+					filterFunc: function (datum, processedFilterVal) {
+						var basicFilterFunc = this.typeSettings("alpha").filterFunc;
+						var pass = false;
+						if (Array.isArray(datum)) {
+							// just need 1 element in array to not be filtered out to pass
+							for (var m = 0; m < datum.length; m++) {
+								if (basicFilterFunc (datum[m], processedFilterVal)) {
+									pass = true;
+									break;
+								}
+							}
+						} else {
+							pass = basicFilterFunc (datum, processedFilterVal);
+						}
+						return pass;
+					},
+					comparator: function (a, b) {
+						var comparator = this.typeSettings("alpha").comparator;
+						var minlen = Math.min (a.length, b.length);
+						for (var n = 0; n < minlen; n++) {
+							var diff = comparator (a[n], b[n]);
+							if (diff !== 0) {
+								return diff;
+							}
+						}
+
+						var z = a.length - b.length;
+						return z;
+					}
+				};
+				
 				
                 // Settings for tables of previous acquisitions / sequences
                 var previousSettings = {
@@ -674,7 +712,7 @@ CLMSUI.buildSubmitSearch = function () {
 						  columns: ["id", "name", "date", "user", "files", "#", "download", "selected"], 
 						  autoWidths: d3.set(["files", "name"]), 
 						  hide: {download: false},
-						  types: {id: "numeric", "#": "numeric", selected: "boolean", download: "none"}
+						  types: {id: "numeric", "#": "numeric", selected: "boolean", download: "none", files: "alphaArray"}
 					},
                     seq: {domid: "#seqPrevious", 
 						  data: data.previousSeq, 
@@ -719,7 +757,7 @@ CLMSUI.buildSubmitSearch = function () {
 							data: psetting.data, 
 							headerEntries: headerEntries, 
 							cellStyles: cellStyles,
-							eventHooks: cellEventHooks,
+							cellD3Hooks: cellD3Hooks,
 							columnOrder: headerEntries.map (function (hentry) { return hentry.key; }),
 						})
 					;
@@ -742,9 +780,10 @@ CLMSUI.buildSubmitSearch = function () {
 					};
 					
 					table
+						.typeSettings ("alphaArray", alphaArrayTypeSettings)
 						.filter (keyedFilters)
-						.dataToHTMLModifiers (modifiers)
-						.postUpdateFunc (empowerRows)
+						.dataToHTML (modifiers)
+						.postUpdate (empowerRows)
 						.pageSize(10)
 						.update()
 					;
