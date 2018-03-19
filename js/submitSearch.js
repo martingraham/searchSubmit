@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -339,15 +339,11 @@ CLMSUI.buildSubmitSearch = function () {
 			if (poplist.maskAsSingle) {
 				var multSwitchButton = options.insert("li", ":first-child")
 					.append("button")
-					.text ("Allow Multiple Selections")
+					.text (poplist.multipleButtonText || "Allow Multiple Selections")
 					.attr ("type", "button")
 					.on ("click", function () {
 						poplist.maskAsSingle = false;
-						poplist.isOpen = true;
-						relaunchMultipleSelectionWidget (poplist, elem, selElem)
-						setTimeout (function () {
-							elem.select("button.ms-choice").node().click();	// open it by click in a timeout, cos neither isOpen nor immediate click() seemed to work
-						}, 0);
+						poplist.multipleSetupFunc (poplist, elem, selElem)
 					})
 				;
 				$(multSwitchButton.node()).button();
@@ -481,12 +477,28 @@ CLMSUI.buildSubmitSearch = function () {
                     {data: data.xlinkers, domid: "#paramCrossLinker", 
 					 	niceLabel: "Cross-Linker <span class='xlinkerMassHead'>¦ Mass</span><span class='beAware'></span>", 
 					 	filter: true, required: true, multiple: true, maskAsSingle: true, placeHolder: "Select one or more Cross Linkers", 
+					 	multipleButtonText: "Select Multiple Cross-Linkers",
+					 	multipleSetupFunc: function (poplist, elem, selElem) {
+							poplist.isOpen = true;
+							relaunchMultipleSelectionWidget (poplist, elem, selElem)
+							setTimeout (function () {
+								elem.select("button.ms-choice").node().click();	// open it by click in a timeout, cos neither isOpen nor immediate click() seemed to work
+							}, 0);
+						},
 					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
 					 	clickFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
 					 	addNew: function () { CLMSUI.jqdialogs.addCrosslinkerDialog ("popErrorDialog", data, populateOptionLists[0], newPopListDataAdded); },
 					 	clearOption: true,
 					},
-                    {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme"},
+                    {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",
+					 	maskAsSingle: true, multipleButtonText: "Construct Multiple Digestion",
+					 	multipleSetupFunc: function (poplist, elem, selElem) {
+							var curSelect = $("#paramEnzymeSelect").multipleSelect("getSelects")[0];
+							d3.select("#paramEnzyme").select(".ms-parent.formPart").style("display", "none");
+							CLMSUI.jqdialogs.makeMultiDigestAccordion ("paramEnzyme", data.enzymes, {mc: d3.select("#paramMissedCleavagesValue").property("value"), enzymeId: curSelect});
+						},
+					 	//addNew: function () { CLMSUI.jqdialogs.multipleDigestionDialog ("popErrorDialog", data.enzymes, {mc: d3.select("#paramMissedCleavagesValue").property("value"), enzymeId: $("#paramEnzymeSelect").multipleSelect("getSelects")[0]}); },
+					},
                     {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications", clearOption: true},
                     {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications", addNew: false, clearOption: true},
                     {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion", clearOption: true},

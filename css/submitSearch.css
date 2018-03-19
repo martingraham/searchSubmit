@@ -318,7 +318,7 @@ input[type='number'], input[type='text'] {
    color: #ccc !important;
 }
 
-.ui-dialog {
+.ui-dialog, .multipleDigestAccordion {
     -webkit-box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
     -moz-box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
     box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
@@ -563,4 +563,34 @@ TABLE.d3table tbody tr td.varWidthCell, TABLE.d3table tr th.varWidthCell {
 
 TABLE.d3table thead th:not(:first-child) span {
     padding: 5px;
+}
+
+/*
+.digestionList {
+    counter-reset: digestionOrder;
+}
+
+.digestionList > li::before {
+    counter-increment: digestionOrder;
+    content: counter(digestionOrder) ". ";
+}
+*/
+
+.dragSymbol {
+	cursor: ns-resize;
+}
+
+.digestionList .horizontalFlex > * {
+	margin: auto 0.25em;
+}
+
+.missedCleavages {
+	visibility: hidden;
+	vertical-align: middle;
+}
+
+.multipleDigestAccordion {
+	z-index: 1000;
+	height: auto;
+	position: absolute;
 }
