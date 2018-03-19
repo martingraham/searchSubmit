@@ -779,6 +779,7 @@ CLMSUI.buildSubmitSearch = function () {
 						addSelectionListeners (rowSelection, baseId);
 					};
 					
+					
 					table
 						.typeSettings ("alphaArray", alphaArrayTypeSettings)
 						.filter (keyedFilters)
