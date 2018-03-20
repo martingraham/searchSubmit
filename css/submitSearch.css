@@ -318,7 +318,7 @@ input[type='number'], input[type='text'] {
    color: #ccc !important;
 }
 
-.ui-dialog, .multipleDigestAccordion {
+.ui-dialog, .digestAccordionContent {
     -webkit-box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
     -moz-box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
     box-shadow: 10px 10px 10px 0 rgba(0,0,0,0.5);
@@ -589,8 +589,15 @@ TABLE.d3table thead th:not(:first-child) span {
 	vertical-align: middle;
 }
 
-.multipleDigestAccordion {
+.digestAccordionContent {
 	z-index: 1000;
 	height: auto;
 	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+.digestAccordionContainer {
+	position: relative;
+	/* make this class position:relative so class above's left and right values reference to this class's element bounds */
 }

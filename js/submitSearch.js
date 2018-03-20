@@ -468,7 +468,7 @@ CLMSUI.buildSubmitSearch = function () {
 						.style ("display", crossLinkerCount > 1 ? null : "none")
 					;
 					var jqClearAllButton = $(d3.select("#paramCrossLinker").select(".clearAll").node());
-					jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disable");
+					jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disabl e");
 				}
 				
                 // Make combobox and multiple selection elements
@@ -905,20 +905,8 @@ CLMSUI.buildSubmitSearch = function () {
 
                     $("#startProcessing").button("option", "disabled", true);   // so user can't press again
                     toDoMessage ("Processing");
-                    var formData = {};
-                    d3.select("#parameterForm").selectAll(".formPart").each (function() {
-                        if (this.id && (this.type !== "checkbox" || this.checked)) {    // unselected checkboxes aren't passed by form submit so do this here too
-                            var val = this.value;
-                            // If one of the multiple select widgets, must get multiple values like this
-                            if (this.type === "select-multiple") {
-                                val = $("#"+this.id).multipleSelect("getSelects");
-                            }   // if a string begin with '[' then is an array string we need to split
-                            else if (val.charAt(0) === '[') {
-                                val = val.slice(1, -1).split(",");  // split the bit between the square brackets
-                            }
-                            formData[this.name] = val;
-                        }
-                    });
+                    var formData = getValuesFromFields();
+					
                     console.log ("formData", formData);
                     
                     d3.select("body").style("cursor", "wait");
@@ -1289,6 +1277,39 @@ CLMSUI.buildSubmitSearch = function () {
             }
         });
     }
+	
+	
+	function getValuesFromFields () {
+		var formData = {};
+		var additions = {
+			"paramCustomValue": function () { return CLMSUI.jqdialogs.generateMultipleDigestionString (d3.select("#digestAccordionContent")); }
+		};
+
+		d3.select("#parameterForm").selectAll(".formPart").each (function() {
+			if (this.id && (this.type !== "checkbox" || this.checked)) {    // unselected checkboxes aren't passed by form submit so do this here too
+				var val = this.value;
+				// If one of the multiple select widgets, must get multiple values like this
+				if (this.type === "select-multiple") {
+					val = $("#"+this.id).multipleSelect("getSelects"); 
+				}   // if a string begins with '[' then is an array string we need to split
+				else if (val && val.charAt(0) === '[') {
+					val = val.slice(1, -1).split(",");  // split the bit between the square brackets
+				}
+				if (this.name) {
+					formData[this.name] = val;
+				}
+			}
+		});
+
+		d3.entries(additions).forEach (function (addEntry) {
+			var elem = d3.select("#"+addEntry.key);
+			var additionalValue = addEntry.value();
+			var currentVal = elem.property("value");
+			formData[elem.attr("name")] = currentVal +"\n" + additionalValue;
+		});
+		
+		return formData;
+	}
 
     
     canDoImmediately();
