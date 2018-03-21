@@ -7,18 +7,10 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 
 	obj.digestCounter = 0;
 
-	obj.multipleDigestionDialog = function (dialogID, data, defaults, updateFunction) {
-
-		console.log ("this2", this, defaults);
-
+	obj.multipleDigestionDialog = function (dialogID, data, defaults) {
 		var dialog = obj.addStuffDialog (dialogID, "", "Define Multiple Digestion", "OK", "Cancel", function() {} /*ajaxSubmit*/);
 		dialog.dialog ("option", "width", 600);
-
-		var truthy = function (val) {
-			return val === 1 || val === 't' || val === 'true' || val === true;
-		}
-
-		objs.multipleDigestionInternals (d3.select(dialog[0]), data, defaults, updateFunction);
+		obj.multipleDigestionInternals (d3.select(dialog[0]), data, defaults);
 	};
 
 
@@ -31,6 +23,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		;
 		$("#digestAccordionContainer").accordion ({
 			collapsible: true,
+			active: false,
 			heightStyle: "content",
 		});
 
@@ -43,15 +36,20 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 	};
 
 
-	obj.multipleDigestionInternals = function (container, data, defaults, updateFunction) {
+	obj.multipleDigestionInternals = function (container, data, defaults, extFuncs) {
 
 		container.style ("overflow", "visible");
 
 		var model = {
 			digests: [],
 		};
+		
+		function notNullOrES (str) {
+			return str !== null && str !== "";
+		};
 
-		var addNewDigestItem = function (did, enzymeId, localmc) {
+		obj.addNewDigestItem = function (did, enzymeId, localmc) {
+			console.log ("mc", localmc, defaults.mc);
 			var digestion = digestionList.append("li")
 				.attr("id", "digest"+did)
 				.attr("class", "ui-state-default digestItem")
@@ -63,7 +61,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 				.attr ("class", "ui-icon ui-icon-arrowthick-2-n-s dragSymbol")
 			;
 
-			var digestionOptions = digestion.append("select")
+			digestion.append("select")
 				.attr("class", "flexExpand")
 				.attr("id", "digestSelect"+did)
 					.selectAll("option")
@@ -75,55 +73,28 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			;
 
 			var singlePopulateOptionList = {data: data, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme", addNew: false };
-
 			var baseId = "digestSelect"+did;
-			var poplist = singlePopulateOptionList;
-			var elem = d3.select(poplist.domid);
-			var selElem = d3.select("#"+baseId);
-
-			var selectionChanged = function () {};
-			var singleSelect = !poplist.multiple || poplist.maskAsSingle;
-			$("#"+baseId).multipleSelect({ 
-					baseid: "#"+baseId,
-					single: singleSelect,
-					filter: poplist.filter, 
-					selectAll: false,
-					placeholder: poplist.placeHolder,
-					multiple: true, // this is to show multiple options per row, not to do with multiple selections (that's 'single')
-					//width: 450,
-					multipleWidth: 200,
-					isOpen: poplist.isOpen,
-					onClick: function () {
-						selectionChanged ($(selElem.node()), poplist.clickFunc);
-					},
-					onUncheckAll: function () {
-						selectionChanged ($(selElem.node()), poplist.clickFunc);
-					},
-				})
-			;
+			extFuncs.buildMultipleSelect (baseId, singlePopulateOptionList);
 			$("#"+baseId).multipleSelect("setSelects", [enzymeId]);
-
+			
 
 			var digestionMissedCleavages = digestion.append("span");
+			var mcStateFunc = function () {
+				var vis = d3.select(this).property("checked");
+				digestionMissedCleavages.select(".ui-spinner").style("visibility", vis ? "visible" : "hidden");
+			}
+			
 			digestionMissedCleavages
 				.append("label")
 				.text ("Local MC")
 				.append("input")
 					.attr("type", "checkbox")
-					.each (function () {
-						//$(this).checkboxradio({
-						//	label: "Local MC"
-						//});
-					})
-					.on ("click", function () {
-						var vis = d3.select(this).property("checked");
-						digestionMissedCleavages.select(".ui-spinner").style("visibility", vis ? "visible" : "hidden");
-					})
+					.property ("checked", notNullOrES(localmc)) 
+					.on ("click", mcStateFunc)
 			;
 			digestionMissedCleavages.append("input")
 				.attr("type", "number")
-				.property ("value", defaults.mc)
-				//.attr("class", "missedCleavages")
+				.property ("value", notNullOrES(localmc) ? localmc : defaults.mc || 4)
 				.each (function () {
 					$(this).spinner({
 						min: 0,
@@ -149,19 +120,32 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 					cantDeleteWhenOnlyOne();
 				})
 			;
+			
+			mcStateFunc.call (digestionMissedCleavages.select("input[type='checkbox']").node());
 		}
 
-		var self = this;
 		container.append("button")
 			.attr("type", "button")
 			.attr("class", "addNewDigestion")
 			.text("Add New Digestion Step")
 			.on ("click", function () {
-				addNewDigestItem (obj.digestCounter++, defaults.enzymeId, defaults.mc);
+				obj.addNewDigestItem (obj.digestCounter++, defaults.enzymeId, defaults.mc);
 				cantDeleteWhenOnlyOne();
 			})
 			.each (function() {
-				$(this).button();
+				$(this).button({icon: "ui-icon-plus"});
+			})
+		;
+		
+		container.append("button")
+			.attr("type", "button")
+			.attr("class", "revertMultiDigestion")
+			.text("Revert to Single Enzyme Choice")
+			.on ("click", function () {
+				extFuncs.revertFunc();
+			})
+			.each (function() {
+				$(this).button({icon: "ui-icon-arrowreturn-1-n"});
 			})
 		;
 
@@ -173,11 +157,11 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			var isSingleItem = (digestItems.size() === 1);
 			digestItems.selectAll("button.remove, span.dragSymbol").style("visibility", isSingleItem ? "hidden" : "visible");
 			$(digestionList.node()).sortable("option", "disabled", isSingleItem);
-			//obj.generateMultipleDigestionString (container, data);
 		}
 
 		container.select(".addNewDigestion").node().click();
 	};
+	
 	
 	obj.generateMultipleDigestionString = function (container) {
 		var digests = [];
@@ -199,5 +183,25 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		var string = digests.length > 1 ? "digestion:MultiStepDigest:consecutive" + digests.join("") : "";	// no point in multistep unless it's 2 or more enzymes
 		console.log (string);
 		return string;
-	}
+	};
+	
+	
+	obj.populateMultipleDigestion = function (container, multiDigestionString, enzymes) {
+		container.selectAll("li.digestItem").remove();
+		
+		var digestionStrings = multiDigestionString.split("|S|").slice(1);
+		var enzymeNameMap = d3.map (enzymes, function(d) { return d.name; });
+		
+		digestionStrings.forEach (function (digest, i) {
+			var name = digest.match(/(?:NAME=([^|]+))/i)[1];
+			var missedCleavages = digest.match(/(?:MISSEDCLEAVAGES:(\d+))/i);
+			if (missedCleavages) {
+				missedCleavages = missedCleavages[1];
+			}
+
+			var enzymeID = enzymeNameMap.get(name) ? enzymeNameMap.get(name).id : null;
+			obj.addNewDigestItem (i, enzymeID, missedCleavages);
+		});	
+	};
+	
 }(CLMSUI.jqdialogs));

@@ -48,6 +48,11 @@ CLMSUI.buildSubmitSearch = function () {
 	};
     
     setTabSessionVar ();
+	
+	function switchEnzymeControls (multiOn) {
+		d3.select("#paramEnzyme").select(".horizontalFlex .ms-parent.formPart").style("display", multiOn ? "none" : null);
+		d3.select("#digestAccordionContainer").style("display", multiOn ? null : "none");
+	};
     
     
     // Interface lements that can be built without waiting for database queries to return
@@ -337,16 +342,17 @@ CLMSUI.buildSubmitSearch = function () {
 			}
 			
 			if (poplist.maskAsSingle) {
+				var switchToMultiple = poplist.multipleButton;
 				var multSwitchButton = options.insert("li", ":first-child")
 					.append("button")
-					.text (poplist.multipleButtonText || "Allow Multiple Selections")
+					.text (switchToMultiple.text || "Allow Multiple Selections")
 					.attr ("type", "button")
 					.on ("click", function () {
 						poplist.maskAsSingle = false;
-						poplist.multipleSetupFunc (poplist, elem, selElem)
+						switchToMultiple.func (poplist, elem, selElem)
 					})
 				;
-				$(multSwitchButton.node()).button();
+				$(multSwitchButton.node()).button({icon: switchToMultiple.icon});
 			}
 		}
 		
@@ -477,13 +483,15 @@ CLMSUI.buildSubmitSearch = function () {
                     {data: data.xlinkers, domid: "#paramCrossLinker", 
 					 	niceLabel: "Cross-Linker <span class='xlinkerMassHead'>¦ Mass</span><span class='beAware'></span>", 
 					 	filter: true, required: true, multiple: true, maskAsSingle: true, placeHolder: "Select one or more Cross Linkers", 
-					 	multipleButtonText: "Select Multiple Cross-Linkers",
-					 	multipleSetupFunc: function (poplist, elem, selElem) {
-							poplist.isOpen = true;
-							relaunchMultipleSelectionWidget (poplist, elem, selElem)
-							setTimeout (function () {
-								elem.select("button.ms-choice").node().click();	// open it by click in a timeout, cos neither isOpen nor immediate click() seemed to work
-							}, 0);
+					 	multipleButton: {
+							text: "Select Multiple Cross-Linkers",
+							func: function (poplist, elem, selElem) {
+								poplist.isOpen = true;
+								relaunchMultipleSelectionWidget (poplist, elem, selElem)
+								setTimeout (function () {
+									elem.select("button.ms-choice").node().click();	// open it by click in a timeout, cos neither isOpen nor immediate click() seemed to work
+								}, 0);
+							},
 						},
 					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
 					 	clickFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
@@ -491,13 +499,15 @@ CLMSUI.buildSubmitSearch = function () {
 					 	clearOption: true,
 					},
                     {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",
-					 	maskAsSingle: true, multipleButtonText: "Construct Multiple Digestion",
-					 	multipleSetupFunc: function (poplist, elem, selElem) {
-							var curSelect = $("#paramEnzymeSelect").multipleSelect("getSelects")[0];
-							d3.select("#paramEnzyme").select(".ms-parent.formPart").style("display", "none");
-							CLMSUI.jqdialogs.makeMultiDigestAccordion ("paramEnzyme", data.enzymes, {mc: d3.select("#paramMissedCleavagesValue").property("value"), enzymeId: curSelect});
-						},
-					 	//addNew: function () { CLMSUI.jqdialogs.multipleDigestionDialog ("popErrorDialog", data.enzymes, {mc: d3.select("#paramMissedCleavagesValue").property("value"), enzymeId: $("#paramEnzymeSelect").multipleSelect("getSelects")[0]}); },
+					 	maskAsSingle: true, 
+					 	multipleButton: {
+							text: "Construct Multiple Digestion",
+							icon: "ui-icon-wrench",
+							func: function (poplist, elem, selElem) {
+								switchEnzymeControls (true);
+								$("#digestAccordionContainer").accordion({active: 0});
+							},
+						}
 					},
                     {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications", clearOption: true},
                     {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications", addNew: false, clearOption: true},
@@ -507,7 +517,12 @@ CLMSUI.buildSubmitSearch = function () {
                 ];
 				makeMultipleSelectionElements (populateOptionLists, data.userRights.canSeeAll);	// call the function that does the multiple select setting-up
 				
+				
+				// Make multi-digest accordion
+				var curSelect = $("#paramEnzymeSelect").multipleSelect("getSelects")[0];
+				CLMSUI.jqdialogs.makeMultiDigestAccordion ("paramEnzyme", data.enzymes, {mc: d3.select("#paramMissedCleavagesValue").property("value"), enzymeId: curSelect}, {revertFunc: switchEnzymeControls, buildMultipleSelect: makeMultipleSelectionWidget});
 
+				
                 // Make previous acquisition and sequence tables
                 
                 // Helper functions
@@ -1142,18 +1157,18 @@ CLMSUI.buildSubmitSearch = function () {
 						data: postData,
 						dataType: "json",
 						encode: true,
-						success: function (data, textStatus, jqXhr) {
-							console.log ("defaults return", data, textStatus, jqXhr);
-							if (data.redirect) {	// success but redirect to other page
-								redirector (data.redirect);    // redirect if server php passes this field (should be to login page)        
+						success: function (response, textStatus, jqXhr) {
+							console.log ("defaults return", response, textStatus, jqXhr);
+							if (response.redirect) {	// success but redirect to other page
+								redirector (response.redirect);    // redirect if server php passes this field (should be to login page)        
 							}
-							else if (data.error) {	// success error (i.e. one we've identified, not a php/data format error)
-								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], data.errorType || "No Last Search Exists");
+							else if (response.error) {	// success error (i.e. one we've identified, not a php/data format error)
+								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error[0]+"<br>"+response.error[1], response.errorType || "No Last Search Exists");
 								if (!isGlobalDefaults) {
 									$("#useGlobalDefaults").click();
 								}
 							} else {	// success success, what we want to happen
-								updateFieldsWithValues (data, prevTableClickFuncs);
+								updateFieldsWithValues (response, prevTableClickFuncs, data);
 								dispatchObj.formInputChanged();
 							}
 						},
@@ -1197,8 +1212,8 @@ CLMSUI.buildSubmitSearch = function () {
 
 
     
-    function updateFieldsWithValues (data, prevTableClickFuncs) {
-        console.log ("data", data, prevTableClickFuncs);
+    function updateFieldsWithValues (settings, prevTableClickFuncs, data) {
+        console.log ("data", settings, prevTableClickFuncs);
         var parts = d3.select("#parameterForm").selectAll(".formPart");
         console.log ("parts", parts);
         
@@ -1240,7 +1255,7 @@ CLMSUI.buildSubmitSearch = function () {
                 $(domID).val (newValue);
                 CLMSUI.buildSubmitSearch.userAltered[hashlessDomID] = false;    // reset to no user input having occurred
                 if (options.postFunc && currentValue != newValue) {
-                    options.postFunc();
+                    options.postFunc (newValue);
                 }
             }
         };
@@ -1261,9 +1276,20 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramLossesSelect" : {field : "losses", func: multiSelectSetFunc},
 			"#paramXiVersionSelect": {field : "xiversion", func: multiSelectSetFunc},
             "#paramNotesValue" : {field : "notes", func: textAreaSetFunc, options: {emptyOverwrite: false},},
-            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, options: 
-                                        {emptyOverwrite: true, postFunc: function() { $("#paramCustom").accordion("option", "active", 0); },},
-                                },
+            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, 
+				options: {
+					emptyOverwrite: true, 
+					postFunc: function (value) {
+						$("#paramCustom").accordion("option", "active", 0); 
+						
+						var multiDigestionString = value.match (/^\s*digestion:MultiStepDigest.*NAME=.*$/gmi);
+						if (multiDigestionString) {
+							CLMSUI.jqdialogs.populateMultipleDigestion (d3.select("#digestAccordionContent"), multiDigestionString[0], data.enzymes, settings);
+						}
+						switchEnzymeControls (multiDigestionString ? true : false);
+					},
+				},
+            },
 			// acq/seq table selections aren't updated by search params
             //"#acqPreviousTable" : {field : "acquisitions", func: dynamicTableSetFunc},
             //"#seqPreviousTable" : {field : "sequences", func: dynamicTableSetFunc},
@@ -1273,7 +1299,7 @@ CLMSUI.buildSubmitSearch = function () {
             var exists = d3.select(entry.key);
             var evalue = entry.value;
             if (!exists.empty()) {
-                evalue.func (entry.key, data[evalue.field], evalue.options);
+                evalue.func (entry.key, settings[evalue.field], evalue.options);
             }
         });
     }
@@ -1282,7 +1308,10 @@ CLMSUI.buildSubmitSearch = function () {
 	function getValuesFromFields () {
 		var formData = {};
 		var additions = {
-			"paramCustomValue": function () { return CLMSUI.jqdialogs.generateMultipleDigestionString (d3.select("#digestAccordionContent")); }
+			"paramCustomValue": function () { 
+				var digestAccordionSel = d3.select("#digestAccordionContainer");
+				return digestAccordionSel.style("display") !== "none" ? CLMSUI.jqdialogs.generateMultipleDigestionString (digestAccordionSel) : ""; 
+			}
 		};
 
 		d3.select("#parameterForm").selectAll(".formPart").each (function() {

@@ -601,3 +601,7 @@ TABLE.d3table thead th:not(:first-child) span {
 	position: relative;
 	/* make this class position:relative so class above's left and right values reference to this class's element bounds */
 }
+
+.digestAccordionContent > button:first-of-type {
+	margin-right: 1em;
+}
