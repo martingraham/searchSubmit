@@ -521,7 +521,7 @@ CLMSUI.buildSubmitSearch = function () {
 				// Make multi-digest accordion
 				var curSelect = $("#paramEnzymeSelect").multipleSelect("getSelects")[0];
 				CLMSUI.jqdialogs.makeMultiDigestAccordion ("paramEnzyme", data.enzymes, {mc: d3.select("#paramMissedCleavagesValue").property("value"), enzymeId: curSelect}, {revertFunc: switchEnzymeControls, buildMultipleSelect: makeMultipleSelectionWidget});
-
+				switchEnzymeControls (false);
 				
                 // Make previous acquisition and sequence tables
                 
