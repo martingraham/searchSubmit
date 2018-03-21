@@ -1255,7 +1255,7 @@ CLMSUI.buildSubmitSearch = function () {
                 $(domID).val (newValue);
                 CLMSUI.buildSubmitSearch.userAltered[hashlessDomID] = false;    // reset to no user input having occurred
                 if (options.postFunc && currentValue != newValue) {
-                    options.postFunc (newValue);
+                    options.postFunc (domID, newValue);
                 }
             }
         };
@@ -1279,14 +1279,17 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, 
 				options: {
 					emptyOverwrite: true, 
-					postFunc: function (value) {
+					postFunc: function (domID, value) {
 						$("#paramCustom").accordion("option", "active", 0); 
 						
-						var multiDigestionString = value.match (/^\s*digestion:MultiStepDigest.*NAME=.*$/gmi);
-						if (multiDigestionString) {
-							CLMSUI.jqdialogs.populateMultipleDigestion (d3.select("#digestAccordionContent"), multiDigestionString[0], data.enzymes, settings);
+						var multiDigestionLineRegex = new RegExp ("^\s*digestion:MultiStepDigest.*NAME=.*$", "gmi");
+						var multiDigestionLine = value.match (multiDigestionLineRegex);
+						if (multiDigestionLine) {
+							CLMSUI.jqdialogs.populateMultipleDigestion (d3.select("#digestAccordionContent"), multiDigestionLine[0], data.enzymes, settings);
+							value = value.replace (multiDigestionLineRegex, "");
+							$(domID).val(value);	// new new value
 						}
-						switchEnzymeControls (multiDigestionString ? true : false);
+						switchEnzymeControls (multiDigestionLine ? true : false);
 					},
 				},
             },
