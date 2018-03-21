@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -48,6 +48,11 @@ CLMSUI.buildSubmitSearch = function () {
 	};
     
     setTabSessionVar ();
+	
+	function switchEnzymeControls (multiOn) {
+		d3.select("#paramEnzyme").select(".horizontalFlex .ms-parent.formPart").style("display", multiOn ? "none" : null);
+		d3.select("#digestAccordionContainer").style("display", multiOn ? null : "none");
+	};
     
     
     // Interface lements that can be built without waiting for database queries to return
@@ -337,20 +342,17 @@ CLMSUI.buildSubmitSearch = function () {
 			}
 			
 			if (poplist.maskAsSingle) {
+				var switchToMultiple = poplist.multipleButton;
 				var multSwitchButton = options.insert("li", ":first-child")
 					.append("button")
-					.text ("Allow Multiple Selections")
+					.text (switchToMultiple.text || "Allow Multiple Selections")
 					.attr ("type", "button")
 					.on ("click", function () {
 						poplist.maskAsSingle = false;
-						poplist.isOpen = true;
-						relaunchMultipleSelectionWidget (poplist, elem, selElem)
-						setTimeout (function () {
-							elem.select("button.ms-choice").node().click();	// open it by click in a timeout, cos neither isOpen nor immediate click() seemed to work
-						}, 0);
+						switchToMultiple.func (poplist, elem, selElem)
 					})
 				;
-				$(multSwitchButton.node()).button();
+				$(multSwitchButton.node()).button({icon: switchToMultiple.icon});
 			}
 		}
 		
@@ -472,7 +474,7 @@ CLMSUI.buildSubmitSearch = function () {
 						.style ("display", crossLinkerCount > 1 ? null : "none")
 					;
 					var jqClearAllButton = $(d3.select("#paramCrossLinker").select(".clearAll").node());
-					jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disable");
+					jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disabl e");
 				}
 				
                 // Make combobox and multiple selection elements
@@ -481,12 +483,32 @@ CLMSUI.buildSubmitSearch = function () {
                     {data: data.xlinkers, domid: "#paramCrossLinker", 
 					 	niceLabel: "Cross-Linker <span class='xlinkerMassHead'>¦ Mass</span><span class='beAware'></span>", 
 					 	filter: true, required: true, multiple: true, maskAsSingle: true, placeHolder: "Select one or more Cross Linkers", 
+					 	multipleButton: {
+							text: "Select Multiple Cross-Linkers",
+							func: function (poplist, elem, selElem) {
+								poplist.isOpen = true;
+								relaunchMultipleSelectionWidget (poplist, elem, selElem)
+								setTimeout (function () {
+									elem.select("button.ms-choice").node().click();	// open it by click in a timeout, cos neither isOpen nor immediate click() seemed to work
+								}, 0);
+							},
+						},
 					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
 					 	clickFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
 					 	addNew: function () { CLMSUI.jqdialogs.addCrosslinkerDialog ("popErrorDialog", data, populateOptionLists[0], newPopListDataAdded); },
 					 	clearOption: true,
 					},
-                    {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme"},
+                    {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",
+					 	maskAsSingle: true, 
+					 	multipleButton: {
+							text: "Construct Multiple Digestion",
+							icon: "ui-icon-wrench",
+							func: function (poplist, elem, selElem) {
+								switchEnzymeControls (true);
+								$("#digestAccordionContainer").accordion({active: 0});
+							},
+						}
+					},
                     {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications", clearOption: true},
                     {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications", addNew: false, clearOption: true},
                     {data: data.ions, domid: "#paramIons", niceLabel: "Ions", required: true, multiple: true, filter: false, placeHolder: "Select At Least One Ion", clearOption: true},
@@ -495,7 +517,12 @@ CLMSUI.buildSubmitSearch = function () {
                 ];
 				makeMultipleSelectionElements (populateOptionLists, data.userRights.canSeeAll);	// call the function that does the multiple select setting-up
 				
-
+				
+				// Make multi-digest accordion
+				var curSelect = $("#paramEnzymeSelect").multipleSelect("getSelects")[0];
+				CLMSUI.jqdialogs.makeMultiDigestAccordion ("paramEnzyme", data.enzymes, {mc: d3.select("#paramMissedCleavagesValue").property("value"), enzymeId: curSelect}, {revertFunc: switchEnzymeControls, buildMultipleSelect: makeMultipleSelectionWidget});
+				switchEnzymeControls (false);
+				
                 // Make previous acquisition and sequence tables
                 
                 // Helper functions
@@ -893,20 +920,8 @@ CLMSUI.buildSubmitSearch = function () {
 
                     $("#startProcessing").button("option", "disabled", true);   // so user can't press again
                     toDoMessage ("Processing");
-                    var formData = {};
-                    d3.select("#parameterForm").selectAll(".formPart").each (function() {
-                        if (this.id && (this.type !== "checkbox" || this.checked)) {    // unselected checkboxes aren't passed by form submit so do this here too
-                            var val = this.value;
-                            // If one of the multiple select widgets, must get multiple values like this
-                            if (this.type === "select-multiple") {
-                                val = $("#"+this.id).multipleSelect("getSelects");
-                            }   // if a string begin with '[' then is an array string we need to split
-                            else if (val.charAt(0) === '[') {
-                                val = val.slice(1, -1).split(",");  // split the bit between the square brackets
-                            }
-                            formData[this.name] = val;
-                        }
-                    });
+                    var formData = getValuesFromFields();
+					
                     console.log ("formData", formData);
                     
                     d3.select("body").style("cursor", "wait");
@@ -1142,18 +1157,18 @@ CLMSUI.buildSubmitSearch = function () {
 						data: postData,
 						dataType: "json",
 						encode: true,
-						success: function (data, textStatus, jqXhr) {
-							console.log ("defaults return", data, textStatus, jqXhr);
-							if (data.redirect) {	// success but redirect to other page
-								redirector (data.redirect);    // redirect if server php passes this field (should be to login page)        
+						success: function (response, textStatus, jqXhr) {
+							console.log ("defaults return", response, textStatus, jqXhr);
+							if (response.redirect) {	// success but redirect to other page
+								redirector (response.redirect);    // redirect if server php passes this field (should be to login page)        
 							}
-							else if (data.error) {	// success error (i.e. one we've identified, not a php/data format error)
-								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", data.error[0]+"<br>"+data.error[1], data.errorType || "No Last Search Exists");
+							else if (response.error) {	// success error (i.e. one we've identified, not a php/data format error)
+								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error[0]+"<br>"+response.error[1], response.errorType || "No Last Search Exists");
 								if (!isGlobalDefaults) {
 									$("#useGlobalDefaults").click();
 								}
 							} else {	// success success, what we want to happen
-								updateFieldsWithValues (data, prevTableClickFuncs);
+								updateFieldsWithValues (response, prevTableClickFuncs, data);
 								dispatchObj.formInputChanged();
 							}
 						},
@@ -1197,8 +1212,8 @@ CLMSUI.buildSubmitSearch = function () {
 
 
     
-    function updateFieldsWithValues (data, prevTableClickFuncs) {
-        console.log ("data", data, prevTableClickFuncs);
+    function updateFieldsWithValues (settings, prevTableClickFuncs, data) {
+        console.log ("data", settings, prevTableClickFuncs);
         var parts = d3.select("#parameterForm").selectAll(".formPart");
         console.log ("parts", parts);
         
@@ -1240,7 +1255,7 @@ CLMSUI.buildSubmitSearch = function () {
                 $(domID).val (newValue);
                 CLMSUI.buildSubmitSearch.userAltered[hashlessDomID] = false;    // reset to no user input having occurred
                 if (options.postFunc && currentValue != newValue) {
-                    options.postFunc();
+                    options.postFunc (domID, newValue);
                 }
             }
         };
@@ -1261,9 +1276,23 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramLossesSelect" : {field : "losses", func: multiSelectSetFunc},
 			"#paramXiVersionSelect": {field : "xiversion", func: multiSelectSetFunc},
             "#paramNotesValue" : {field : "notes", func: textAreaSetFunc, options: {emptyOverwrite: false},},
-            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, options: 
-                                        {emptyOverwrite: true, postFunc: function() { $("#paramCustom").accordion("option", "active", 0); },},
-                                },
+            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, 
+				options: {
+					emptyOverwrite: true, 
+					postFunc: function (domID, value) {
+						$("#paramCustom").accordion("option", "active", 0); 
+						
+						var multiDigestionLineRegex = new RegExp ("^\s*digestion:MultiStepDigest.*NAME=.*$", "gmi");
+						var multiDigestionLine = value.match (multiDigestionLineRegex);
+						if (multiDigestionLine) {
+							CLMSUI.jqdialogs.populateMultipleDigestion (d3.select("#digestAccordionContent"), multiDigestionLine[0], data.enzymes, settings);
+							value = value.replace (multiDigestionLineRegex, "");
+							$(domID).val(value);	// new new value
+						}
+						switchEnzymeControls (multiDigestionLine ? true : false);
+					},
+				},
+            },
 			// acq/seq table selections aren't updated by search params
             //"#acqPreviousTable" : {field : "acquisitions", func: dynamicTableSetFunc},
             //"#seqPreviousTable" : {field : "sequences", func: dynamicTableSetFunc},
@@ -1273,10 +1302,46 @@ CLMSUI.buildSubmitSearch = function () {
             var exists = d3.select(entry.key);
             var evalue = entry.value;
             if (!exists.empty()) {
-                evalue.func (entry.key, data[evalue.field], evalue.options);
+                evalue.func (entry.key, settings[evalue.field], evalue.options);
             }
         });
     }
+	
+	
+	function getValuesFromFields () {
+		var formData = {};
+		var additions = {
+			"paramCustomValue": function () { 
+				var digestAccordionSel = d3.select("#digestAccordionContainer");
+				return digestAccordionSel.style("display") !== "none" ? CLMSUI.jqdialogs.generateMultipleDigestionString (digestAccordionSel) : ""; 
+			}
+		};
+
+		d3.select("#parameterForm").selectAll(".formPart").each (function() {
+			if (this.id && (this.type !== "checkbox" || this.checked)) {    // unselected checkboxes aren't passed by form submit so do this here too
+				var val = this.value;
+				// If one of the multiple select widgets, must get multiple values like this
+				if (this.type === "select-multiple") {
+					val = $("#"+this.id).multipleSelect("getSelects"); 
+				}   // if a string begins with '[' then is an array string we need to split
+				else if (val && val.charAt(0) === '[') {
+					val = val.slice(1, -1).split(",");  // split the bit between the square brackets
+				}
+				if (this.name) {
+					formData[this.name] = val;
+				}
+			}
+		});
+
+		d3.entries(additions).forEach (function (addEntry) {
+			var elem = d3.select("#"+addEntry.key);
+			var additionalValue = addEntry.value();
+			var currentVal = elem.property("value");
+			formData[elem.attr("name")] = currentVal +"\n" + additionalValue;
+		});
+		
+		return formData;
+	}
 
     
     canDoImmediately();
