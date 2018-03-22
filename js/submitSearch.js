@@ -54,6 +54,29 @@ CLMSUI.buildSubmitSearch = function () {
 		d3.select("#digestAccordionContainer").style("display", multiOn ? null : "none");
 	};
     
+	var Submission = Backbone.Model.extend ({
+		urlRoot: "php/"
+	});
+	var model = new Submission ({
+		"ms_tol": undefined,
+        "ms2_tol": undefined,
+        "missed_cleavages": undefined,
+        "ms_tol_unit": undefined,
+        "ms2_tol_unit": undefined,
+        "crosslinkers": undefined,
+        "enzyme": undefined,
+        "ions": undefined,
+        "fixedMods": undefined,
+        "varMods": undefined,
+        "losses": undefined,
+		"xiversion": undefined,
+        "notes": undefined,
+        "customsettings": undefined,
+		"acquisitions": undefined,
+		"sequences": undefined,
+	});
+	console.log ("model", model);
+	
     
     // Interface lements that can be built without waiting for database queries to return
     function canDoImmediately () {
@@ -1151,6 +1174,15 @@ CLMSUI.buildSubmitSearch = function () {
                 
 				// function to return default settings from php (global, lastSearch, or specificSearch)
 				var loadDefaults = function (phpScript, postData, isGlobalDefaults, buttonName) {
+					model.set("id", "getGlobalDefaults.php");
+					model.fetch({
+						success: function (model, response, options) {
+							console.log ("fetch succ response", model, response, options);
+						},
+						error: function (model, response, options) {
+							console.log ("fetch err response", model, response, options);
+						}
+					});
 					$.ajax ({
 						type: "POST",
 						url: "./php/"+phpScript,
