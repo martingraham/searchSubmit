@@ -74,7 +74,9 @@
             foreach ($getSearchMultiOptions as $key => $value) {
                 pg_prepare ($dbconn, $key, $value);
                 $result = pg_execute ($dbconn, $key, array($searchID));
-                $defaults[$key] = resultsAsArray($result);
+				$arr = resultsAsArray($result);
+				$arrValues = array_map(function($a) { return array_values($a)[0]; }, $arr);
+                $defaults[$key] = $arrValues;
             }
         }
         
