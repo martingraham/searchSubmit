@@ -54,14 +54,19 @@
             );
             
             $getSearchMultiOptions = array (
+				// don't download acquisitions / sequences when loading search defaults
+				/*
                 "acquisitions" => "SELECT DISTINCT acq_id FROM search_acquisition WHERE search_id = $1",
                 "sequences" => "SELECT seqdb_id FROM search_sequencedb WHERE search_id = $1"
+				*/
             );
 
             foreach ($getParamMultiOptions as $key => $value) {
                 pg_prepare ($dbconn, $key, $value);
                 $result = pg_execute ($dbconn, $key, array($pid));
-                $defaults[$key] = resultsAsArray($result);
+				$arr = resultsAsArray($result);
+				$arrValues = array_map(function($a) { return array_values($a)[0]; }, $arr);
+                $defaults[$key] = $arrValues;
             }
             
             foreach ($getSearchSingleResults as $key => $value) {
@@ -97,7 +102,9 @@
             "notes" => "",
             "customsettings" => "",
             "acquisitions" => array(),
-            "sequences" => array()
+            "sequences" => array(),
+			"privateSearch" => false,
+			"searchName" => "",
         );
         
         $getMultiOptions = array (
@@ -109,11 +116,20 @@
             "fixedMods" => "SELECT id FROM modification WHERE is_default_fixed = TRUE",
             "varMods" => "SELECT id FROM modification WHERE is_default_var = TRUE",
         );
+		
+		$returnFirst = array ("enzyme" => true, "xiversion" => true);
+		
+		
             
         foreach ($getMultiOptions as $key => $value) {
             pg_prepare ($dbconn, $key, $value);
             $result = pg_execute ($dbconn, $key, array());
-            $defaults[$key] = resultsAsArray($result);
+			$arr = resultsAsArray($result);
+			$arrValues = array_map(function($a) { return array_values($a)[0]; }, $arr);
+			if ($returnFirst[$key]) {
+				$arrValues = $arrValues[0];
+			}
+            $defaults[$key] = $arrValues;
         }
         
         //error_log (print_r($defaults, TRUE));

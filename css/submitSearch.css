@@ -94,6 +94,11 @@ div.row > span.fileNameExists {
     display: inline-block;
 }
 
+.todoMissing {
+	text-transform: capitalize;
+	margin-left: 16px;
+}
+
 P, H1, H3, span, label.plike {
     line-height: 1.4em;
 }
@@ -564,6 +569,7 @@ TABLE.d3table tbody tr td.varWidthCell, TABLE.d3table tr th.varWidthCell {
 TABLE.d3table thead th:not(:first-child) span {
     padding: 5px;
 }
+
 
 /*
 .digestionList {
