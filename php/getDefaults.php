@@ -126,7 +126,7 @@
             $result = pg_execute ($dbconn, $key, array());
 			$arr = resultsAsArray($result);
 			$arrValues = array_map(function($a) { return array_values($a)[0]; }, $arr);
-			if ($returnFirst[$key]) {
+			if (array_key_exists ($key, $returnFirst)) {
 				$arrValues = $arrValues[0];
 			}
             $defaults[$key] = $arrValues;

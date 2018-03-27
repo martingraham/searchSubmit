@@ -55,7 +55,7 @@ CLMSUI.buildSubmitSearch = function () {
 	};
     
 	var Submission = Backbone.Model.extend ({
-		validate: function (attrs, options) {
+		validate: function () {
 			var missing = d3.set();
 			var test = ["ions", "acquisitions", "sequences", "crosslinkers", "enzyme", "xiversion"];
 			test.forEach (function (field) {
@@ -87,7 +87,6 @@ CLMSUI.buildSubmitSearch = function () {
 		"sequences": undefined,
 		"privateSearch": null,
 	});
-	console.log ("model", model);
 	
     
     // Interface elements that can be built without waiting for database queries to return
@@ -559,7 +558,7 @@ CLMSUI.buildSubmitSearch = function () {
 								$("#digestAccordionContainer").accordion({active: 0});
 							},
 						},
-					 	modelKey: "enzymes",
+					 	modelKey: "enzyme",
 					},
                     {data: data.modifications, domid: "#paramFixedMods", niceLabel: "Fixed Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Fixed Modifications", clearOption: true, modelKey: "fixedMods"},
                     {data: data.modifications, domid: "#paramVarMods", niceLabel: "Variable Modifications", required: false, multiple: true, filter: true, placeHolder: "Select Any Var Modifications", addNew: false, clearOption: true, modelKey: "varMods"},
@@ -597,7 +596,6 @@ CLMSUI.buildSubmitSearch = function () {
 					var tdata = d3Tables[baseId].getData();
 					var ftdata = tdata.filter (function (d) { return oidSet.has(d.id); });
 					
-					console.log ("oids", oids, ftdata);
                     var labels = d3.select(domid).selectAll("span.removable").data(ftdata, function(d) { return d.id; });
                     labels.exit().remove();
                     var buts = labels.enter()
@@ -895,10 +893,9 @@ CLMSUI.buildSubmitSearch = function () {
 						d3table.getData().forEach (function(d) {
 							d.selected = itemSet.has(d.id);
 						});
-						d3table.update();
+						d3table.refilter().update();
 						
 						addSelectionListeners (d3table.getAllRowsSelection(), psetting.modelKey);
-						console.log ("change form");
                         dispatchObj.formInputChanged();
 					});
                 });
@@ -985,7 +982,7 @@ CLMSUI.buildSubmitSearch = function () {
 								if (response.redirect) {
 									redirector (response.redirect);    // redirect if server php passes this field (should be to login page)     
 								}
-								else if (response.status == "success") {
+								else if (response.status === "success") {
 									toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
 									window.location.assign ("../history/history.html");
 								} else {
@@ -994,7 +991,6 @@ CLMSUI.buildSubmitSearch = function () {
 								}
 							},
 							error: function (model, response, options) {
-								console.log ("bleh", model, response, options);
 								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "Submit failed on the server before reaching the database<br>"+errorDateFormat (new Date()), "Connection Error");
 								submitFailSets();
 								d3.select("body").style("cursor", null);
@@ -1175,10 +1171,15 @@ CLMSUI.buildSubmitSearch = function () {
                 // if new row added, then add it to the correct table of previous results
                 dispatchObj.on ("newEntryUploaded", function (type, newRow) {
                     var tableId = type+"PreviousTable";
-					newRow.selected = true;
+					var modelKeyMap = {
+						"acq" : "acquisitions",
+						"seq" : "sequences",
+					};
 					var d3table = d3Tables[tableId];
 					d3table.getData().push (newRow);
-					d3table.refilter().update();
+					
+					// this will poke model to update removableLabels and d3table views
+					setModelFromAcc (modelKeyMap[type], true, newRow.id);
                 });
 
                 // Make the two file upload forms
