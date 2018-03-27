@@ -17,10 +17,11 @@
 	}
 
     function getDefaults ($dbconn, $searchID) {
-        pg_prepare($dbconn, "getParamSettings", "SELECT parameter_set.*, xiversion FROM search join parameter_set on parameter_set.id = search.paramset_id WHERE search.id = $1");
+		$defaults = array ();
+		
+        pg_prepare($dbconn, "getParamSettings", "select parameter_set.*, search.notes, search.xiversion, search.private from parameter_set, search where parameter_set.id = search.paramset_id AND search.id = $1");
         $result = pg_execute($dbconn, "getParamSettings", array($searchID));
         $paramSettings = resultsAsArray($result);
-        $defaults = array ();
         
         //error_log ("SID ".$searchID);
         //error_log (print_r($paramSettings, TRUE));
@@ -29,16 +30,18 @@
         if (count($paramSettings) > 0) {
             $pSettings = $paramSettings[0];
             $pid = $pSettings["id"];
-
-            $defaults = array (
+			
+			$defaults = array (
                 "ms_tol" => $pSettings["ms_tol"],
                 "ms2_tol" => $pSettings["ms2_tol"],
                 "ms_tol_unit" => $pSettings["ms_tol_unit"],
                 "ms2_tol_unit" => $pSettings["ms2_tol_unit"],
                 "missed_cleavages" => $pSettings["missed_cleavages"],
                 "enzyme" => $pSettings["enzyme_chosen"],
+                "customsettings" => $pSettings["customsettings"],
+				"notes" => $pSettings["notes"],
+				"privateSearch" => $pSettings["private"],
 				"xiversion" => $pSettings["xiversion"],
-                "customsettings" => $pSettings["customsettings"]
             );
 
             $getParamMultiOptions = array (
@@ -47,10 +50,6 @@
                 "losses" => "SELECT loss_id FROM chosen_losses WHERE paramset_id = $1",
                 "fixedMods" => "SELECT mod_id FROM chosen_modification WHERE paramset_id = $1 AND fixed = TRUE",
                 "varMods" => "SELECT mod_id FROM chosen_modification WHERE paramset_id = $1 AND fixed = FALSE",
-            );
-            
-            $getSearchSingleResults = array (
-                "notes" => "SELECT notes FROM search WHERE id = $1"
             );
             
             $getSearchMultiOptions = array (
@@ -69,13 +68,6 @@
                 $defaults[$key] = $arrValues;
             }
             
-            foreach ($getSearchSingleResults as $key => $value) {
-                pg_prepare ($dbconn, $key, $value);
-                $result = pg_execute ($dbconn, $key, array($searchID));
-                $defaults[$key] = pg_fetch_row($result)[0];
-                //error_log (print_r($result, TRUE));
-            }
-            
             foreach ($getSearchMultiOptions as $key => $value) {
                 pg_prepare ($dbconn, $key, $value);
                 $result = pg_execute ($dbconn, $key, array($searchID));
@@ -84,6 +76,10 @@
                 $defaults[$key] = $arrValues;
             }
         }
+		
+		// convert 't' and 'f' to true and false
+		$pSearch = $defaults["privateSearch"];
+		$defaults["privateSearch"] = isTrue($pSearch) ? true : false;
         
         //error_log (print_r($defaults, TRUE));
 

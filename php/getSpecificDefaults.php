@@ -7,7 +7,7 @@
 	include('../../connectionString.php');
 
 	$sidPlusRandom = $_GET["sid"];
-	error_log (print_r ($_GET, true));
+	//error_log (print_r ($_GET, true));
 
 	$dbconn = pg_connect($connectionString);
 

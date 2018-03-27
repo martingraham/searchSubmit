@@ -544,7 +544,7 @@ CLMSUI.buildSubmitSearch = function () {
                     {data: data.enzymes, domid: "#paramEnzyme", niceLabel: "Enzyme", filter: true, required: true, multiple: false, placeHolder: "Select An Enzyme",
 					 	maskAsSingle: true, 
 					 	multipleButton: {
-							text: "Construct Multiple Digestion",
+							text: "Construct Sequential Digestion",
 							icon: "ui-icon-wrench",
 							func: function (poplist, elem, selElem) {
 								switchEnzymeControls (true);
@@ -964,8 +964,7 @@ CLMSUI.buildSubmitSearch = function () {
                         $("#startProcessing").button("option", "disabled", false);
                     }
 					
-					var formData = getValuesFromFields();
-					console.log ("formData", formData, model);
+					finaliseModel ();
 					d3.select("body").style("cursor", "wait");
 					model.save (undefined,
 						{
@@ -987,7 +986,7 @@ CLMSUI.buildSubmitSearch = function () {
 								submitFailSets();
 								d3.select("body").style("cursor", null);
 							},
-							url: "php/submitParams2.php",
+							url: "php/submitParams.php",
 						}
 					);
                 });
@@ -1240,10 +1239,8 @@ CLMSUI.buildSubmitSearch = function () {
 
 
     
-    function updateFieldsWithValues (settings, data) {
-        console.log ("data", settings);
-        var parts = d3.select("#parameterForm").selectAll(".formPart");
-        console.log ("parts", parts);
+    function updateFieldsWithValues (searchSettings, possibleValues) {
+        console.log ("search settings", searchSettings);
         
         var multiSelectSetFunc = function (domElem, mdata, options) {
             if (!(mdata instanceof Array)) {
@@ -1266,6 +1263,11 @@ CLMSUI.buildSubmitSearch = function () {
                 .selectmenu({width: "auto"})
             ;
         };
+		
+		var checkboxSetFunc = function (domElem, value) {
+			console.log ("dd", domElem, "v", value);
+			d3.select(domElem).property ("checked", value ? true : false);	
+		};
         
         var textAreaSetFunc = function (domID, newValue, options) {
             var hashlessDomID = domID.slice(1);
@@ -1309,7 +1311,7 @@ CLMSUI.buildSubmitSearch = function () {
 						var multiDigestionLineRegex = new RegExp ("^\s*digestion:MultiStepDigest.*NAME=.*$", "gmi");
 						var multiDigestionLine = value.match (multiDigestionLineRegex);
 						if (multiDigestionLine) {
-							CLMSUI.jqdialogs.populateMultipleDigestion (d3.select("#digestAccordionContent"), multiDigestionLine[0], data.enzymes, settings);
+							CLMSUI.jqdialogs.populateMultipleDigestion (d3.select("#digestAccordionContent"), multiDigestionLine[0], possibleValues.enzymes, searchSettings);
 							value = value.replace (multiDigestionLineRegex, "");
 							model.set ("customsettings", value);
 							$(domID).val(value);	// new new value
@@ -1318,6 +1320,7 @@ CLMSUI.buildSubmitSearch = function () {
 					},
 				},
             },
+			"#privacy" : {field: "privateSearch", func: checkboxSetFunc}
 			// acq/seq table selections aren't updated by search params
             //"#acqPreviousTable" : {field : "acquisitions", func: dynamicTableSetFunc},
             //"#seqPreviousTable" : {field : "sequences", func: dynamicTableSetFunc},
@@ -1327,13 +1330,13 @@ CLMSUI.buildSubmitSearch = function () {
             var exists = d3.select(entry.key);
             var evalue = entry.value;
             if (!exists.empty()) {
-                evalue.func (entry.key, settings[evalue.field], evalue.options);
+                evalue.func (entry.key, searchSettings[evalue.field], evalue.options);
             }
         });
     }
 	
 	
-	function getValuesFromFields () {
+	function finaliseModel () {
 		var custom = model.get("customsettings");
 		var digestAccordionSel = d3.select("#digestAccordionContainer");
 		var customMultiDigest = digestAccordionSel.style("display") !== "none" ? CLMSUI.jqdialogs.generateMultipleDigestionString (digestAccordionSel) : ""; 
