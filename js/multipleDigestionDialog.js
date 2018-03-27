@@ -8,7 +8,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 	obj.digestCounter = 0;
 
 	obj.multipleDigestionDialog = function (dialogID, data, defaults) {
-		var dialog = obj.addStuffDialog (dialogID, "", "Define Multiple Digestion", "OK", "Cancel", function() {} /*ajaxSubmit*/);
+		var dialog = obj.addStuffDialog (dialogID, "", "Define Sequential Digestion", "OK", "Cancel", function() {} /*ajaxSubmit*/);
 		dialog.dialog ("option", "width", 600);
 		obj.multipleDigestionInternals (d3.select(dialog[0]), data, defaults);
 	};
@@ -19,7 +19,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			.append("div")
 			.attr("id", "digestAccordionContainer")
 			.attr("class", "digestAccordionContainer")
-			.html ("<H3>Multiple Digest Construction</H3><div id='digestAccordionContent'></div>")
+			.html ("<H3>Sequential Digest Construction</H3><div id='digestAccordionContent'></div>")
 		;
 		$("#digestAccordionContainer").accordion ({
 			collapsible: true,
@@ -173,6 +173,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			var localMissedCleavages = isLocalMissedCleavages ? d3.select(this).select(".ui-spinner input").property("value") : undefined;
 			
 			var description = "|S|"+enzymeDatum.description;
+			description = description.replace(/(?:NAME=([^|]+))/i, "NAME="+enzymeDatum.name);	// make sure name in description matches enzyme name
 			var splitPoint = description.indexOf(";NAME");
 			if (splitPoint >= 0 && localMissedCleavages !== undefined) {
 				description = description.substring(0, splitPoint) + ";MISSEDCLEAVAGES:" + localMissedCleavages + description.substring (splitPoint);
@@ -202,6 +203,8 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			var enzymeID = enzymeNameMap.get(name) ? enzymeNameMap.get(name).id : null;
 			obj.addNewDigestItem (i, enzymeID, missedCleavages);
 		});	
+		
+		obj.digestCounter = digestionStrings.length;
 	};
 	
 }(CLMSUI.jqdialogs));

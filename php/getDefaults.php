@@ -17,10 +17,11 @@
 	}
 
     function getDefaults ($dbconn, $searchID) {
-        pg_prepare($dbconn, "getParamSettings", "SELECT parameter_set.*, xiversion FROM search join parameter_set on parameter_set.id = search.paramset_id WHERE search.id = $1");
+		$defaults = array ();
+		
+        pg_prepare($dbconn, "getParamSettings", "select parameter_set.*, search.notes, search.xiversion, search.private from parameter_set, search where parameter_set.id = search.paramset_id AND search.id = $1");
         $result = pg_execute($dbconn, "getParamSettings", array($searchID));
         $paramSettings = resultsAsArray($result);
-        $defaults = array ();
         
         //error_log ("SID ".$searchID);
         //error_log (print_r($paramSettings, TRUE));
@@ -29,16 +30,18 @@
         if (count($paramSettings) > 0) {
             $pSettings = $paramSettings[0];
             $pid = $pSettings["id"];
-
-            $defaults = array (
+			
+			$defaults = array (
                 "ms_tol" => $pSettings["ms_tol"],
                 "ms2_tol" => $pSettings["ms2_tol"],
                 "ms_tol_unit" => $pSettings["ms_tol_unit"],
                 "ms2_tol_unit" => $pSettings["ms2_tol_unit"],
                 "missed_cleavages" => $pSettings["missed_cleavages"],
                 "enzyme" => $pSettings["enzyme_chosen"],
+                "customsettings" => $pSettings["customsettings"],
+				"notes" => $pSettings["notes"],
+				"privateSearch" => $pSettings["private"],
 				"xiversion" => $pSettings["xiversion"],
-                "customsettings" => $pSettings["customsettings"]
             );
 
             $getParamMultiOptions = array (
@@ -49,34 +52,34 @@
                 "varMods" => "SELECT mod_id FROM chosen_modification WHERE paramset_id = $1 AND fixed = FALSE",
             );
             
-            $getSearchSingleResults = array (
-                "notes" => "SELECT notes FROM search WHERE id = $1"
-            );
-            
             $getSearchMultiOptions = array (
+				// don't download acquisitions / sequences when loading search defaults
+				/*
                 "acquisitions" => "SELECT DISTINCT acq_id FROM search_acquisition WHERE search_id = $1",
                 "sequences" => "SELECT seqdb_id FROM search_sequencedb WHERE search_id = $1"
+				*/
             );
 
             foreach ($getParamMultiOptions as $key => $value) {
                 pg_prepare ($dbconn, $key, $value);
                 $result = pg_execute ($dbconn, $key, array($pid));
-                $defaults[$key] = resultsAsArray($result);
-            }
-            
-            foreach ($getSearchSingleResults as $key => $value) {
-                pg_prepare ($dbconn, $key, $value);
-                $result = pg_execute ($dbconn, $key, array($searchID));
-                $defaults[$key] = pg_fetch_row($result)[0];
-                //error_log (print_r($result, TRUE));
+				$arr = resultsAsArray($result);
+				$arrValues = array_map(function($a) { return array_values($a)[0]; }, $arr);
+                $defaults[$key] = $arrValues;
             }
             
             foreach ($getSearchMultiOptions as $key => $value) {
                 pg_prepare ($dbconn, $key, $value);
                 $result = pg_execute ($dbconn, $key, array($searchID));
-                $defaults[$key] = resultsAsArray($result);
+				$arr = resultsAsArray($result);
+				$arrValues = array_map(function($a) { return array_values($a)[0]; }, $arr);
+                $defaults[$key] = $arrValues;
             }
         }
+		
+		// convert 't' and 'f' to true and false
+		$pSearch = $defaults["privateSearch"];
+		$defaults["privateSearch"] = isTrue($pSearch) ? true : false;
         
         //error_log (print_r($defaults, TRUE));
 
@@ -95,7 +98,9 @@
             "notes" => "",
             "customsettings" => "",
             "acquisitions" => array(),
-            "sequences" => array()
+            "sequences" => array(),
+			"privateSearch" => false,
+			"searchName" => "",
         );
         
         $getMultiOptions = array (
@@ -107,11 +112,20 @@
             "fixedMods" => "SELECT id FROM modification WHERE is_default_fixed = TRUE",
             "varMods" => "SELECT id FROM modification WHERE is_default_var = TRUE",
         );
+		
+		$returnFirst = array ("enzyme" => true, "xiversion" => true);
+		
+		
             
         foreach ($getMultiOptions as $key => $value) {
             pg_prepare ($dbconn, $key, $value);
             $result = pg_execute ($dbconn, $key, array());
-            $defaults[$key] = resultsAsArray($result);
+			$arr = resultsAsArray($result);
+			$arrValues = array_map(function($a) { return array_values($a)[0]; }, $arr);
+			if (array_key_exists ($key, $returnFirst)) {
+				$arrValues = $arrValues[0];
+			}
+            $defaults[$key] = $arrValues;
         }
         
         //error_log (print_r($defaults, TRUE));

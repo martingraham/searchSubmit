@@ -8,47 +8,64 @@ $userID = $_SESSION['user_id'];
 $username = $_SESSION['session_name'];
 
 $paramFieldNameMap = array (
-	"paramMissedCleavagesValue" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
-	"paramToleranceValue" => array ("required" => true, "validate" => FILTER_VALIDATE_FLOAT),
-	"paramToleranceUnits" => array ("required" => true),
-	"paramTolerance2Value" => array ("required" => true, "validate" => FILTER_VALIDATE_FLOAT),
-	"paramTolerance2Units" => array ("required" => true),
-	"paramEnzymeSelect" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
-	"paramNotesValue" => array ("required" => false),
-	"paramCustomValue" => array ("required" => false),
-	"paramSearchNameValue" => array ("required" => false),
-	"acqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
-	"seqPreviousTable" => array ("required" => true, "validate" => FILTER_VALIDATE_INT)
+	"missed_cleavages" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
+	"ms_tol" => array ("required" => true, "validate" => FILTER_VALIDATE_FLOAT),
+	"ms_tol_unit" => array ("required" => true),
+	"ms2_tol" => array ("required" => true, "validate" => FILTER_VALIDATE_FLOAT),
+	"ms2_tol_unit" => array ("required" => true),
+	"enzyme" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
+	"notes" => array ("required" => false),
+	"customsettings" => array ("required" => false),
+	"searchName" => array ("required" => false),
+	"acquisitions" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
+	"sequences" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
+	"privateSearch" => array ("required" => false, "validate" => FILTER_VALIDATE_BOOLEAN),
+	"xiversion" => array ("required" => true)
 );
 
 $paramLinkTableMap = array (
-	"paramCrossLinkerSelect" => array ("required" => true),
-	"paramFixedModsSelect" => array ("required" => false, "defaults" => array ("fixed" => "true"), "validate" => FILTER_VALIDATE_INT),
-	"paramVarModsSelect" => array ("required" => false, "defaults" => array ("fixed" => "false"), "validate" => FILTER_VALIDATE_INT),
-	"paramIonsSelect" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
-	"paramLossesSelect" => array ("required" => false, "validate" => FILTER_VALIDATE_INT),
+	"crosslinkers" => array ("required" => true),
+	"fixedMods" => array ("required" => false, "defaults" => array ("fixed" => "true"), "validate" => FILTER_VALIDATE_INT),
+	"varMods" => array ("required" => false, "defaults" => array ("fixed" => "false"), "validate" => FILTER_VALIDATE_INT),
+	"ions" => array ("required" => true, "validate" => FILTER_VALIDATE_INT),
+	"losses" => array ("required" => false, "validate" => FILTER_VALIDATE_INT),
 );
 
-//error_log (print_r ($_POST, true));
+$request_method = strtolower($_SERVER['REQUEST_METHOD']);
+$data = null;
+
+switch ($request_method) {
+    case 'post':
+    case 'put':
+        $data = json_decode(file_get_contents('php://input'), true);
+    break;
+}
+
+/*
+error_log (print_r (file_get_contents('php://input'), true));
+error_log (print_r ($data, true));
+*/
+
+
 
 
 $allUserFieldsMap = array_merge ($paramFieldNameMap, $paramLinkTableMap);
 
-$privacy = isset($_POST["privacy"]) ? 1 : 0;    // convert presence of privacy field into 1 or 0 that can be used in database query as boolean field
+$privacy = (isset($data["privateSearch"]) && $data["privateSearch"]) ? 1 : 0;    // convert presence of privacy field into 1 or 0 that can be used in database query as boolean field
 
 // Check everything necessary is in the bag
 $allGood = true;
 
 foreach ($allUserFieldsMap as $key => $value) {
 	// if no post value for expected variable give it a blank string
-	if (!isset($_POST[$key])) {
-		$_POST[$key] = array_key_exists ($key, $paramLinkTableMap) ? [] : null;
+	if (!isset($data[$key])) {
+		$data[$key] = array_key_exists ($key, $paramLinkTableMap) ? [] : null;
 		if ($value["required"]) {
 			$allGood = false;
 		}
 	}
 	else {
-		$arrval = $_POST[$key];
+		$arrval = $data[$key];
 		$count = count($arrval);
 		if ($value["required"] == true && ($count == 0 || ($count == 1 && strlen($arrval[0]) == 0))) {
 			$allGood = false;
@@ -59,8 +76,9 @@ foreach ($allUserFieldsMap as $key => $value) {
 				$arrval = array($arrval);   // single item array
 			}
 			foreach ($arrval as $index => $val) {
-				$valid = filter_var ($val, $value["validate"]);
+				$valid = ($val === false) || filter_var ($val, $value["validate"]);
 				if ($valid === false) {
+					//error_log (print_r ("failed validation ".$key." ".$val, true));
 					$allGood = false;
 				}
 			}  
@@ -79,12 +97,12 @@ if ($allGood) {
 
 	$preparedStatementTexts = array (
 		"paramSet" => "INSERT INTO parameter_set (enzyme_chosen, name, uploadedby, missed_cleavages, ms_tol, ms2_tol, ms_tol_unit, ms2_tol_unit, customsettings, top_alpha_matches, template, synthetic) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, '10', FALSE, FALSE) RETURNING id",
-		"paramFixedModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
-		"paramVarModsSelect" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
-		"paramIonsSelect" => "INSERT INTO chosen_ions (paramset_id, ion_id) VALUES ($1, $2)",
-		"paramLossesSelect" => "INSERT INTO chosen_losses (paramset_id, loss_id) VALUES ($1, $2)",
-		"paramCrossLinkerSelect" => "INSERT INTO chosen_crosslinker (paramset_id, crosslinker_id) VALUES ($1, $2)",
-		"acqPreviousTable" => "SELECT name FROM acquisition WHERE id = ANY ($1::int[])",
+		"fixedMods" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
+		"varMods" => "INSERT INTO chosen_modification (paramset_id, mod_id, fixed) VALUES ($1, $2, $3)",
+		"ions" => "INSERT INTO chosen_ions (paramset_id, ion_id) VALUES ($1, $2)",
+		"losses" => "INSERT INTO chosen_losses (paramset_id, loss_id) VALUES ($1, $2)",
+		"crosslinkers" => "INSERT INTO chosen_crosslinker (paramset_id, crosslinker_id) VALUES ($1, $2)",
+		"acquisitions" => "SELECT name FROM acquisition WHERE id = ANY ($1::int[])",
 		"getUserGroups" => "SELECT group_id FROM user_in_group WHERE user_id = $1",
 		"newSearch" => "INSERT INTO search (paramset_id, visible_group, name, uploadedby, notes, private, xiversion, status, completed, is_executing) VALUES ($1, $2, $3, $4, $5, $6, $7, 'queuing', FALSE, FALSE) RETURNING id",
 		"newSearchSeqLink" => "INSERT INTO search_sequencedb (search_id, seqdb_id) VALUES($1, $2)",
@@ -94,6 +112,7 @@ if ($allGood) {
 
 
 	include('../../connectionString.php');
+	ob_end_clean();	// because otherwise the received data above ^^^ gets echo'ed back out
 	//open connection
 	$dbconn = pg_connect($connectionString) or die('Could not connect: ' . pg_last_error());
 
@@ -105,8 +124,8 @@ if ($allGood) {
 			// little bobby tables - https://xkcd.com/327/
 
 			// Get names of acquisitions (via ids) to make parameter name
-			$acqIds = "{".join(',',$_POST["acqPreviousTable"])."}"; // re-use this later to get run data too
-			$getAcqNames = pg_prepare($dbconn, "getAcqNames", $preparedStatementTexts["acqPreviousTable"]);
+			$acqIds = "{".join(',',$data["acquisitions"])."}"; // re-use this later to get run data too
+			$getAcqNames = pg_prepare($dbconn, "getAcqNames", $preparedStatementTexts["acquisitions"]);
 			$result = pg_execute($dbconn, "getAcqNames", array($acqIds));
 			$acqNameRows = pg_fetch_all ($result); // get associated acquisition names to make name for parameter
 			$allAcqNames = array_map(function($row) { return $row["name"]; }, $acqNameRows);
@@ -114,14 +133,14 @@ if ($allGood) {
 
 			// Add parameter_set values to db
 			$result = pg_prepare($dbconn, "paramsAdd", $preparedStatementTexts["paramSet"]);
-			$result = pg_execute($dbconn, "paramsAdd", [$_POST["paramEnzymeSelect"], $paramName, $userID, $_POST["paramMissedCleavagesValue"], $_POST["paramToleranceValue"],$_POST["paramTolerance2Value"], $_POST["paramToleranceUnits"], $_POST["paramTolerance2Units"],       $_POST["paramCustomValue"]]);
+			$result = pg_execute($dbconn, "paramsAdd", [$data["enzyme"], $paramName, $userID, $data["missed_cleavages"], $data["ms_tol"], $data["ms2_tol"], $data["ms_tol_unit"], $data["ms2_tol_unit"], $data["customsettings"]]);
 			$paramIDRow = pg_fetch_assoc ($result); // get the newly added parameter id
 			$paramid = $paramIDRow["id"];
 
 			// Add link tables to connect parameter_set to ions/mods/losses/crosslinkers
 			foreach ($paramLinkTableMap as $key => $value) {
 
-				$arrval = $_POST[$key];
+				$arrval = $data[$key];
 				if (!is_array ($arrval)) {
 					$arrval = array($arrval);   // single item array
 				}
@@ -146,15 +165,16 @@ if ($allGood) {
 
 			// Add search to db
 			// Make search name timestamped list of acquisitions if not explicitly provided
-			$searchName = ($_POST["paramSearchNameValue"] ? $_POST["paramSearchNameValue"] : $paramName);
+			$searchName = ($data["searchName"] ? $data["searchName"] : $paramName);
 			$searchInsert = pg_prepare ($dbconn, "searchInsert", $preparedStatementTexts["newSearch"]);
-			$result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $_POST["paramNotesValue"], $privacy, $_POST["paramXiVersionSelect"]]);
+
+			$result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $data["notes"], $privacy, $data["xiversion"]]);
 			$searchRow = pg_fetch_assoc ($result); // get the newly added search id
 			$searchid = $searchRow["id"];
 
 			// Add search-to-sequence link table rows
 			$searchSeqLink = pg_prepare ($dbconn, "searchSeqLink", $preparedStatementTexts["newSearchSeqLink"]);
-			foreach ($_POST["seqPreviousTable"] as $key => $seqid) {
+			foreach ($data["sequences"] as $key => $seqid) {
 				$result = pg_execute ($dbconn, "searchSeqLink", [$searchid, $seqid]);
 			}
 
