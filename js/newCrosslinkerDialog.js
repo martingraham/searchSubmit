@@ -19,13 +19,13 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 						obj.errorDialog ("popErrorDialog", response.error, response.errorType);
 					} else if (response) {
 						//console.log ("success response", response);
-						var result = response.result;
-						obj.simpleDialog ("popErrorDialog", "Success! Crosslinker "+result.name+" (ID: "+result.id+") Added", "Crosslinker Added");
+						var newCrosslinker = response.result;
+						obj.simpleDialog ("popErrorDialog", "Success! Crosslinker "+newCrosslinker.name+" (ID: "+newCrosslinker.id+") Added", "Crosslinker Added");
 
-						linkerPoplist.data.push (result);	// linkerPoplist.data IS data.xlinkers
+						linkerPoplist.data.push (newCrosslinker);	// linkerPoplist.data IS data.xlinkers
 						linkerPoplist.isOpen = false;
 						// update the associated multiple select widget 
-						updateFunction (linkerPoplist);
+						updateFunction (linkerPoplist, newCrosslinker);
 					}
 				},
 				error: function () {

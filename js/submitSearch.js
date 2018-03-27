@@ -323,15 +323,6 @@ CLMSUI.buildSubmitSearch = function () {
 			makeMultipleSelectionWidget (selElem.attr("id"), poplist);	
 		};
         
-		// when item in multiple selection picked/unpicked (or everything unclicked) then
-		// 1. run an optional post click function (needs supplied)
-		// 2. inform the dispatch obj the form input has changed, to see if it alters validity of the entire form
-		function selectionChanged (jqNode, clickFunc) {
-			if (clickFunc) {
-				clickFunc (jqNode);
-			}
-			dispatchObj.formInputChanged();   
-		};
 		
 		// Make just the multiple-select.js widget portion of a select mechanism
 		function makeMultipleSelectionWidget (baseId, singlePopulateOptionList) {
@@ -354,11 +345,11 @@ CLMSUI.buildSubmitSearch = function () {
 				onClick: function () {
 					var selects = $("#"+baseId).multipleSelect("getSelects");	// single number for single select, array for multiple select
 					model.set (poplist.modelKey, poplist.multiple ? selects : selects[0]);
-					selectionChanged ($(selElem.node()), poplist.clickFunc);
+					dispatchObj.formInputChanged();
 				},
 				onUncheckAll: function () {
 					model.set (poplist.modelKey, poplist.multiple ? [] : undefined);
-					selectionChanged ($(selElem.node()), poplist.clickFunc);
+					dispatchObj.formInputChanged();
 				},
 			});
 
@@ -466,22 +457,33 @@ CLMSUI.buildSubmitSearch = function () {
 		}
 		
 		
+		/* this updates an array in a backbone model, replacing old array with new so events are triggered if attached on that property */
+		function setModelFromAcc (modelKey, add, id) {
+			var curVals = model.get (modelKey);
+			console.log ("cur", curVals, modelKey);
+			var set = d3.set (curVals);
+			set[add ? "add" : "remove"](id);
+			model.set (modelKey, set.values());
+			console.log ("model", model);
+		};
+		
+		
 		// this updates options in a select element (calls function above) and then rebuilds the multiple selection widget
 		// data, dom id etc taken from poplist object
 		// Generally used in the add dialog functions when just added a new crosslinker, modification etc
-		function newPopListDataAdded (poplist) {
-			updateOptionList (poplist, true);
-			var elem = d3.select(poplist.domid);
+		function newPopListDataAdded (popList, newItem) {
+			updateOptionList (popList, true);
+			var elem = d3.select(popList.domid);
 			var selElem = elem.select("select");
 			
-			if (poplist.maskAsSingle !== undefined) {
-				poplist.maskAsSingle = selElem.selectAll("option:checked").size() <= 1;
+			if (popList.maskAsSingle !== undefined) {
+				popList.maskAsSingle = selElem.selectAll("option:checked").size() <= 1;
 			}
 			
-			relaunchMultipleSelectionWidget (poplist, elem, selElem);
-			selectionChanged ($(selElem.node()), poplist.clickFunc);
+			relaunchMultipleSelectionWidget (popList, elem, selElem);
+			setModelFromAcc (popList.modelKey, true, newItem.id);
+			dispatchObj.formInputChanged();
 		}
-		
 		
 		
 		var delegateModel = new Backbone.Model({});
@@ -515,17 +517,6 @@ CLMSUI.buildSubmitSearch = function () {
                 mergeInFilenamesToAcquistions (data.previousAcqui, data.filenames);
 
 				
-				CLMSUI.buildSubmitSearch.controlClickFuncs = {};
-				CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"] = function (jqSelectElem) {
-					var crossLinkerCount = jqSelectElem.multipleSelect("getSelects").length;
-					d3.select("#paramCrossLinker").select(".beAware")
-						.text("! "+crossLinkerCount+" Cross-Linkers selected !")
-						.style ("display", crossLinkerCount > 1 ? null : "none")
-					;
-					var jqClearAllButton = $(d3.select("#paramCrossLinker").select(".clearAll").node());
-					jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disable");
-				}
-				
                 // Make combobox and multiple selection elements
                 // Multiple Select uses Jquery-plugin from https://github.com/wenzhixin/multiple-select
                 var populateOptionLists = [
@@ -543,7 +534,6 @@ CLMSUI.buildSubmitSearch = function () {
 							},
 						},
 					 	textFunc: function(d) { return escapeHtml(d.name)+" <span class='xlinkerMassNote'>¦ "+integerFormat(d.mass)+"</span>"; }, 
-					 	clickFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
 					 	addNew: function () { CLMSUI.jqdialogs.addCrosslinkerDialog ("popErrorDialog", data, populateOptionLists[0], newPopListDataAdded); },
 					 	clearOption: true,
 					 	modelKey: "crosslinkers",
@@ -574,20 +564,22 @@ CLMSUI.buildSubmitSearch = function () {
 				CLMSUI.jqdialogs.makeMultiDigestAccordion ("paramEnzyme", data.enzymes, {mc: d3.select("#paramMissedCleavagesValue").property("value"), enzymeId: curSelect}, {revertFunc: switchEnzymeControls, buildMultipleSelect: makeMultipleSelectionWidget});
 				switchEnzymeControls (false);
 				
+				// listen to crosslinker selection changes
+				delegateModel.listenTo (model, "change:crosslinkers", function () {
+					var crossLinkerCount = model.get("crosslinkers").length;
+					d3.select("#paramCrossLinker").select(".beAware")
+						.text("! "+crossLinkerCount+" Cross-Linkers selected !")
+						.style ("display", crossLinkerCount > 1 ? null : "none")
+					;
+					var jqClearAllButton = $(d3.select("#paramCrossLinker").select(".clearAll").node());
+					jqClearAllButton.button (crossLinkerCount > 0 ? "enable" : "disable");
+				});
+				
+				
                 // Make previous acquisition and sequence tables
                 
                 // Helper functions
 				var d3Tables = {};
-                
-				
-				function setModelFromAcc (modelKey, selected, id) {
-					var curVals = model.get (modelKey);
-					console.log ("cur", curVals, modelKey);
-					var set = d3.set (curVals);
-					set[selected ? "add" : "remove"](id);
-					model.set (modelKey, set.values());
-					console.log ("model", model);
-				};
 				
                 // Maintains labels that appear next to sequence / acquisition headers to show state of current selection. Removeable by clicking close icon.
                 var makeRemovableLabels = function (domid, baseId, modelKey) {
@@ -1301,9 +1293,7 @@ CLMSUI.buildSubmitSearch = function () {
             "#paramMissedCleavagesValue" : {field : "missed_cleavages", func: numberSetFunc},
             "#paramToleranceUnits" : {field : "ms_tol_unit", func: jquerySelectSetFunc},
             "#paramTolerance2Units" : {field : "ms2_tol_unit", func: jquerySelectSetFunc},
-            "#paramCrossLinkerSelect" : {field : "crosslinkers", func: multiSelectSetFunc, options: {
-				postFunc: CLMSUI.buildSubmitSearch.controlClickFuncs["paramCrossLinker"],
-			}},
+            "#paramCrossLinkerSelect" : {field : "crosslinkers", func: multiSelectSetFunc},
             "#paramEnzymeSelect" : {field : "enzyme", func: multiSelectSetFunc},
             "#paramIonsSelect" : {field : "ions", func: multiSelectSetFunc},
             "#paramFixedModsSelect" : {field : "fixedMods", func: multiSelectSetFunc},

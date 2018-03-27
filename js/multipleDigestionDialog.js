@@ -173,6 +173,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			var localMissedCleavages = isLocalMissedCleavages ? d3.select(this).select(".ui-spinner input").property("value") : undefined;
 			
 			var description = "|S|"+enzymeDatum.description;
+			description = description.replace(/(?:NAME=([^|]+))/i, "NAME="+enzymeDatum.name);	// make sure name in description matches enzyme name
 			var splitPoint = description.indexOf(";NAME");
 			if (splitPoint >= 0 && localMissedCleavages !== undefined) {
 				description = description.substring(0, splitPoint) + ";MISSEDCLEAVAGES:" + localMissedCleavages + description.substring (splitPoint);
