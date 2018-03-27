@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    //console.disableLogging();
+    console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -1265,7 +1265,6 @@ CLMSUI.buildSubmitSearch = function () {
         };
 		
 		var checkboxSetFunc = function (domElem, value) {
-			console.log ("dd", domElem, "v", value);
 			d3.select(domElem).property ("checked", value ? true : false);	
 		};
         
