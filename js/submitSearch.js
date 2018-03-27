@@ -345,11 +345,9 @@ CLMSUI.buildSubmitSearch = function () {
 				onClick: function () {
 					var selects = $("#"+baseId).multipleSelect("getSelects");	// single number for single select, array for multiple select
 					model.set (poplist.modelKey, poplist.multiple ? selects : selects[0]);
-					dispatchObj.formInputChanged();
 				},
 				onUncheckAll: function () {
 					model.set (poplist.modelKey, poplist.multiple ? [] : undefined);
-					dispatchObj.formInputChanged();
 				},
 			});
 
@@ -482,11 +480,16 @@ CLMSUI.buildSubmitSearch = function () {
 			
 			relaunchMultipleSelectionWidget (popList, elem, selElem);
 			setModelFromAcc (popList.modelKey, true, newItem.id);
-			dispatchObj.formInputChanged();
 		}
 		
 		
 		var delegateModel = new Backbone.Model({});
+		// any change to model results in form input being validated for enabling/disabling of submit button
+		// this gets fired after any named "change:" events
+		delegateModel.listenTo (model, "change", function () {
+			//console.log ("firing general change");
+			dispatchObj.formInputChanged();
+		});
 		
         // http://stackoverflow.com/questions/23740548/how-to-pass-variables-and-data-from-php-to-javascript
         function gotChoicesResponse (data, textStatus, jqXhr) {
@@ -873,8 +876,6 @@ CLMSUI.buildSubmitSearch = function () {
 						.update()
 					;
 					
-					
-					console.log ("delegateModel", delegateModel);
 					delegateModel.listenTo (model, "change:"+psetting.modelKey, function () {
                         // make removable labels outside of accordion area for selected rows
 						console.log ("modelKey", psetting.modelKey);
@@ -888,7 +889,6 @@ CLMSUI.buildSubmitSearch = function () {
 						d3table.refilter().update();
 						
 						addSelectionListeners (d3table.getAllRowsSelection(), psetting.modelKey);
-                        dispatchObj.formInputChanged();
 					});
                 });
                 
@@ -940,8 +940,8 @@ CLMSUI.buildSubmitSearch = function () {
                 dispatchObj.on ("formInputChanged", function () {
 					var missingFields = model.validate();
 					var missingList = missingFields ? missingFields : d3.set();
-
 					var noneMissing = missingList.empty();
+					
                     $("#startProcessing").button("option", "disabled", !noneMissing || (data.noSearchAllowed === true));
                     happyToDo (noneMissing);
                     toDoMessage (noneMissing ? "Ready to Submit" : "To enable Submit, selections are required for:", missingList.values().join(", "));
@@ -1196,7 +1196,6 @@ CLMSUI.buildSubmitSearch = function () {
 								}
 							} else {	// success success, what we want to happen
 								updateFieldsWithValues (response, data);
-								dispatchObj.formInputChanged();
 							}
 						},
 						error: function (model, response, options) {
@@ -1312,6 +1311,7 @@ CLMSUI.buildSubmitSearch = function () {
 						if (multiDigestionLine) {
 							CLMSUI.jqdialogs.populateMultipleDigestion (d3.select("#digestAccordionContent"), multiDigestionLine[0], data.enzymes, settings);
 							value = value.replace (multiDigestionLineRegex, "");
+							model.set ("customsettings", value);
 							$(domID).val(value);	// new new value
 						}
 						switchEnzymeControls (multiDigestionLine ? true : false);

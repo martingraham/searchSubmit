@@ -203,6 +203,8 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			var enzymeID = enzymeNameMap.get(name) ? enzymeNameMap.get(name).id : null;
 			obj.addNewDigestItem (i, enzymeID, missedCleavages);
 		});	
+		
+		obj.digestCounter = digestionStrings.length;
 	};
 	
 }(CLMSUI.jqdialogs));
