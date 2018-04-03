@@ -125,6 +125,11 @@ CLMSUI.buildSubmitSearch = function () {
                     .attr ("for", tid)   // for accessibility compliance, https://achecker.ca/checker/suggestion.php?id=95
                 ;
             }
+			
+			function setAreaValue (val) {
+				model.set (settings.modelKey, val);	// this sets model for textarea inputs
+                CLMSUI.buildSubmitSearch.userAltered[tid] = true;
+			}
 
             elem.append("textarea")
                 .attr ({
@@ -139,8 +144,13 @@ CLMSUI.buildSubmitSearch = function () {
                 })
                 .classed ("ui-widget ui-state-default ui-corner-all", true)
                 .on ("keypress", function() {
-					model.set (settings.modelKey, this.value);	// this sets model for textarea inputs
-                    CLMSUI.buildSubmitSearch.userAltered[tid] = true;
+					setAreaValue (this.value)
+                }) 
+			    .on ("input", function() {
+					setAreaValue (this.value)
+                }) 
+				.on ("paste", function() {
+					setAreaValue (this.value)
                 }) 
             ;
         });
@@ -1339,6 +1349,7 @@ CLMSUI.buildSubmitSearch = function () {
 		var custom = model.get("customsettings");
 		var digestAccordionSel = d3.select("#digestAccordionContainer");
 		var customMultiDigest = digestAccordionSel.style("display") !== "none" ? CLMSUI.jqdialogs.generateMultipleDigestionString (digestAccordionSel) : ""; 
+		
 		if (customMultiDigest) {
 			model.set("customsettings", custom + "\n" + customMultiDigest);
 		}
