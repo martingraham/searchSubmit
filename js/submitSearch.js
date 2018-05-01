@@ -468,11 +468,10 @@ CLMSUI.buildSubmitSearch = function () {
 		/* this updates an array in a backbone model, replacing old array with new so events are triggered if attached on that property */
 		function setModelFromAcc (modelKey, add, id) {
 			var curVals = model.get (modelKey);
-			console.log ("cur", curVals, modelKey);
 			var set = d3.set (curVals);
 			set[add ? "add" : "remove"](id);
 			model.set (modelKey, set.values());
-			console.log ("model", model);
+			console.log ("cur", curVals, modelKey, model);
 		};
 		
 		
@@ -888,7 +887,7 @@ CLMSUI.buildSubmitSearch = function () {
 					
 					delegateModel.listenTo (model, "change:"+psetting.modelKey, function () {
                         // make removable labels outside of accordion area for selected rows
-						console.log ("modelKey", psetting.modelKey);
+						console.log ("TABLE modelKey", psetting.modelKey, model);
                         makeRemovableLabels (psetting.selectSummaryid, baseId, psetting.modelKey);
 						
 						var d3table = d3Tables[baseId];
@@ -896,7 +895,10 @@ CLMSUI.buildSubmitSearch = function () {
 						d3table.getData().forEach (function(d) {
 							d.selected = itemSet.has(d.id);
 						});
-						d3table.refilter().update();
+						// refiltering was used to change table on de/selection as chosen column could be a filter, 
+						// but has the unintended side effect of always putting the table back to page 1
+						// https://github.com/Rappsilber-Laboratory/xi3-issue-tracker/issues/295
+						d3table./*refilter().*/update();
 						
 						addSelectionListeners (d3table.getAllRowsSelection(), psetting.modelKey);
 					});
