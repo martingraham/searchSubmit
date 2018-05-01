@@ -53,11 +53,8 @@
             );
             
             $getSearchMultiOptions = array (
-				// don't download acquisitions / sequences when loading search defaults
-				/*
                 "acquisitions" => "SELECT DISTINCT acq_id FROM search_acquisition WHERE search_id = $1",
                 "sequences" => "SELECT seqdb_id FROM search_sequencedb WHERE search_id = $1"
-				*/
             );
 
             foreach ($getParamMultiOptions as $key => $value) {
@@ -80,8 +77,25 @@
 		// convert 't' and 'f' to true and false
 		$pSearch = $defaults["privateSearch"];
 		$defaults["privateSearch"] = isTrue($pSearch) ? true : false;
-        
-        //error_log (print_r($defaults, TRUE));
+		
+		// blank out sequences this user doesn't have permission to reuse
+		$refuseSeq = refuseAcqSeqPermission ($dbconn, $_SESSION['user_id'], "sequence_file", $defaults['sequences']);
+		foreach ($defaults['sequences'] as $key=>$value) {
+			if (isTrue ($refuseSeq[$key])) {
+				$defaults['sequences'][$key] = null;
+			}
+		}
+		
+		// blank out acquisitions this user doesn't have permission to reuse
+		$refuseAcq = refuseAcqSeqPermission ($dbconn, $_SESSION['user_id'], "acquisition", $defaults['acquisitions']);
+		foreach ($defaults['acquisitions'] as $key=>$value) {
+			if (isTrue ($refuseSeq[$key])) {
+				$defaults['acquisitions'][$key] = null;
+			}
+		}
+		
+        //error_log (print_r($refuseSeq, TRUE));
+		//error_log (print_r($refuseAcq, TRUE));
 
         return $defaults;
     }

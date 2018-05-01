@@ -34,8 +34,8 @@
     }
 
     function getUserRights ($dbconn, $userID) {
-        pg_prepare($dbconn, "user_rights", "SELECT * FROM users WHERE id = $1");
-        $result = pg_execute ($dbconn, "user_rights", [$userID]);
+        pg_prepare($dbconn, "", "SELECT * FROM users WHERE id = $1");
+        $result = pg_execute ($dbconn, "", [$userID]);
         $row = pg_fetch_assoc ($result);
         
         $canSeeAll = (isset($row["see_all"]) && isTrue($row["see_all"]));  // 1 if see_all flag is present and true
@@ -49,7 +49,7 @@
         $searchDenyReason = $canAddNewSearch ? "" : "Your user role is not allowed to add new searches.";
         
         if (doesColumnExist ($dbconn, "user_groups", "max_aas")) {
-            pg_prepare($dbconn, "user_rights2", "SELECT max(user_groups.max_search_count) as max_search_count, max(user_groups.max_spectra) as max_spectra, max(user_groups.max_aas) as max_aas, max(user_groups.search_lifetime_days) as max_search_lifetime, max(user_groups.max_searches_per_day) as max_searches_per_day,
+            pg_prepare($dbconn, "", "SELECT max(user_groups.max_search_count) as max_search_count, max(user_groups.max_spectra) as max_spectra, max(user_groups.max_aas) as max_aas, max(user_groups.search_lifetime_days) as max_search_lifetime, max(user_groups.max_searches_per_day) as max_searches_per_day,
             MAX(CAST(user_groups.see_all as INT)) AS see_all,
             MAX(CAST(user_groups.super_user as INT)) AS super_user,
             MAX(CAST(user_groups.can_add_search as INT)) AS can_add_search
@@ -57,8 +57,9 @@
             JOIN user_in_group ON user_in_group.group_id = user_groups.id
             JOIN users ON users.id = user_in_group.user_id
             WHERE users.id = $1");
-            $result = pg_execute ($dbconn, "user_rights2", [$userID]);
+            $result = pg_execute ($dbconn, "", [$userID]);
             $row = pg_fetch_assoc ($result);
+			//pg_query ($dbconn, "DEALLOCATE user_rights2");
             
             $maxSearchCount = (int)$row["max_search_count"];
             $maxSearchLifetime = (int)$row["max_search_lifetime"];
@@ -88,6 +89,8 @@
             $maxAAs = max($maxAAs, 1000);
             $maxSpectra = max($maxSpectra, 1000000);
         }
+		
+		//pg_query ($dbconn, "DEALLOCATE user_rights");
         
         // Test if searchSubmit exists as a sibling project
         $doesSearchSubmitExist = file_exists ("../../searchSubmit/");
@@ -105,26 +108,38 @@
 
     // Number of searches by a particular user performed today
     function countUserSearchesToday ($dbconn, $userID) {
-        pg_prepare ($dbconn, "activeUserSearchesToday", "SELECT COUNT(id) FROM search WHERE uploadedby = $1 AND (hidden ISNULL or hidden = 'f') AND submit_date::date = now()::date");
-        $result = pg_execute ($dbconn, "activeUserSearchesToday", [$userID]);
+        pg_prepare ($dbconn, "", "SELECT COUNT(id) FROM search WHERE uploadedby = $1 AND (hidden ISNULL or hidden = 'f') AND submit_date::date = now()::date");
+        $result = pg_execute ($dbconn, "", [$userID]);
         $row = pg_fetch_assoc ($result);
         return (int)$row["count"];
     }
 
     // Number of searches by a particular user
     function countUserSearches ($dbconn, $userID) {
-        pg_prepare ($dbconn, "activeUserSearches", "SELECT COUNT(id) FROM search WHERE uploadedby = $1 AND (hidden ISNULL or hidden = 'f')");
-        $result = pg_execute ($dbconn, "activeUserSearches", [$userID]);
+        pg_prepare ($dbconn, "", "SELECT COUNT(id) FROM search WHERE uploadedby = $1 AND (hidden ISNULL or hidden = 'f')");
+        $result = pg_execute ($dbconn, "", [$userID]);
         $row = pg_fetch_assoc ($result);
         return (int)$row["count"];
     }
 
     function doesColumnExist ($dbconn, $tableName, $columnName) {
-        pg_prepare($dbconn, "doesColExist", "SELECT COUNT(column_name) FROM information_schema.columns WHERE table_name=$1 AND column_name=$2");
-        $result = pg_execute ($dbconn, "doesColExist", [$tableName, $columnName]);
+        pg_prepare($dbconn, "", "SELECT COUNT(column_name) FROM information_schema.columns WHERE table_name=$1 AND column_name=$2");
+        $result = pg_execute ($dbconn, "", [$tableName, $columnName]);
         $row = pg_fetch_assoc ($result);
         return isTrue($row["count"]);
     }
+
+	function refuseAcqSeqPermission ($dbconn, $userID, $table, $uploadIDArray, $isSuperUser = null) {
+		if ($isSuperUser === null) {
+			$isSuperUser = isSuperUser ($dbconn, $userID);
+		}
+		$arrString = "{".join(",", $uploadIDArray)."}"; 
+		// table name can't be paramterised - https://stackoverflow.com/questions/11312737
+		pg_prepare ($dbconn, "", "SELECT id,private,private and not($2 or uploadedby=$1) as refused from ".$table." where id = ANY($3)");
+        $result = pg_execute ($dbconn, "", [$userID, $isSuperUser, $arrString]);
+		
+		return resultsAsArray ($result);
+	}
 
     // Turn result set into array of objects
     function resultsAsArray($result) {

@@ -231,6 +231,11 @@ span.removable button {
     content: counter(chosenCount) ". ";
 }
 
+.removeAllButton {
+	padding: 2px;
+	display: none;
+}
+
 /* Multiple file upload not possible for sequences, so don't need to number those */
 #acquire .fileupload {
     counter-reset: newFileCount;
