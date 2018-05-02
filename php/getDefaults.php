@@ -19,7 +19,7 @@
     function getDefaults ($dbconn, $searchID) {
 		$defaults = array ();
 		
-        pg_prepare($dbconn, "getParamSettings", "select parameter_set.*, search.notes, search.xiversion, search.private from parameter_set, search where parameter_set.id = search.paramset_id AND search.id = $1");
+        pg_prepare($dbconn, "getParamSettings", "select parameter_set.*, search.notes, search.xiversion, search.private, search.uploadedby from parameter_set, search where parameter_set.id = search.paramset_id AND search.id = $1");
         $result = pg_execute($dbconn, "getParamSettings", array($searchID));
         $paramSettings = resultsAsArray($result);
         
@@ -29,6 +29,7 @@
 
         if (count($paramSettings) > 0) {
             $pSettings = $paramSettings[0];
+			//error_log (print_r ($pSettings, true));
             $pid = $pSettings["id"];
 			
 			$defaults = array (
@@ -53,11 +54,8 @@
             );
             
             $getSearchMultiOptions = array (
-				// don't download acquisitions / sequences when loading search defaults
-				/*
                 "acquisitions" => "SELECT DISTINCT acq_id FROM search_acquisition WHERE search_id = $1",
                 "sequences" => "SELECT seqdb_id FROM search_sequencedb WHERE search_id = $1"
-				*/
             );
 
             foreach ($getParamMultiOptions as $key => $value) {
@@ -80,8 +78,31 @@
 		// convert 't' and 'f' to true and false
 		$pSearch = $defaults["privateSearch"];
 		$defaults["privateSearch"] = isTrue($pSearch) ? true : false;
-        
-        //error_log (print_r($defaults, TRUE));
+		
+		// blank out sequences this user doesn't have permission to reuse
+		$userID = $_SESSION['user_id'];
+		$isSuperUser = isSuperUser ($dbconn, $userID);
+		$mySearch = $isSuperUser || (count($paramSettings) > 0 ? $userID === $paramSettings[0]['uploadedby'] : false);
+		//error_log (print_r ("superuser ".$isSuperUser.", mysearch ".$mySearch, true));
+		
+		$refuseSeq = refuseAcqSeqPermission ($dbconn, $userID, "sequence_file", $defaults['sequences'], $isSuperUser);
+		//error_log (print_r ($refuseSeq, true));
+		foreach ($defaults['sequences'] as $key=>$value) {
+			if (isTrue ($refuseSeq[$key]) || !$mySearch) {
+				$defaults['sequences'][$key] = null;
+			}
+		}
+		
+		// blank out acquisitions this user doesn't have permission to reuse
+		$refuseAcq = refuseAcqSeqPermission ($dbconn, $userID, "acquisition", $defaults['acquisitions'], $isSuperUser);
+		foreach ($defaults['acquisitions'] as $key=>$value) {
+			if (isTrue ($refuseAcq[$key]) || !$mySearch) {
+				$defaults['acquisitions'][$key] = null;
+			}
+		}
+		
+        //error_log (print_r($refuseSeq, TRUE));
+		//error_log (print_r($refuseAcq, TRUE));
 
         return $defaults;
     }

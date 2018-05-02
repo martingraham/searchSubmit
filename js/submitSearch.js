@@ -93,8 +93,8 @@ CLMSUI.buildSubmitSearch = function () {
     function canDoImmediately () {
         // Make acquisition and sequence divs via shared template
         var acqSeqTemplateData = [
-            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "sPronoun":"A", "partialId":"seq", "fileTypes":".fasta,.txt", "tabVal": getTabSessionVar()}},
-            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "sPronoun": "An", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip", "tabVal":getTabSessionVar(), multipleUpload: true}},
+            {id: "#sequence", fields: {"singleLabel":"Sequence", "pluralLabel":"Sequences", "sPronoun":"A", "partialId":"seq", "fileTypes":".fasta,.txt", "tabVal": getTabSessionVar()}, modelAttr: "sequences"},
+            {id: "#acquire", fields: {"singleLabel":"Acquisition", "pluralLabel":"Acquisitions", "sPronoun": "An", "partialId":"acq", "fileTypes":".mgf,.msm,.apl,.zip", "tabVal":getTabSessionVar(), multipleUpload: true}, modelAttr: "acquisitions"},
         ];
         acqSeqTemplateData.forEach (function (datum) {
             d3.select(datum.id)
@@ -248,17 +248,18 @@ CLMSUI.buildSubmitSearch = function () {
 
         // Make buttons
         var buttonData = [
-            {id: "#startProcessing", type: "submit"},
-            {id: "#backButton", type: "button"},
-            {id: "#helpButton", type: "button"},
-			{id: "#logoutButton", type: "button"},
-            {id: "#useGlobalDefaults", type: "button"},
-            {id: "#useLastSearchDefaults", type: "button"},
+            {selector: "#startProcessing", type: "submit"},
+            {selector: "#backButton", type: "button"},
+            {selector: "#helpButton", type: "button"},
+			{selector: "#logoutButton", type: "button"},
+            {selector: "#useGlobalDefaults", type: "button"},
+            {selector: "#useLastSearchDefaults", type: "button"},
+			{selector: ".removeAllButton", type: "button"},
         ];
         buttonData.forEach (function (buttonDatum) {
-            var buttonID = buttonDatum.id;
-            $(buttonID).button();  
-            d3.select(buttonID).attr("type", buttonDatum.type);
+            var buttonSelector = buttonDatum.selector;
+            $(buttonSelector).button();  
+            d3.selectAll(buttonSelector).attr("type", buttonDatum.type);
         });
         
         
@@ -275,6 +276,11 @@ CLMSUI.buildSubmitSearch = function () {
 			;
         });
         
+		acqSeqTemplateData.forEach (function (datum) {
+            d3.select(datum.id).select(".removeAllButton").on("click", function() {
+				model.set (datum.modelAttr, []);	//	empty the model field on remove all click	
+			});
+		});
         
         // Add actions for top-rightbutton
         d3.select("#backButton").on("click", function() { window.history.back(); });
@@ -600,7 +606,7 @@ CLMSUI.buildSubmitSearch = function () {
 					var tdata = d3Tables[baseId].getData();
 					var ftdata = tdata.filter (function (d) { return oidSet.has(d.id); });
 					
-                    var labels = d3.select(domid).selectAll("span.removable").data(ftdata, function(d) { return d.id; });
+                    var labels = d3.select(domid+" .removables").selectAll("span.removable").data(ftdata, function(d) { return d.id; });
                     labels.exit().remove();
                     var buts = labels.enter()
                         .append("span")
@@ -621,7 +627,8 @@ CLMSUI.buildSubmitSearch = function () {
                         });
                     });
 					
-					d3.select(domid).select("span.noneChosen").style("display", labels.empty() ? null : "none");	
+					d3.select(domid).select("span.noneChosen").style("display", labels.empty() ? null : "none");
+					d3.select(domid).select("span.clearAllRemovables").style("display", labels.size() > 1 ? "inline-block" : "none");	
                 };
    
                 // Mouse listeners; listens to mouse click on table rows and on checkbox within those rows to (un)select seqs/acqs
@@ -824,7 +831,6 @@ CLMSUI.buildSubmitSearch = function () {
                 d3.values(previousSettings).forEach (function (psetting) {
                     var sel = d3.select (psetting.domid);
 					var baseId = psetting.domid.slice(1)+"Table";
-					
 					//console.log ("pd", psetting);
 					
 					var names = {selected: "chosen"};
@@ -1244,6 +1250,10 @@ CLMSUI.buildSubmitSearch = function () {
 				} else {
 					// programmatic click on global default button, load fields with those defaults
                 	$("#useGlobalDefaults").click();
+					model
+						.set("acquisitions", [])
+						.set("sequences", [])
+					;
 				}
             }
         }
@@ -1344,6 +1354,28 @@ CLMSUI.buildSubmitSearch = function () {
                 evalue.func (entry.key, searchSettings[evalue.field], evalue.options);
             }
         });
+		
+		model
+			.set ("acquisitions", searchSettings.acquisitions || [])
+			.set ("sequences", searchSettings.sequences || [])
+		;
+		
+		// Fire a warning pop-up if some sequences / acquisitions asked for are restricted
+		var acqNullCount = (searchSettings.acquisitions || []).filter(function(d) { return d === null; }).length;
+		var seqNullCount = (searchSettings.sequences || []).filter(function(d) { return d === null; }).length;
+		if (acqNullCount || seqNullCount) {
+			var counts = [{count: acqNullCount, label: acqNullCount+" Acquisition(s)"}, {count: seqNullCount, label: seqNullCount+" Sequence(s)"}];
+			var messageStr = counts
+				.filter(function(d) { return d.count > 0;})
+				.map(function(d) { return d.label; })
+				.join (" and ")
+			;
+			CLMSUI.jqdialogs.simpleDialog (
+				"popErrorDialog", 
+				"Sorry, but you do not have permission to re-use "+messageStr+" associated with this search. All others have been loaded.", 
+				"Access Restriction"
+			);
+		}
     }
 	
 	
