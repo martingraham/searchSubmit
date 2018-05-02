@@ -19,7 +19,7 @@
     function getDefaults ($dbconn, $searchID) {
 		$defaults = array ();
 		
-        pg_prepare($dbconn, "getParamSettings", "select parameter_set.*, search.notes, search.xiversion, search.private from parameter_set, search where parameter_set.id = search.paramset_id AND search.id = $1");
+        pg_prepare($dbconn, "getParamSettings", "select parameter_set.*, search.notes, search.xiversion, search.private, search.uploadedby from parameter_set, search where parameter_set.id = search.paramset_id AND search.id = $1");
         $result = pg_execute($dbconn, "getParamSettings", array($searchID));
         $paramSettings = resultsAsArray($result);
         
@@ -29,6 +29,7 @@
 
         if (count($paramSettings) > 0) {
             $pSettings = $paramSettings[0];
+			//error_log (print_r ($pSettings, true));
             $pid = $pSettings["id"];
 			
 			$defaults = array (
@@ -79,17 +80,23 @@
 		$defaults["privateSearch"] = isTrue($pSearch) ? true : false;
 		
 		// blank out sequences this user doesn't have permission to reuse
-		$refuseSeq = refuseAcqSeqPermission ($dbconn, $_SESSION['user_id'], "sequence_file", $defaults['sequences']);
+		$userID = $_SESSION['user_id'];
+		$isSuperUser = isSuperUser ($dbconn, $userID);
+		$mySearch = $isSuperUser || (count($paramSettings) > 0 ? $userID === $paramSettings[0]['uploadedby'] : false);
+		//error_log (print_r ("superuser ".$isSuperUser.", mysearch ".$mySearch, true));
+		
+		$refuseSeq = refuseAcqSeqPermission ($dbconn, $userID, "sequence_file", $defaults['sequences'], $isSuperUser);
+		//error_log (print_r ($refuseSeq, true));
 		foreach ($defaults['sequences'] as $key=>$value) {
-			if (isTrue ($refuseSeq[$key])) {
+			if (isTrue ($refuseSeq[$key]) || !$mySearch) {
 				$defaults['sequences'][$key] = null;
 			}
 		}
 		
 		// blank out acquisitions this user doesn't have permission to reuse
-		$refuseAcq = refuseAcqSeqPermission ($dbconn, $_SESSION['user_id'], "acquisition", $defaults['acquisitions']);
+		$refuseAcq = refuseAcqSeqPermission ($dbconn, $userID, "acquisition", $defaults['acquisitions'], $isSuperUser);
 		foreach ($defaults['acquisitions'] as $key=>$value) {
-			if (isTrue ($refuseSeq[$key])) {
+			if (isTrue ($refuseAcq[$key]) || !$mySearch) {
 				$defaults['acquisitions'][$key] = null;
 			}
 		}

@@ -233,6 +233,9 @@ span.removable button {
 
 .removeAllButton {
 	padding: 2px;
+}
+
+.clearAllRemovables {
 	display: none;
 }
 
