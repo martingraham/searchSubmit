@@ -43,6 +43,7 @@
 				"notes" => $pSettings["notes"],
 				"privateSearch" => $pSettings["private"],
 				"xiversion" => $pSettings["xiversion"],
+				"missedPeaks" => 0,
             );
 
             $getParamMultiOptions = array (
@@ -122,6 +123,7 @@
             "sequences" => array(),
 			"privateSearch" => false,
 			"searchName" => "",
+			"missedPeaks" => 0,
         );
         
         $getMultiOptions = array (

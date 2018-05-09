@@ -86,6 +86,7 @@ CLMSUI.buildSubmitSearch = function () {
 		"acquisitions": undefined,
 		"sequences": undefined,
 		"privateSearch": null,
+		"missedPeaks": undefined,
 	});
 	
     
@@ -161,6 +162,7 @@ CLMSUI.buildSubmitSearch = function () {
             {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, step: "any", modelKey: "ms_tol"},
             {domid: "#paramTolerance2", niceLabel: "Ms2 Tolerance", min: 0, step: "any", modelKey: "ms2_tol"},
             {domid: "#paramMissedCleavages", niceLabel: "Missed cleavages", min: 0, step: 1, modelKey: "missed_cleavages"},
+			{domid: "#paramMissedPeaks", niceLabel: "Missing Mono-Isotopic Peaks", min: 0, max: 6, step: 1, modelKey: "missedPeaks"},
         ];
         numberInputSettings.forEach (function (settings) {
             var elem = d3.select(settings.domid);
@@ -1309,27 +1311,27 @@ CLMSUI.buildSubmitSearch = function () {
             }
         };
         
-        var elementMap = {
-            "#paramToleranceValue" : {field : "ms_tol", func: numberSetFunc},
-            "#paramTolerance2Value" : {field : "ms2_tol", func: numberSetFunc},
-            "#paramMissedCleavagesValue" : {field : "missed_cleavages", func: numberSetFunc},
-            "#paramToleranceUnits" : {field : "ms_tol_unit", func: jquerySelectSetFunc},
-            "#paramTolerance2Units" : {field : "ms2_tol_unit", func: jquerySelectSetFunc},
-            "#paramCrossLinkerSelect" : {field : "crosslinkers", func: multiSelectSetFunc},
-            "#paramEnzymeSelect" : {field : "enzyme", func: multiSelectSetFunc},
-            "#paramIonsSelect" : {field : "ions", func: multiSelectSetFunc},
-            "#paramFixedModsSelect" : {field : "fixedMods", func: multiSelectSetFunc},
-            "#paramVarModsSelect" : {field : "varMods", func: multiSelectSetFunc},
-            "#paramLossesSelect" : {field : "losses", func: multiSelectSetFunc},
-			"#paramXiVersionSelect": {field : "xiversion", func: multiSelectSetFunc},
-            "#paramNotesValue" : {field : "notes", func: textAreaSetFunc, options: {emptyOverwrite: false},},
-            "#paramCustomValue" : {field : "customsettings", func: textAreaSetFunc, 
+        var elementModelMap = [
+            {id: "#paramToleranceValue", field : "ms_tol", func: numberSetFunc},
+            {id: "#paramTolerance2Value", field : "ms2_tol", func: numberSetFunc},
+            {id: "#paramMissedCleavagesValue", field : "missed_cleavages", func: numberSetFunc},
+            {id: "#paramToleranceUnits", field : "ms_tol_unit", func: jquerySelectSetFunc},
+            {id: "#paramTolerance2Units", field : "ms2_tol_unit", func: jquerySelectSetFunc},
+            {id: "#paramCrossLinkerSelect", field : "crosslinkers", func: multiSelectSetFunc},
+            {id: "#paramEnzymeSelect", field : "enzyme", func: multiSelectSetFunc},
+            {id: "#paramIonsSelect", field : "ions", func: multiSelectSetFunc},
+            {id: "#paramFixedModsSelect", field : "fixedMods", func: multiSelectSetFunc},
+            {id: "#paramVarModsSelect", field : "varMods", func: multiSelectSetFunc},
+            {id: "#paramLossesSelect", field : "losses", func: multiSelectSetFunc},
+			{id: "#paramXiVersionSelect", field : "xiversion", func: multiSelectSetFunc},
+            {id: "#paramNotesValue", field : "notes", func: textAreaSetFunc, options: {emptyOverwrite: false},},
+            {id: "#paramCustomValue", field : "customsettings", func: textAreaSetFunc, 
 				options: {
 					emptyOverwrite: true, 
 					postFunc: function (domID, value) {
 						$("#paramCustom").accordion("option", "active", 0); 
 						
-						var multiDigestionLineRegex = new RegExp ("^\s*digestion:MultiStepDigest.*NAME=.*$", "gmi");
+						var multiDigestionLineRegex = new RegExp ("^\\s*digestion:MultiStepDigest.*NAME=.*$", "gmi");
 						var multiDigestionLine = value.match (multiDigestionLineRegex);
 						if (multiDigestionLine) {
 							CLMSUI.jqdialogs.populateMultipleDigestion (d3.select("#digestAccordionContent"), multiDigestionLine[0], possibleValues.enzymes, searchSettings);
@@ -1338,20 +1340,36 @@ CLMSUI.buildSubmitSearch = function () {
 							$(domID).val(value);	// new new value
 						}
 						switchEnzymeControls (multiDigestionLine ? true : false);
+							
+						// check for missing monoisotopic peak declaration in custom settings
+						var missedPeaksRegex = new RegExp ("^\\s*missing_isotope_peaks:(\\d+)$", "gmi");
+						value = model.get ("customsettings");
+						var missedPeaksLine = value.match (missedPeaksRegex);
+						if (missedPeaksLine) {
+							value = value.replace (missedPeaksRegex, "");	// remove missing_isotope_peaks line from custom settings for now
+							model.set ("customsettings", value);
+							$(domID).val(value);	// new new new value
+							
+							var mpv = missedPeaksLine[0].match (new RegExp("\\d+"), "g");
+							if (mpv && mpv[0] && +mpv[0]) {
+								model.set ("missedPeaks", +mpv[0]);
+								searchSettings.missedPeaks = +mpv[0];
+							}
+						}
 					},
 				},
             },
-			"#privacy" : {field: "privateSearch", func: checkboxSetFunc}
+			{id: "#privacy", field: "privateSearch", func: checkboxSetFunc},
+			{id: "#paramMissedPeaksValue", field : "missedPeaks", func: numberSetFunc},	// do last to pick up changes made in custom settings above
 			// acq/seq table selections aren't updated by search params
-            //"#acqPreviousTable" : {field : "acquisitions", func: dynamicTableSetFunc},
-            //"#seqPreviousTable" : {field : "sequences", func: dynamicTableSetFunc},
-        };
+            //{id: "#acqPreviousTable", field : "acquisitions", func: dynamicTableSetFunc},
+            //{id: "#seqPreviousTable", field : "sequences", func: dynamicTableSetFunc},
+        ];
         
-        d3.entries(elementMap).forEach (function (entry) {
-            var exists = d3.select(entry.key);
-            var evalue = entry.value;
+        elementModelMap.forEach (function (entry) {
+            var exists = d3.select (entry.id);
             if (!exists.empty()) {
-                evalue.func (entry.key, searchSettings[evalue.field], evalue.options);
+                entry.func (entry.id, searchSettings[entry.field], entry.options);
             }
         });
 		
@@ -1380,12 +1398,27 @@ CLMSUI.buildSubmitSearch = function () {
 	
 	
 	function finaliseModel () {
-		var custom = model.get("customsettings");
 		var digestAccordionSel = d3.select("#digestAccordionContainer");
 		var customMultiDigest = digestAccordionSel.style("display") !== "none" ? CLMSUI.jqdialogs.generateMultipleDigestionString (digestAccordionSel) : ""; 
-		
 		if (customMultiDigest) {
-			model.set("customsettings", custom + "\n" + customMultiDigest);
+			model.set("customsettings", model.get("customsettings") + "\n" + customMultiDigest);
+		}
+		
+		var missingPeaksSel = d3.select("#paramMissedPeaksValue");
+		var missingPeaks = +missingPeaksSel.property("value");
+		var missedPeaksRegex = new RegExp ("^\\s*missing_isotope_peaks:(\\d+)$", "gmi");	// double escaped
+		var custom = model.get("customsettings");
+		if (missingPeaks) {
+			custom += "\nmissing_isotope_peaks:" + missingPeaks;
+			var fuRegex = new RegExp ("^\\s*FRAGMENTTREE:FU$", "gmi");
+			if (!custom.match(fuRegex)) {
+				custom += "\nFRAGMENTTREE:FU";
+			}
+			var xiClassRegex = new RegExp ("^\\s*XICLASS:SimpleXiProcessMultipleCandidates$", "gmi");
+			if (!custom.match(xiClassRegex)) {
+				custom += "\nXICLASS:SimpleXiProcessMultipleCandidates";
+			}
+			model.set("customsettings", custom);
 		}
 	}
 
