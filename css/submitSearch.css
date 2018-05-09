@@ -42,10 +42,6 @@ body {
     border-right: 0;
 }
 
-.paramSetting.rowDiff {
-	/*border-top : 3px solid #ccc;*/
-}
-
 .paramSetting P {
     padding: 0;
     margin: 0;
