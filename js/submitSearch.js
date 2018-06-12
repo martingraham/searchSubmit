@@ -86,7 +86,7 @@ CLMSUI.buildSubmitSearch = function () {
 		"acquisitions": undefined,
 		"sequences": undefined,
 		"privateSearch": null,
-		"missedPeaks": undefined,
+		"missedPeaks": undefined,	// unused at the moment, but there for future reference
 	});
 	
     
