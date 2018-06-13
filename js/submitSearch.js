@@ -86,7 +86,7 @@ CLMSUI.buildSubmitSearch = function () {
 		"acquisitions": undefined,
 		"sequences": undefined,
 		"privateSearch": null,
-		"missedPeaks": undefined,
+		"missedPeaks": undefined,	// unused at the moment, but there for future reference
 	});
 	
     
@@ -161,7 +161,7 @@ CLMSUI.buildSubmitSearch = function () {
         var numberInputSettings = [
             {domid: "#paramTolerance", niceLabel: "Ms Tolerance", min: 0, step: "any", modelKey: "ms_tol"},
             {domid: "#paramTolerance2", niceLabel: "Ms2 Tolerance", min: 0, step: "any", modelKey: "ms2_tol"},
-            {domid: "#paramMissedCleavages", niceLabel: "Missed cleavages", min: 0, step: 1, modelKey: "missed_cleavages"},
+            {domid: "#paramMissedCleavages", niceLabel: "Missed Cleavages", min: 0, step: 1, modelKey: "missed_cleavages"},
 			{domid: "#paramMissedPeaks", niceLabel: "Missing Mono-Isotopic Peaks", min: 0, max: 6, step: 1, modelKey: "missedPeaks"},
         ];
         numberInputSettings.forEach (function (settings) {

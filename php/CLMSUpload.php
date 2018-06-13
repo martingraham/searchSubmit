@@ -59,7 +59,7 @@ if (empty ($_SESSION['session_name'])) {
     $options = array('upload_dir' => $folder, 'upload_url' => $folder);
 
     error_reporting(E_ALL | E_STRICT);
-    require('../vendor/server/php/UploadHandler.php');
+    require('../../vendor/server/php/UploadHandler.php');
     try {
         if ($_SESSION["canAddNewSearch"]) {
             $upload_handler = new UploadHandler ($options);
