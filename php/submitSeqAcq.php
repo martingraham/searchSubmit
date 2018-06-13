@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-include ('utils.php');
+include('../../vendor/php/utils.php');
 ajaxBootOut();
 
 include('../../connectionString.php');
@@ -45,9 +45,9 @@ if ($allGood) {
 	// test if files are actually present, and these variables are available outside this bracket scope
 	// http://php.net/manual/en/language.variables.scope.php#105925
 	$filenames = $_POST["filenames"];
-	$saneName = normalizeString ($_POST["name"]);   // sanitise user-supplied acq/seq name, same as in clmsupload.php
+	$saneName = normalizeString1 ($_POST["name"]);   // sanitise user-supplied acq/seq name, same as in clmsupload.php
 	$tstampname = $saneName.$_SESSION[$uploadTSKey];
-	$normUsername = normalizeString ($username);
+	$normUsername = normalizeString1 ($username);
 	$baseDir = $_SESSION["baseDir"];
 	$folder = ($_POST["type"] == "acq") ? "xi/users/".$normUsername."/".$tstampname : "xi/sequenceDB/".$tstampname;
 

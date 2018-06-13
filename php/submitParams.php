@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-include('utils.php');
+    include('../../vendor/php/utils.php');
 ajaxBootOut();
 
 $userID = $_SESSION['user_id'];
