@@ -16,7 +16,7 @@ if (empty ($_SESSION['session_name'])) {
     exit();
 } else {
 
-    include 'utils.php';
+    include('../../vendor/php/utils.php');
 
     // make a timestamp in the session to use in filepaths and name entries (so db php routines can use it) 
     date_default_timezone_set ('Europe/Berlin');
@@ -37,10 +37,10 @@ if (empty ($_SESSION['session_name'])) {
         }
 
         $userName = $_SESSION["session_name"];
-        $userName = normalizeString ($userName);
+        $userName = normalizeString1 ($userName);
 
         $dirName = $_POST["newacqID"].$_SESSION[$tsName];
-        $dirName = normalizeString ($dirName);
+        $dirName = normalizeString1 ($dirName);
 
         $folder = $baseDir."xi/users/".$userName."/".$dirName."/";
     }
@@ -51,7 +51,7 @@ if (empty ($_SESSION['session_name'])) {
         }
 
         $dirName = $_POST["newseqID"].$_SESSION[$tsName];
-        $dirName = normalizeString ($dirName);
+        $dirName = normalizeString1 ($dirName);
 
         $folder = $baseDir."xi/sequenceDB/".$dirName."/";
     }

@@ -1,6 +1,6 @@
 <?php
 session_start();
-include('utils.php');
+    include('../../vendor/php/utils.php');
 //you could comment out the following line and have no login authentication. 
 ajaxBootOut();
 

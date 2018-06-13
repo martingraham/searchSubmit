@@ -1,6 +1,6 @@
 <?php
     session_start();
-    include ('utils.php');
+    include('../../vendor/php/utils.php');
     ajaxBootOut();
 
 	include 'getDefaults.php';
