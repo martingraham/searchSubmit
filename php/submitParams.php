@@ -167,7 +167,7 @@ if ($allGood) {
 			// Make search name timestamped list of acquisitions if not explicitly provided
 			$searchName = ($data["searchName"] ? $data["searchName"] : $paramName);
 			$searchInsert = pg_prepare ($dbconn, "searchInsert", $preparedStatementTexts["newSearch"]);
-
+			
 			$result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $data["notes"], $privacy, $data["xiversion"]]);
 			$searchRow = pg_fetch_assoc ($result); // get the newly added search id
 			$searchid = $searchRow["id"];
