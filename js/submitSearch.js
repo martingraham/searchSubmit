@@ -362,10 +362,10 @@ CLMSUI.buildSubmitSearch = function () {
 				isOpen: poplist.isOpen,
 				onClick: function () {
 					var selects = $("#"+baseId).multipleSelect("getSelects");	// single number for single select, array for multiple select
-					model.set (poplist.modelKey, poplist.multiple ? selects : selects[0]);
+					model.set (poplist.modelKey, !poplist.single ? selects : selects[0]);
 				},
 				onUncheckAll: function () {
-					model.set (poplist.modelKey, poplist.multiple ? [] : undefined);
+					model.set (poplist.modelKey, !poplist.single ? [] : undefined);
 				},
 			});
 
