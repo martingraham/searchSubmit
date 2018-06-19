@@ -11,7 +11,7 @@ CLMSUI.buildSubmitSearch = function () {
             console.log = function () {};
         };
     })(console.log);
-    console.disableLogging();
+    //console.disableLogging();
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -88,6 +88,8 @@ CLMSUI.buildSubmitSearch = function () {
 		"privateSearch": null,
 		"missedPeaks": undefined,	// unused at the moment, but there for future reference
 	});
+	
+	this.buildSubmitSearch.model = model;	// expose for testing
 	
     
     // Interface elements that can be built without waiting for database queries to return
