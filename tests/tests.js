@@ -3,27 +3,19 @@ function callback () {
 	var iwindow = iframe.contentWindow;
 	var iframeDom = $("#searchSubmitPage").contents();
 	var model = iwindow.CLMSUI.buildSubmitSearch.model;
+	var initialState = model.toJSON(); 
 	
+
+	QUnit.start();
 	
-	QUnit.begin (function (details) {
-		console.log ("details", details);	
-		/*
-		var doneLoad = details.async();
-		console.log ("waiting for search page sync event");
-		model.on ("sync", doneLoad, this);
-		*/
-	});
-	
-	QUnit.module ("Base Search", {
-		before: function (assert) {
-			var doneLoad = assert.async();
-			console.log ("waiting for search page sync event");
-			model.on ("sync", doneLoad, this);
+	QUnit.module ("Base Search Test", {
+		beforeEach: function () {
+			model.set (initialState);
 		}
 	});
 	
 	QUnit.test ("JSON to Model Parsing", function (assert) {
-		var expectedModel = {
+		var expected = {
 			"searchName": undefined,
 			"ms_tol":"6",
 			"ms2_tol":"20",
@@ -44,30 +36,70 @@ function callback () {
 			"privateSearch":false,
 			"missedPeaks":"0"
 		};
-		//console.log (model.toJSON(), expectedModel);
-	    assert.propEqual (model.toJSON(), expectedModel, "Expected "+JSON.stringify(expectedModel)+", Passed!");
+	    assert.propEqual (model.toJSON(), expected, "Expected "+JSON.stringify(expected)+", Passed!");
 	});
 	
-	QUnit.module ("Button Pushing", {
-		beforeEach: function (assert) {
-			model.set("crosslinkers", ["0"]);
+	QUnit.module ("Button Pushing Tests 1", {
+		beforeEach: function () {
+			model.set (initialState);
 		}
 	});
 	
 	QUnit.test ("Set New Single Crosslinker", function (assert) {
+		// tests multiple-select widget is the bug-fixed version
 		
 		var done = assert.async();
-		var expectedCrosslinkers = ["30"];
-		console.log ("wheee", iframeDom);
-		iframeDom.find("#paramCrossLinker > div > div > button").click();
+		var expected = ["30"];
+		iframeDom.find("#paramCrossLinker > div > div > button").click();	// open crosslinker multiple select panel
 		setTimeout (function() {
-			iframeDom.find("#paramCrossLinker > div > div > div > ul > li:nth-child(5) label").click();
+			iframeDom.find("#paramCrossLinker > div > div > div > ul > li[title='AP1_HA ¦ 290'] label").click();
 			setTimeout (function () {
-				iframeDom.find("#paramCrossLinker > div > div > div > ul > li:nth-child(3) label").click();
+				iframeDom.find("#paramCrossLinker > div > div > div > ul > li[title='-1H ¦ -1'] label").click();
 				setTimeout (function () {
-					assert.deepEqual (model.get("crosslinkers"), expectedCrosslinkers, "Expected "+JSON.stringify(expectedCrosslinkers)+", Passed!");
+					assert.deepEqual (model.get("crosslinkers"), expected, "Expected "+JSON.stringify(expected)+", Passed!");
 					done();
 				});
+			});
+		});
+	});
+	
+	
+	QUnit.test ("Set New Xi Version", function (assert) {
+		// tests multiple-select widget is the bug-fixed version
+		
+		var doneXV = assert.async();
+		var expected = "29";
+		console.log ("wheee4", iframeDom);
+		iframeDom.find("#paramXiVersion > div > div > button").click();	// open crosslinker multiple select panel
+		setTimeout (function() {
+			iframeDom.find("#paramXiVersion > div > div > div > ul > li[title='1.6.738'] > label").click();
+			setTimeout (function () {
+				assert.deepEqual (model.get("xiversion"), expected, "Expected "+JSON.stringify(expected)+", Passed!");
+				doneXV();
+			});
+		});
+	});
+	
+	
+	QUnit.test ("Clear and Set 2 New Fixed Mods", function (assert) {
+		// tests multiple-select widget is the bug-fixed version
+		
+		var doneMods = assert.async();
+		var expected = ["8", "55"].sort();
+		console.log ("wheee5", iframeDom);
+		iframeDom.find("#paramFixedMods > div > div > button").click();	// open crosslinker multiple select panel
+		setTimeout (function() {
+			iframeDom.find("#paramFixedMods > div > div > div button.clearAll").click();
+			setTimeout (function () {
+				iframeDom.find("#paramFixedMods > div > div > div > ul > li[title='BS3Loop'] > label").click();
+				setTimeout (function () {
+					iframeDom.find("#paramFixedMods > div > div > div > ul > li[title='Arg6'] > label").click();
+					setTimeout (function () {
+						var actual = model.get("fixedMods").slice().sort();
+						assert.deepEqual (actual, expected, "Expected "+JSON.stringify(expected)+", Passed!");
+						doneMods();
+					});
+				});			
 			});
 		});
 	});
@@ -75,8 +107,16 @@ function callback () {
 }
 
 function testSetup (cbfunc) {
+		
 	var iframe = $("#searchSubmitPage")[0];
-	iframe.onload = cbfunc;
+	
+	var iframeLoaded = function () {
+		var iwindow = iframe.contentWindow;
+		var model = iwindow.CLMSUI.buildSubmitSearch.model;
+		model.on ("sync", cbfunc, this);
+	}
+	
+	iframe.onload = iframeLoaded;
 	iframe.src = "../submitSearch.html?base=10003-28709-66718-97705-57359";
 }
 
