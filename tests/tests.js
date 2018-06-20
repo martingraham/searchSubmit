@@ -69,7 +69,6 @@ function callback () {
 		
 		var doneXV = assert.async();
 		var expected = "29";
-		console.log ("wheee4", iframeDom);
 		iframeDom.find("#paramXiVersion > div > div > button").click();	// open crosslinker multiple select panel
 		setTimeout (function() {
 			iframeDom.find("#paramXiVersion > div > div > div > ul > li[title='1.6.738'] > label").click();
@@ -86,7 +85,6 @@ function callback () {
 		
 		var doneMods = assert.async();
 		var expected = ["8", "55"].sort();
-		console.log ("wheee5", iframeDom);
 		iframeDom.find("#paramFixedMods > div > div > button").click();	// open crosslinker multiple select panel
 		setTimeout (function() {
 			iframeDom.find("#paramFixedMods > div > div > div button.clearAll").click();
