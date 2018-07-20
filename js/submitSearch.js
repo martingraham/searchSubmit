@@ -57,7 +57,7 @@ CLMSUI.buildSubmitSearch = function () {
 	var Submission = Backbone.Model.extend ({
 		validate: function () {
 			var missing = d3.set();
-			var test = ["ions", "acquisitions", "sequences", "crosslinkers", "enzyme", "xiversion"];
+			var test = ["ions", "acquisitions", "sequences", "crosslinkers", "enzyme", "xiversion", "noLoading"];
 			test.forEach (function (field) {
 				var val = this.get(field);
 				if (!val || ($.isArray(val) && !val.length)) {
@@ -87,6 +87,7 @@ CLMSUI.buildSubmitSearch = function () {
 		"sequences": undefined,
 		"privateSearch": null,
 		"missedPeaks": undefined,	// unused at the moment, but there for future reference
+		"noLoading": true,	// flag thats set false when uploading starts and reset when ends. Used to disable submit button.
 	});
 	
 	this.buildSubmitSearch.model = model;	// expose for testing
@@ -296,6 +297,13 @@ CLMSUI.buildSubmitSearch = function () {
     $(document).ready (function () {
         
 		var dispatchObj = d3.dispatch ("formInputChanged", "newEntryUploaded", "newFileAdded");
+		function setNotLoadingFlag (booleanValue) {
+			// if noloading flag set to false i.e. uploading is occurring, then model will not validate
+			// and forminputchanged will disable submit button (needed for long uploads to stop risk of user
+			// submitting halfway through)
+			model.set ("noLoading", booleanValue);
+			dispatchObj.formInputChanged();
+		}
 		
         var waitDialogID = "databaseLoading";
         CLMSUI.jqdialogs.waitDialog (waitDialogID, "Please Wait...", "Populating Fields");
@@ -1050,6 +1058,9 @@ CLMSUI.buildSubmitSearch = function () {
                     $(formid).on({
                         "fileuploadstart": function (e, data) {
                             console.log ("file upload started", e, data);
+							
+							// suspend submit button for duration of loading and subsequent db activity
+							setNotLoadingFlag (false);
                             uploadSuccess = true;
                         },
                         "fileuploadadded": function (e, data) {
@@ -1097,6 +1108,7 @@ CLMSUI.buildSubmitSearch = function () {
                         "fileuploadstopped": function (e, data) {
                             console.log ("file upload stopped", e, data, uploadSuccess);
                             dispatchObj.newFileAdded (type, "");
+							
                             if (uploadSuccess) {
                                 var privateElem = d3.select(formid).select(".privacy");
                                 var private = privateElem.empty() ? false : privateElem.property("checked");
@@ -1118,6 +1130,7 @@ CLMSUI.buildSubmitSearch = function () {
                                         if (response.redirect) {
                                             redirector (response.redirect);    // redirect if server php passes this field (should be to login page)       
                                         } else if (response.error) {
+											setNotLoadingFlag (true);
                                             CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
                                         } else {
                                             var newRow = response.newRow;
@@ -1136,7 +1149,9 @@ CLMSUI.buildSubmitSearch = function () {
                                 });
                                 
                                 filesUploaded.length = 0;
-                            }
+                            } else {
+								setNotLoadingFlag (true);
+							}
                             nonzeroes.filesAwaiting = rowCountFunc();
                             enabler();
                         },
@@ -1193,6 +1208,9 @@ CLMSUI.buildSubmitSearch = function () {
 					
 					// this will poke model to update removableLabels and d3table views
 					setModelFromAcc (modelKeyMap[type], true, newRow.id);
+					
+					// Allow showing of submit button (if all other conditions met)
+					setNotLoadingFlag (true);
                 });
 
                 // Make the two file upload forms
