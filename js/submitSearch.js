@@ -913,10 +913,11 @@ CLMSUI.buildSubmitSearch = function () {
 						d3table.getData().forEach (function(d) {
 							d.selected = itemSet.has(d.id);
 						});
-						// refiltering was used to change table on de/selection as chosen column could be a filter, 
-						// but has the unintended side effect of always putting the table back to page 1
-						// https://github.com/Rappsilber-Laboratory/xi3-issue-tracker/issues/295
-						d3table./*refilter().*/update();
+						// on changing the model attributes for seqs/acqs, refilter the data (to include new)
+						// set to the old page (to avoid going back to page 1) - https://github.com/Rappsilber-Laboratory/xi3-issue-tracker/issues/295
+						// and update the table view
+						var page = d3table.page();
+						d3table.refilter().page(page).update();
 						
 						addSelectionListeners (d3table.getAllRowsSelection(), psetting.modelKey);
 					});
