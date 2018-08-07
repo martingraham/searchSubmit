@@ -217,6 +217,7 @@ span.removable button {
 }
 
 .chosenFiles {
+	line-height: 2em;
     color: black;
     counter-reset: chosenCount;
     /*padding-top: 0.55em;*/
