@@ -29,6 +29,7 @@ function callback () {
 			"varMods":["2","30"],
 			"losses":["1","2","4"],
 			"xiversion":null,
+			"noLoading":true,
 			"notes":"\nxi-version: 1.6.671",
 			"customsettings":"",
 			"acquisitions":["2089"],
