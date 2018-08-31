@@ -12,6 +12,8 @@ CLMSUI.buildSubmitSearch = function () {
         };
     })(console.log);
     console.disableLogging();
+	
+	CLMSUI.testForFileExistence = true;
     
     var errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
     var integerFormat = d3.format(",.0f");
@@ -642,11 +644,43 @@ CLMSUI.buildSubmitSearch = function () {
 					d3.select(domid).select("span.noneChosen").style("display", labels.empty() ? null : "none");
 					d3.select(domid).select("span.clearAllRemovables").style("display", labels.size() > 1 ? "inline-block" : "none");	
                 };
+				
+				var fileExists = function (d3sel, modelKey, d) {
+					if (CLMSUI.testForFileExistence) {
+						if (d.selected) {
+							var data = {};
+							data[modelKey+"_id"] = d.id;
+							$.ajax ({
+								type: "GET",
+								url: "./php/testFileExists.php",
+								data: data,
+								dataType: "json",
+								encode: true,
+								complete: function () {
+
+								},
+								success: function (response, textStatus, jqXhr) {
+									//console.log ("response", response);
+									if (response.success === false) {
+										d.selected = false;
+										d.badFiles = true;
+										setModelFromAcc (modelKey, d.selected, d.id);
+									}
+								},
+								error: function (jqXhr, textStatus, errorThrown) {
+									console.log (arguments);
+									CLMSUI.jqdialogs.errorDialog ("popErrorDialog", errorThrown+"<br>"+errorDateFormat (new Date()), "Connection Error");
+								},
+							});
+						}
+					}
+				}
    
                 // Mouse listeners; listens to mouse click on table rows and on checkbox within those rows to (un)select seqs/acqs
 				// need base id as well so can't send as eventHooks to d3 table	
 				var addWholeRowListeners = function (rowSel, modelKey) {
 					rowSel
+						.classed ("rowBadFiles", function (d) { return d.badFiles ? true : false; })
                         .on("click", function (d) {
                             d.selected = !!!d.selected;
 							d3.select(this)
@@ -654,6 +688,7 @@ CLMSUI.buildSubmitSearch = function () {
 								.property ("checked", function (d) { return d.selected; })
 							;
 							setModelFromAcc (modelKey, d.selected, d.id);
+							fileExists (d3.select(this), modelKey, d);
                         })
                     ;
 				};
@@ -661,6 +696,8 @@ CLMSUI.buildSubmitSearch = function () {
 				var addSelectionListeners = function (rowSel, modelKey) {
 					rowSel.select("input[type=checkbox]")
 						.property ("checked", function (d) { return d.selected; })
+						.property ("disabled", function (d) { return d.badFiles ? true : false; })
+						.classed ("rowBadFiles", function (d) { return d.badFiles ? true : false; })
 						.classed ("verticalCentred", true)
                         .on ("click", function(d) {
                             d3.event.stopPropagation(); // don't let parent tr catch event, or it'll just revert the checked property
@@ -669,6 +706,7 @@ CLMSUI.buildSubmitSearch = function () {
 								.property ("checked", function (d) { return d.selected; })
 							;
 							setModelFromAcc (modelKey, d.selected, d.id);
+							fileExists (d3.select(this), modelKey, d);
                         })
                     ; 
 				};
