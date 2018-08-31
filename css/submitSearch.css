@@ -625,3 +625,16 @@ TABLE.d3table tfoot {
 .digestAccordionContent > button:first-of-type {
 	margin-right: 1em;
 }
+
+TABLE.d3table tbody tr.rowBadFiles {
+	background: pink;
+}
+
+input.rowBadFiles {
+	/*display: none;*/
+}
+
+input.rowBadFiles:before {
+	content: "Missing";
+	margin-left: -20px;
+}
