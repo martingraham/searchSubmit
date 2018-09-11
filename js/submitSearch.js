@@ -923,7 +923,7 @@ CLMSUI.buildSubmitSearch = function () {
 					// set initial filters
 					var keyedFilters = {};
 					headerEntries.forEach (function (hentry) {
-						keyedFilters[hentry.key] = {value: "", type: hentry.value.type}	
+						keyedFilters[hentry.key] = "";	
 					});
 
 					var empowerRows = function (rowSelection) {
