@@ -576,12 +576,26 @@ TABLE.d3table tbody tr td.varWidthCell, TABLE.d3table tr th.varWidthCell {
     white-space: normal;
 }
 
-TABLE.d3table thead th:not(:first-child) span {
-    padding: 5px;
+TABLE.d3table thead th span.d3table-headerSpan {
+    padding: 5px 3px;
 }
 
 TABLE.d3table tfoot {
 	display: none;
+}
+
+TABLE.d3table .d3table-headerSpan svg.d3table-arrow {
+	vertical-align: middle;
+}
+
+TABLE.d3table thead th {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.d3table-filterInput {
+	padding: 0;
+	margin: 0 0.25em;
 }
 
 
