@@ -886,7 +886,7 @@ CLMSUI.buildSubmitSearch = function () {
 					var names = {selected: "chosen"};
 					var columnMetaData = psetting.columns.map (function (field) {
 						var visible = psetting.hide[field] !== undefined ? psetting.hide[field] : true;
-						return {name: names[field] || field, id: field, type: psetting.types[field] || "alpha", visible: visible, removable: true, tooltip: ""}
+						return {columnName: names[field] || field, id: field, type: psetting.types[field] || "alpha", visible: visible, removable: true, tooltip: ""}
 					});
 					
 					var cellStyles = {selected: "centreContent", download: "centreContent"};
@@ -903,14 +903,14 @@ CLMSUI.buildSubmitSearch = function () {
 						}
 					};
 					
-					var headerEntries = columnMetaData.map (function (cmd) { return {key: cmd.id, value: cmd}; });
+					var columnSettings = columnMetaData.map (function (cmd) { return {key: cmd.id, value: cmd}; });
 					var d3tab = sel.append("div").attr("class", "d3tableContainer")
 						.datum({
 							data: psetting.data, 
-							headerEntries: headerEntries, 
+							columnSettings: columnSettings, 
 							cellStyles: cellStyles,
 							cellD3Hooks: cellD3Hooks,
-							columnOrder: headerEntries.map (function (hentry) { return hentry.key; }),
+							columnOrder: columnSettings.map (function (hentry) { return hentry.key; }),
 						})
 					;
 					var table = CLMSUI.d3Table ();
@@ -922,7 +922,7 @@ CLMSUI.buildSubmitSearch = function () {
 
 					// set initial filters
 					var keyedFilters = {};
-					headerEntries.forEach (function (hentry) {
+					columnSettings.forEach (function (hentry) {
 						keyedFilters[hentry.key] = "";	
 					});
 
