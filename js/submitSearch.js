@@ -884,33 +884,37 @@ CLMSUI.buildSubmitSearch = function () {
 					//console.log ("pd", psetting);
 					
 					var names = {selected: "chosen"};
-					var columnMetaData = psetting.columns.map (function (field) {
+					var columnSettings = {};
+					psetting.columns.forEach (function (field) {
 						var visible = psetting.hide[field] !== undefined ? psetting.hide[field] : true;
-						return {columnName: names[field] || field, id: field, type: psetting.types[field] || "alpha", visible: visible, removable: true, tooltip: ""}
+						columnSettings[field] = {columnName: names[field] || field, type: psetting.types[field] || "alpha", visible: visible, removable: true, headerTooltip: ""}
 					});
 					
-					var cellStyles = {selected: "centreContent", download: "centreContent"};
+					columnSettings.selected.cellStyle = "centreContent";
+					columnSettings.download.cellStyle = "centreContent";
 					psetting.autoWidths.values().forEach (function (key) {
-						cellStyles[key] = "varWidthCell";
+						columnSettings[key].cellStyle = "varWidthCell";
 					});
 					
-					var modifiers = {
-						selected: function () {
-							return "<input type='checkbox'></input>"
-						},
-						download: function () {
-							return "<button class='download'></button";
-						}
+					columnSettings.selected.dataToHTMLModifier = function () {
+						return "<input type='checkbox'></input>"
+					};
+					columnSettings.download.dataToHTMLModifier = function () {
+						return "<button class='download'></button>";
 					};
 					
-					var columnSettings = columnMetaData.map (function (cmd) { return {key: cmd.id, value: cmd}; });
-					var d3tab = sel.append("div").attr("class", "d3tableContainer")
+					d3.entries(cellD3Hooks).forEach (function (hookEntry) {
+						var csetting = columnSettings[hookEntry.key];
+						if (csetting) {
+							csetting.cellD3EventHook = hookEntry.value;
+						}
+					});
+					
+					var d3tab = sel.append("div")
 						.datum({
 							data: psetting.data, 
 							columnSettings: columnSettings, 
-							cellStyles: cellStyles,
-							cellD3Hooks: cellD3Hooks,
-							columnOrder: columnSettings.map (function (hentry) { return hentry.key; }),
+							columnOrder: d3.keys(columnSettings),
 						})
 					;
 					var table = CLMSUI.d3Table ();
@@ -922,8 +926,8 @@ CLMSUI.buildSubmitSearch = function () {
 
 					// set initial filters
 					var keyedFilters = {};
-					columnSettings.forEach (function (hentry) {
-						keyedFilters[hentry.key] = "";	
+					d3.keys(columnSettings).forEach (function (columnKey) {
+						keyedFilters[columnKey] = "";	
 					});
 
 					var empowerRows = function (rowSelection) {
@@ -935,7 +939,6 @@ CLMSUI.buildSubmitSearch = function () {
 					table
 						.typeSettings ("alphaArray", alphaArrayTypeSettings)
 						.filter (keyedFilters)
-						.dataToHTML (modifiers)
 						.postUpdate (empowerRows)
 						.pageSize(10)
 						.update()
