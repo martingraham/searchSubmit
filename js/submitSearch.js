@@ -1224,7 +1224,7 @@ CLMSUI.buildSubmitSearch = function () {
 						$.each (newFilter, function (key) {
 							newFilter[key].value = "";
 						});
-						newFilter[type === "seq" ? "file" : "files"] = {value: fileName, type: "alpha"};
+						newFilter[type === "seq" ? "file" : "files"] = fileName;
 						d3table.filter (newFilter);
                         hits = d3table.getFilteredSize();
 						
