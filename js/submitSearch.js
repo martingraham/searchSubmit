@@ -1276,6 +1276,15 @@ CLMSUI.buildSubmitSearch = function () {
 									$("#useGlobalDefaults").click();
 								}
 							} else {	// success success, what we want to happen
+								// Update notes value with base search number
+								if (response.notes && postData && postData.sid) {
+									var baseSearchID = postData.sid.match("\\d*")[0];
+									if (baseSearchID) {
+										response.notes += "\r\nBased on search: "+baseSearchID;
+									}
+								}
+								
+								// update fields with loaded values
 								updateFieldsWithValues (response, data);
 							}
 						},
