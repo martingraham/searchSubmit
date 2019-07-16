@@ -785,7 +785,7 @@ CLMSUI.buildSubmitSearch = function () {
                     
                     cellSel
                         .on ("mouseover", function(d) {
-							var datum = d.value[d.key];
+							var datum = d.value ? d.value[d.key] : undefined;
                             var text = $.isArray(datum) ? enumerateText(datum) : datum;
                             CLMSUI.tooltip
                                 .updateText (d.key, text)
@@ -1014,7 +1014,7 @@ CLMSUI.buildSubmitSearch = function () {
 					var missingList = missingFields ? missingFields : d3.set();
 					var noneMissing = missingList.empty();
 					
-                    $("#startProcessing").button("option", "disabled", !noneMissing || (data.noSearchAllowed === true));
+                    $("#startProcessing").button("option", "disabled", !noneMissing || (data.noSearchAllowed === true) || CLMSUI.submitting);
                     happyToDo (noneMissing);
                     toDoMessage (noneMissing ? "Ready to Submit" : "To enable Submit, selections are required for:", missingList.values().join(", "));
                 });
@@ -1027,40 +1027,44 @@ CLMSUI.buildSubmitSearch = function () {
                 $("#parameterForm").submit(function (event) {
                     event.preventDefault();
 
-                    $("#startProcessing").button("option", "disabled", true);   // so user can't press again
-                    toDoMessage ("Processing");
-					
-					function submitFailSets () {
-                        toDoMessage ("Error, search submit failed.");
-                        happyToDo (false);
-                        $("#startProcessing").button("option", "disabled", false);
+                    if (!CLMSUI.submitting) {   // extra avoid double click flag 'cos disabled occasionally borks 
+                        CLMSUI.submitting = true;
+                        $("#startProcessing").button("option", "disabled", true);   // so user can't press again
+                        toDoMessage ("Processing");
+
+                        function submitFailSets () {
+                            CLMSUI.submitting = false;
+                            toDoMessage ("Error, search submit failed.");
+                            happyToDo (false);
+                            $("#startProcessing").button("option", "disabled", false);
+                        }
+
+                        finaliseModel ();
+                        d3.select("body").style("cursor", "wait");
+                        model.save (undefined,
+                            {
+                                success: function (model, response, options) {
+                                    console.log ("db params insert success", response, textStatus);
+                                    if (response.redirect) {
+                                        redirector (response.redirect);    // redirect if server php passes this field (should be to login page)     
+                                    }
+                                    else if (response.status === "success") {
+                                        toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
+                                        window.location.assign ("../history/history.html");
+                                    } else {
+                                        CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
+                                        submitFailSets();
+                                    }
+                                },
+                                error: function (model, response, options) {
+                                    CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "Submit failed on the server before reaching the database<br>"+errorDateFormat (new Date()), "Connection Error");
+                                    submitFailSets();
+                                    d3.select("body").style("cursor", null);
+                                },
+                                url: "php/submitParams.php",
+                            }
+                        );
                     }
-					
-					finaliseModel ();
-					d3.select("body").style("cursor", "wait");
-					model.save (undefined,
-						{
-							success: function (model, response, options) {
-								console.log ("db params insert success", response, textStatus);
-								if (response.redirect) {
-									redirector (response.redirect);    // redirect if server php passes this field (should be to login page)     
-								}
-								else if (response.status === "success") {
-									toDoMessage ("Success, Search ID "+response.newSearch.id+" added.");
-									window.location.assign ("../history/history.html");
-								} else {
-									CLMSUI.jqdialogs.errorDialog ("popErrorDialog", response.error, response.errorType);
-									submitFailSets();
-								}
-							},
-							error: function (model, response, options) {
-								CLMSUI.jqdialogs.errorDialog ("popErrorDialog", "Submit failed on the server before reaching the database<br>"+errorDateFormat (new Date()), "Connection Error");
-								submitFailSets();
-								d3.select("body").style("cursor", null);
-							},
-							url: "php/submitParams.php",
-						}
-					);
                 });
 
 
@@ -1090,7 +1094,6 @@ CLMSUI.buildSubmitSearch = function () {
                             .toggleClass ("ui-button-disabled ui-state-disabled", singleFileUploadOnly)   // force span to look disabled
                             .removeClass ("ui-state-hover")   // dunno why hover state doesn't switch off by itself, maybe because the button gets disabled?
                         ;
-                        
                     };
                     this.buttonEnabler = enabler;
                     var uploadSuccess = true;
