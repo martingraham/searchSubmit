@@ -39,7 +39,7 @@
 					return file_exists($_SESSION["baseDir"].$row["file_path"]);
 				}
 				$fileExists = array_map ("fileTest", $resultArr);
-				//error_log (print_r ($fileExists, true));
+				//error_log (print_r ($_SESSION["baseDir"].$resultArr[0]["file_path"].','.$fileExists[0], true));
 				
 				pg_close ($dbconn);
 
