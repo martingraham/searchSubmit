@@ -1013,6 +1013,8 @@ CLMSUI.buildSubmitSearch = function () {
 					var missingFields = model.validate();
 					var missingList = missingFields ? missingFields : d3.set();
 					var noneMissing = missingList.empty();
+                    
+                    //console.error ("CHECK", missingFields, noneMissing, data.noSearchAllowed, CLMSUI.submitting);
 					
                     $("#startProcessing").button("option", "disabled", !noneMissing || (data.noSearchAllowed === true) || CLMSUI.submitting);
                     happyToDo (noneMissing);
@@ -1484,6 +1486,8 @@ CLMSUI.buildSubmitSearch = function () {
 		var custom = model.get("customsettings");
 		if (missingPeaks) {
 			custom += "\nmissing_isotope_peaks:" + missingPeaks;
+            // The following are defaults assumed by XiSearch so no need to add them here - issue 422
+            /*
 			var fuRegex = new RegExp ("^\\s*FRAGMENTTREE:FU$", "gmi");
 			if (!custom.match(fuRegex)) {
 				custom += "\nFRAGMENTTREE:FU";
@@ -1492,6 +1496,7 @@ CLMSUI.buildSubmitSearch = function () {
 			if (!custom.match(xiClassRegex)) {
 				custom += "\nXICLASS:SimpleXiProcessMultipleCandidates";
 			}
+            */
 			model.set("customsettings", custom);
 		}
 	}
