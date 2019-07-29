@@ -1014,9 +1014,9 @@ CLMSUI.buildSubmitSearch = function () {
 					var missingList = missingFields ? missingFields : d3.set();
 					var noneMissing = missingList.empty();
                     
-                    //console.error ("CHECK", missingFields, noneMissing, data.noSearchAllowed, CLMSUI.submitting);
+                    //console.error ("CHECK", missingFields, noneMissing, data.noSearchAllowed, CLMSUI.submitting, !noneMissing || (data.noSearchAllowed === true) || CLMSUI.submitting || false);
 					
-                    $("#startProcessing").button("option", "disabled", !noneMissing || (data.noSearchAllowed === true) || CLMSUI.submitting);
+                    $("#startProcessing").button("option", "disabled", !noneMissing || (data.noSearchAllowed === true) || CLMSUI.submitting || false);
                     happyToDo (noneMissing);
                     toDoMessage (noneMissing ? "Ready to Submit" : "To enable Submit, selections are required for:", missingList.values().join(", "));
                 });
@@ -1028,6 +1028,7 @@ CLMSUI.buildSubmitSearch = function () {
                 // PITA have to reconstruct form data from all fields (marked them with .formPart class to make it easier)
                 $("#parameterForm").submit(function (event) {
                     event.preventDefault();
+                    console.log ("SUBMITTING");
 
                     if (!CLMSUI.submitting) {   // extra avoid double click flag 'cos disabled occasionally borks 
                         CLMSUI.submitting = true;
