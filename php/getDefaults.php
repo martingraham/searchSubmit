@@ -43,7 +43,7 @@
 				"notes" => $pSettings["notes"],
 				"privateSearch" => $pSettings["private"],
 				"xiversion" => $pSettings["xiversion"],
-				"missedPeaks" => 0,
+				"missedPeaks" => 2, // change from 0 to 2, issue 423 
             );
 
             $getParamMultiOptions = array (
