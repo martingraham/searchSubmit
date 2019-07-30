@@ -298,7 +298,7 @@ textarea.formPart.ui-state-default, input[type='text'] {
     overflow-x: hidden;
 }
 
-input:required:invalid {
+input:not(.d3table-filterInput):required:invalid {
     background: #fee;
     border: 1px solid red;
 }
@@ -592,8 +592,13 @@ TABLE.d3table thead th {
 
 
 .d3table-filterInput {
+    border: 1px solid #a9a9a9;
 	padding: 0;
 	margin: 0 4px;
+}
+
+.d3table-filterInput:valid {
+	background: #afa;
 }
 
 
