@@ -546,7 +546,7 @@ CLMSUI.buildSubmitSearch = function () {
                 d3.selectAll(".maxFile").data(d3.keys(uploadOptions).reverse()).text(function(d) { return uFormat (uploadOptions[d].maxFileSize); });
                 submitter.upload (uploadOptions);
                 
-                mergeInFilenamesToAcquistions (data.previousAcqui, data.filenames);
+                mergeInFilenamesToAcquistions (data.previousAcqui || [], data.filenames);
 
 				
                 // Make combobox and multiple selection elements
@@ -856,7 +856,7 @@ CLMSUI.buildSubmitSearch = function () {
                 // Settings for tables of previous acquisitions / sequences
                 var previousSettings = {
                     acq: {domid: "#acqPrevious", 
-						  data: data.previousAcqui, 
+						  data: data.previousAcqui || [], 
 						  niceLabel: "Acquisitions", 
 						  required: true, 
 						  selectSummaryid: "#acqSelected", 
@@ -867,7 +867,7 @@ CLMSUI.buildSubmitSearch = function () {
 						  modelKey: "acquisitions",
 					},
                     seq: {domid: "#seqPrevious", 
-						  data: data.previousSeq, 
+						  data: data.previousSeq || [], 
 						  niceLabel: "Sequences", 
 						  required: true, 
 						  selectSummaryid: "#seqSelected", 						  
@@ -922,6 +922,8 @@ CLMSUI.buildSubmitSearch = function () {
 					table (d3tab);
 					d3tab.select("table").classed("previousTable", true);
 					applyHeaderStyling (table.getHeaderCells(), psetting.autoWidths);
+                    // allows css trick to highlight filter inputs with content so more visible to user
+			         d3.selectAll(".d3table-filterInput").property("required", true);
 					//console.log ("table", table);
 
 					// set initial filters
@@ -1428,6 +1430,7 @@ CLMSUI.buildSubmitSearch = function () {
 							$(domID).val(value);	// new new new value
 							
 							var mpv = missedPeaksLine[0].match (new RegExp("\\d+"), "g");
+                            // set the missed peaks widget with the custom settings missed peaks value
 							if (mpv && mpv[0] && +mpv[0]) {
 								model.set ("missedPeaks", +mpv[0]);
 								searchSettings.missedPeaks = +mpv[0];
@@ -1456,8 +1459,8 @@ CLMSUI.buildSubmitSearch = function () {
 		;
 		
 		// Fire a warning pop-up if some sequences / acquisitions asked for are restricted
-		var acqNullCount = (searchSettings.acquisitions || []).filter(function(d) { return d === null; }).length;
-		var seqNullCount = (searchSettings.sequences || []).filter(function(d) { return d === null; }).length;
+		var acqNullCount = model.get("acquisitions").filter(function(d) { return d === null; }).length;
+		var seqNullCount = model.get("sequences").filter(function(d) { return d === null; }).length;
 		if (acqNullCount || seqNullCount) {
 			var counts = [{count: acqNullCount, label: acqNullCount+" Acquisition(s)"}, {count: seqNullCount, label: seqNullCount+" Sequence(s)"}];
 			var messageStr = counts
@@ -1483,7 +1486,6 @@ CLMSUI.buildSubmitSearch = function () {
 		
 		var missingPeaksSel = d3.select("#paramMissedPeaksValue");
 		var missingPeaks = +missingPeaksSel.property("value");
-		var missedPeaksRegex = new RegExp ("^\\s*missing_isotope_peaks:(\\d+)$", "gmi");	// double escaped
 		var custom = model.get("customsettings");
 		if (missingPeaks) {
 			custom += "\nmissing_isotope_peaks:" + missingPeaks;
