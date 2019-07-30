@@ -123,7 +123,7 @@
             "sequences" => array(),
 			"privateSearch" => false,
 			"searchName" => "",
-			"missedPeaks" => 0,
+			"missedPeaks" => 2,
         );
         
         $getMultiOptions = array (
