@@ -52,20 +52,25 @@ try {
 				: array ("q" => $pSeqStr, "params" => [$_SESSION["user_id"]])
 			,
 			"filenames" => array ("q" => "SELECT acq_id, name FROM run ORDER by acq_id DESC"),
-			"username" => array ("q" => "SELECT user_name FROM users WHERE id = $1", "params" => [$_SESSION["user_id"]]),
+			//"username" => array ("q" => "SELECT user_name FROM users WHERE id = $1", "params" => [$_SESSION["user_id"]]),
 		);
 
+        $times = [];
 		foreach ($getFieldValues as $key => $value) {
+            $z = microtime(true);
 			$query = $value["q"];
 			$params = isset($value["params"]) ? $value["params"] : array();
 			pg_prepare ($dbconn, $key, $query);
 			$result = pg_execute ($dbconn, $key, $params);
 			$possibleValues[$key] = resultsAsArray($result);
+            $times[$key] = microtime(true) - $z;
+            $z = microtime(true);
 		}
 
 		// Add user rights so interface can provide appropriate labelling
 		$possibleValues["userRights"] = $userRights;
-		$possibleValues["username"] = $possibleValues["username"][0]["user_name"];
+		$possibleValues["username"] = $_SESSION["session_name"];  //$possibleValues["username"][0]["user_name"];
+        $possibleValues["times"] = $times;
 
 		// Get basedir for file uploads
 		$query = "SELECT setting FROM base_setting WHERE name='base_directory_path';";
