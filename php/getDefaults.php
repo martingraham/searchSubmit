@@ -87,6 +87,7 @@
 		//error_log (print_r ("superuser ".$isSuperUser.", mysearch ".$mySearch, true));
 		
 		$refuseSeq = refuseAcqSeqPermission ($dbconn, $userID, "sequence_file", $defaults['sequences'], $isSuperUser);
+        //error_log (print_r ($defaults['sequences'], true));
 		//error_log (print_r ($refuseSeq, true));
 		foreach ($defaults['sequences'] as $key=>$value) {
 			if (isTrue ($refuseSeq[$key]) || !$mySearch) {

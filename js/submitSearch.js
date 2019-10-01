@@ -1452,15 +1452,13 @@ CLMSUI.buildSubmitSearch = function () {
                 entry.func (entry.id, searchSettings[entry.field], entry.options);
             }
         });
-		
-		model
-			.set ("acquisitions", searchSettings.acquisitions || [])
-			.set ("sequences", searchSettings.sequences || [])
-		;
-		
+
+        var splitAcqs = _.partition (searchSettings.acquisitions, function (d) { return d === null; });
+		var splitSeqs = _.partition (searchSettings.sequences, function (d) { return d === null; });  //[0] = null, [1] = not null
+        
 		// Fire a warning pop-up if some sequences / acquisitions asked for are restricted
-		var acqNullCount = model.get("acquisitions").filter(function(d) { return d === null; }).length;
-		var seqNullCount = model.get("sequences").filter(function(d) { return d === null; }).length;
+		var acqNullCount = splitAcqs[0].length;
+		var seqNullCount = splitSeqs[0].length;
 		if (acqNullCount || seqNullCount) {
 			var counts = [{count: acqNullCount, label: acqNullCount+" Acquisition(s)"}, {count: seqNullCount, label: seqNullCount+" Sequence(s)"}];
 			var messageStr = counts
@@ -1474,6 +1472,11 @@ CLMSUI.buildSubmitSearch = function () {
 				"Access Restriction"
 			);
 		}
+        
+        model
+			.set ("acquisitions", splitAcqs[1] || [])
+			.set ("sequences", splitSeqs[1] || [])
+		;
     }
 	
 	
