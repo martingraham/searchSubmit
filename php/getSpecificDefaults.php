@@ -37,16 +37,20 @@
 
 			if ($trueRandom !== null) {
 				if ($trueRandom === $random) {
-					$defaults = getDefaults ($dbconn, $sid);
-					echo json_encode ($defaults);
+                    if (canUserAccessSearch ($dbconn, $_SESSION["user_id"], $sid)) {
+                        $defaults = getDefaults ($dbconn, $sid);
+					   echo json_encode ($defaults);
+                    } else {
+                        echo json_encode (array("error" => array ("Your user status lacks permission to base a new search on search ".$sid.".", $date), "errorType" => "User Permission Restriction"));
+                    }
 				} else {
-					echo json_encode (array("error" => array ("Random key '".$random."' does not match for Search ID ".$sid.".", $date)));
+					echo json_encode (array("error" => array ("URL random key '".$random."' is not correct for Search ID ".$sid.".", $date), "errorType" => "Base Search Key Mismatch"));
 				}
 			} else {
-				echo json_encode (array("error" => array ("No Search with ID ".$sid." found.", $date), "errorType" => "No Such Search Exists"));
+				echo json_encode (array("error" => array ("No Search with ID ".$sid." found.", $date), "errorType" => "No Such Base Search Exists"));
 			}
 		} else {
-			echo json_encode (array("error" => array ("Malformed URL value '".$sidPlusRandom."'. Should be Search ID then random key broken into four sets of five digits, all separated by hyphens. e.g. 10003-47384-43984-12121-23232", $date), "errorType" => "Malformed URL Parameter Error"));
+			echo json_encode (array("error" => array ("Malformed Base value '".$sidPlusRandom."'. Should be Search ID then random key broken into four sets of five digits, all separated by hyphens. e.g. 10003-47384-43984-12121-23232", $date), "errorType" => "Malformed Base Parameter Error"));
 		}
 	}
 
