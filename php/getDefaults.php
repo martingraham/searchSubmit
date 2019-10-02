@@ -83,9 +83,12 @@
 		// blank out sequences this user doesn't have permission to reuse
 		$userID = $_SESSION['user_id'];
 		$isSuperUser = isSuperUser ($dbconn, $userID);
-		$mySearch = $isSuperUser || (count($paramSettings) > 0 ? $userID === $paramSettings[0]['uploadedby'] : false);
+        
+        // 02/10/19: If user allowed to base new searches on this search (and if they've got this far, they are), then we now copy that search's non-private acquisition and sequence IDs automatically
+		$mySearch = true; //$isSuperUser || (count($paramSettings) > 0 ? $userID === $paramSettings[0]['uploadedby'] : false);
 		//error_log (print_r ("superuser ".$isSuperUser.", mysearch ".$mySearch, true));
 		
+        // Some sequences / acquisitions are still marked as private, so deny them to anyone else but the original user (or a superuser)
 		$refuseSeq = refuseAcqSeqPermission ($dbconn, $userID, "sequence_file", $defaults['sequences'], $isSuperUser);
         //error_log (print_r ($defaults['sequences'], true));
 		//error_log (print_r ($refuseSeq, true));

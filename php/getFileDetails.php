@@ -17,11 +17,11 @@ try {
 
 	// Get user rights from database
 	$userRights = getUserRights ($dbconn, $_SESSION["user_id"]);
-	$canSeeAll = $userRights["canSeeAll"];
 
 	if (!$userRights["canAddNewSearch"]) {
 		ajaxHistoryRedirect("You don't have permission to download this file due to your user role.");  // Shouldn't get here, but still... defensive coding
 	} else {
+        $canSeeAll = $userRights["canSeeAll"];
 		$datum = $_POST["datum"];
 		//error_log (print_r ($datum, true));
 
