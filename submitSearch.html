@@ -13,15 +13,15 @@
         <link rel="stylesheet" href="../vendor/css/common.css" />
         <link rel="stylesheet" href="css/submitSearch.css" />
         <link rel="stylesheet" href="css/tooltip.css" />
-		<link rel="stylesheet" href="../vendor/css/d3table.css" />
+        <link rel="stylesheet" href="../vendor/css/d3table.css" />
 
-        <script src="../vendor/js/jquery-3.3.1.js"></script>
+        <script src="../vendor/js/jquery-3.4.1.js"></script>
         <script src="../vendor/js/jquery-ui.js"></script>
         <script src="../vendor/js/d3.js"></script>
         <script src="../vendor/js/multiple-select.js"></script>
-		<script src="../vendor/js/underscore.js"></script>
-		<script src="../vendor/js/backbone.js"></script>
-		<script src="../vendor/js/d3table.js"></script>
+        <script src="../vendor/js/underscore.js"></script>
+        <script src="../vendor/js/backbone.js"></script>
+        <script src="../vendor/js/d3table.js"></script>
 
 
         <!-- The Templates plugin is included to render the upload/download listings -->
@@ -37,16 +37,16 @@
         <!-- The File Upload user interface plugin -->
         <script src="../vendor/js/jquery.fileupload-ui.js"></script>
         <script src="../vendor/js/jquery.fileupload-jquery-ui.js"></script>
-		 
+
         <!-- blueimp application initialisation script, pokes some controls into life -->
         <script src="js/CLMSUploadInit.js"></script>
         <script src="js/tooltip.js"></script>
         <script src="js/dialogs.js"></script>
-		<script src="js/newCrosslinkerDialog.js"></script>
-		<script src="js/multipleDigestionDialog.js"></script>
+        <script src="js/newCrosslinkerDialog.js"></script>
+        <script src="js/multipleDigestionDialog.js"></script>
         <script src="js/submitSearch.js"></script>
      </head>
-    
+
      <body>
         <!-- The template to display files available for upload -->
         <script id="template-upload" type="text/x-tmpl">
@@ -79,7 +79,7 @@
             </tr>
             {% } %}
         </script>
-         
+
         <script id="template-download" type="text/x-tmpl">
             {% for (var i=0, file; file=o.files[i]; i++) { %}
             <tr class="template-download fade previouslyUploaded">
@@ -98,8 +98,8 @@
             </tr>
             {% } %}
         </script>
-         
-         
+
+
         <script id="template-acqseq-section" type="text/x-tmpl">
              <div class="row">
                 <div class="col-12"><h3>Choose {%=o.pluralLabel%}</h3></div>
@@ -107,13 +107,13 @@
             </div>
             <div class="row">
                 <div class="col-12">
-					<p id="{%=o.partialId%}Selected" class="chosenFiles">
-						<span class="chosenLabel"></span>
-						<span class="removables"></span>
-						<span class="clearAllRemovables"><button class="removeAllButton">Remove All</button></span>
-						<span class="noneChosen"></span>
-					</p>
-				</div>
+                    <p id="{%=o.partialId%}Selected" class="chosenFiles">
+                        <span class="chosenLabel"></span>
+                        <span class="removables"></span>
+                        <span class="clearAllRemovables"><button class="removeAllButton">Remove All</button></span>
+                        <span class="noneChosen"></span>
+                    </p>
+                </div>
             </div>
             <div class="row">
                 <div class="col-12">
@@ -140,7 +140,7 @@
                                             {% } else { %}
                                                 <span>Add File</span>
                                                 <input type="file" name="files" accept="{%=o.fileTypes%}">
-                                            {% } %} 
+                                            {% } %}
                                         </span>
                                         <button type="submit" class="start">Start Upload</button>
                                         {% if (o.multipleUpload) { %}
@@ -180,43 +180,43 @@
                 </div>
             </div>
         </script>
-         
+
         <div>
             <span class="topRight">
-				<button id="logoutButton"><span class="ui-icon ui-icon-extlink"></span>Log Out</button>
+                <button id="logoutButton"><span class="ui-icon ui-icon-extlink"></span>Log Out</button>
                 <button id="helpButton"><span class="ui-icon ui-icon-help"></span>Help</button>
                 <button id="backButton"><span class="ui-icon ui-icon-arrowreturnthick-1-w"></span>Back</button>
             </span>
             <h1>New Xi Search Form - <span id="username"></span></h1>
             <div id="acquire"></div>
             <div id="sequence"></div>
-        
-            <div class="row">   
+
+            <div class="row">
                 <div class="col-12"><h3>Set Search Parameters</h3></div>
             </div>
-            
+
             <form id="parameterForm" name="login_form" method="post" action="php/submitParams.php">
             <div class="lrmargin">
                 <div class="row">
                     <div class="col-8 paramSetting" id="paramSearchName"></div>
-					<div class="col-2 paramSetting" id="paramXiVersion"></div>
+                    <div class="col-2 paramSetting" id="paramXiVersion"></div>
                     <div class="col-2 paramSetting centreContent verticalCentred"><button id="useGlobalDefaults">Restore Default Parameters</button></div>
                     <!-- <div class="col-2 paramSetting"><button id="useLastSearchDefaults">Use Your Last Search Params</button></div> -->
                 </div>
-                
+
                 <div class="row rowDiff">
                     <div class="col-6 paramSetting" id="paramEnzyme"></div>
-					<div class="col-3 paramSetting" id="paramMissedCleavages"></div>
-					<div class="col-3 paramSetting" id="paramMissedPeaks"></div>
+                    <div class="col-3 paramSetting" id="paramMissedCleavages"></div>
+                    <div class="col-3 paramSetting" id="paramMissedPeaks"></div>
                 </div>
 
                 <div class="row rowDiff">
-					<div class="col-6 paramSetting" id="paramCrossLinker"></div>
+                    <div class="col-6 paramSetting" id="paramCrossLinker"></div>
                     <div class="col-3 paramSetting" id="paramTolerance"></div>
                     <div class="col-3 paramSetting" id="paramTolerance2"></div>
                 </div>
 
-                <div class="row"> 
+                <div class="row">
                     <div class="col-6 paramSetting" id="paramFixedMods"></div>
                     <div class="col-6 paramSetting" id="paramVarMods"></div>
                 </div>
@@ -240,7 +240,7 @@
                             <div id="todo"></div>
                         </div>
                     </div>
-                    
+
                     <div class="col-6 paramSetting rowDiff" id="paramNotes"></div>
                 </div>
 
