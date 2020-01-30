@@ -1,12 +1,25 @@
 CLMSUI = CLMSUI || {};
 CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 
+/**
+*   @namespace CLMSUI.jqdialogs
+*/
 (function (obj) {
 
 	obj.errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
 
+    /**
+    *   Function to build a JQuery-UI dialog containing controls to add a new crosslinker
+    *   @memberof CLMSUI.jqdialogs
+    *   @function
+    *   @param dialogID - domID of dialog element
+    *   @param data - data to pass into multipleDigestionInternals
+    *   @param linkerPopList - data about the multiple select widget and data this dialog originated from
+    *   @param updateFunction - function in submit.js that rebuilds a multiple select widget - called after new crosslinker added
+    */
 	obj.addCrosslinkerDialog = function (dialogID, data, linkerPoplist, updateFunction) {
 
+        // function to add new crosslinker to db
 		var ajaxSubmit = function () {
 			$.ajax ({
 				type: "POST",
@@ -49,45 +62,56 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		};
 
 		var aminoAcids = [
-			{"aminoAcid": "X", "monoisotopicMass": undefined, "longName":"Everything"},
-			{"aminoAcid": "NTERM", "monoisotopicMass": undefined, "longName":"N-Terminus"},
-			{"aminoAcid": "CTERM", "monoisotopicMass": undefined, "longName":"C-Terminus"},
-			{"aminoAcid": "A", "monoisotopicMass": 71.03711, "longName":"Alanine"},
-			{"aminoAcid": "R", "monoisotopicMass": 156.10111, "longName":"Arginine"},
-			{"aminoAcid": "N", "monoisotopicMass": 114.04293, "longName":"Aspargine"},
-			{"aminoAcid": "D", "monoisotopicMass": 115.02694, "longName":"Aspartic Acid"},
-			{"aminoAcid": "C", "monoisotopicMass": 103.00919, "longName":"Cysteine"},
-			{"aminoAcid": "E", "monoisotopicMass": 129.04259, "longName":"Glutamic Acid"},
-			{"aminoAcid": "Q", "monoisotopicMass": 128.05858, "longName":"Glutamine"},
-			{"aminoAcid": "G", "monoisotopicMass": 57.02146, "longName":"Glycine"},
-			{"aminoAcid": "H", "monoisotopicMass": 137.05891, "longName":"Histidine"},
-			{"aminoAcid": "I", "monoisotopicMass": 113.08406, "longName":"Isoleucine"},
-			{"aminoAcid": "L", "monoisotopicMass": 113.08406, "longName":"Leucine"},
-			{"aminoAcid": "K", "monoisotopicMass": 128.09496, "longName":"Lysine"},
-			{"aminoAcid": "M", "monoisotopicMass": 131.04049, "longName":"Methionine"},
-			{"aminoAcid": "F", "monoisotopicMass": 147.06841, "longName":"Phenylalanine"},
-			{"aminoAcid": "P", "monoisotopicMass": 97.05276, "longName":"Proline"},
-			{"aminoAcid": "S", "monoisotopicMass": 87.03203, "longName":"Serine"},
-			{"aminoAcid": "T", "monoisotopicMass": 101.04768, "longName":"Threonine"},
-			{"aminoAcid": "W", "monoisotopicMass": 186.07931, "longName":"Tryptophan"},
-			{"aminoAcid": "Y", "monoisotopicMass": 163.06333, "longName":"Tyrosine"},
-			{"aminoAcid": "V", "monoisotopicMass": 99.06841, "longName":"Valine"}
+			{aminoAcid: "X", monoisotopicMass: undefined, longName:"Everything"},
+			{aminoAcid: "NTERM", monoisotopicMass: undefined, longName:"N-Terminus"},
+			{aminoAcid: "CTERM", monoisotopicMass: undefined, longName:"C-Terminus"},
+			{aminoAcid: "A", monoisotopicMass: 71.03711, longName:"Alanine"},
+			{aminoAcid: "R", monoisotopicMass: 156.10111, longName:"Arginine"},
+			{aminoAcid: "N", monoisotopicMass: 114.04293, longName:"Aspargine"},
+			{aminoAcid: "D", monoisotopicMass: 115.02694, longName:"Aspartic Acid"},
+			{aminoAcid: "C", monoisotopicMass: 103.00919, longName:"Cysteine"},
+			{aminoAcid: "E", monoisotopicMass: 129.04259, longName:"Glutamic Acid"},
+			{aminoAcid: "Q", monoisotopicMass: 128.05858, longName:"Glutamine"},
+			{aminoAcid: "G", monoisotopicMass: 57.02146, longName:"Glycine"},
+			{aminoAcid: "H", monoisotopicMass: 137.05891, longName:"Histidine"},
+			{aminoAcid: "I", monoisotopicMass: 113.08406, longName:"Isoleucine"},
+			{aminoAcid: "L", monoisotopicMass: 113.08406, longName:"Leucine"},
+			{aminoAcid: "K", monoisotopicMass: 128.09496, longName:"Lysine"},
+			{aminoAcid: "M", monoisotopicMass: 131.04049, longName:"Methionine"},
+			{aminoAcid: "F", monoisotopicMass: 147.06841, longName:"Phenylalanine"},
+			{aminoAcid: "P", monoisotopicMass: 97.05276, longName:"Proline"},
+			{aminoAcid: "S", monoisotopicMass: 87.03203, longName:"Serine"},
+			{aminoAcid: "T", monoisotopicMass: 101.04768, longName:"Threonine"},
+			{aminoAcid: "W", monoisotopicMass: 186.07931, longName:"Tryptophan"},
+			{aminoAcid: "Y", monoisotopicMass: 163.06333, longName:"Tyrosine"},
+			{aminoAcid: "V", monoisotopicMass: 99.06841, longName:"Valine"}
 		];
 
 		var mods = [
-			{"modification": "L", "mass": 0, "longName":"Loop"},
-			{"modification": "N", "mass": 17.026549105, "longName":"NH2"},
-			{"modification": "O", "mass": 18.0105647, "longName":"OH"},
-			{"modification": "T", "mass": 121.073893275, "longName":"TRIS"},
+			{modification: "L", mass: 0, longName:"Loop"},
+			{modification: "N", mass: 17.026549105, longName:"NH2"},
+			{modification: "O", mass: 18.0105647, longName:"OH"},
+			{modification: "T", mass: 121.073893275, longName:"TRIS"},
 		];
 
-
+        /**
+        *   Function that styles a table header as invalid if the associated selected amino acid model is empty
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        *   @param tableElems - table elements to test
+        */
 		var tablesAtLeastOneChecked = function (tableElems) {
 			tableElems.each (function (d, i) {
 				d3.select(this).select("thead").classed ("invalidTableSelection", model["acids"+(i+1)].length === 0);
 			})
 		};
 
+        /**
+        *   Function that styles a table row element according to whether it is checked or not.
+        *   The row is passed in as the context (this).
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        */
 		var rowHelperFunc = function () {
 			var chk = this.checked;
 			var row = d3.select($(this).parents("tr")[0]);
@@ -99,20 +123,27 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		var compareCrosslinkers = function () {
 		};
 
-		var parseDescription = function (description) {
-			var props = {};
+        /**
+        *   Parse a xidb crosslinker string and populate a json-like object with the results
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        *   @param description - xi crosslinker description string
+        *   @returns {object} - js object of parsed crosslinker properties
+        */
+		var parseCrossLinkerDescription = function (description) {
+			var newModel = {};
 
 			var parts = description.split(";");
 			var clink = parts[0].split(":");
 			var isSym = (clink[1].substring(0,3).toLowerCase() === "sym")
-			props.symmetric = isSym
-			props.name = clink[3];
-			props.mass = parts[1].split(":")[1];
+			newModel.symmetric = isSym
+			newModel.name = clink[3];
+			newModel.mass = parts[1].split(":")[1];
 
 			var acids1 = parts[2].split(":")[1].split(",");
 
 			var aaRegex = new RegExp ("^([A-Za-z\\*]+)+(\\(\\d*\\.?\\d*\\))?$", "");
-			props.acids1 = acids1.map (function (aa) {
+			newModel.acids1 = acids1.map (function (aa) {
 				var aaParts = aa.match(aaRegex);
 				if (aaParts) {
 					return {"AA": aaParts[1], "prob": aaParts[2] ? aaParts[2].slice(1, aaParts[2].length - 1) : undefined};
@@ -124,7 +155,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 
 			if (isSym) {
 				if (parts[3]) {
-					props.mods = parts[3].split(":")[1].split(",")
+					newModel.mods = parts[3].split(":")[1].split(",")
 						.filter (function (str, i) {
 							return i % 2 === 0;
 						})
@@ -133,7 +164,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 				}
 			} else {
 				var acids2 = parts[3].split(":")[1].split(",");
-				props.acids2 = acids2.map (function (aa) {
+				newModel.acids2 = acids2.map (function (aa) {
 					var aaParts = aa.match(aaRegex);
 					if (aaParts) {
 						return {"AA": aaParts[1], "prob": aaParts[2] ? aaParts[2].slice(1, aaParts[2].length - 1) : undefined};
@@ -145,7 +176,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			}
 
 			// if acids contain a "*" for everything, turn it into an 'X' for simplicity
-			[props.acids1, props.acids2].forEach (function (acids) {
+			[newModel.acids1, newModel.acids2].forEach (function (acids) {
 				if (acids) {
 					var everyAcid = acids.filter (function (aa) {
 						return aa.AA === "*";
@@ -157,22 +188,27 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 				}
 			});
 
-			console.log ("props", props);
+			console.log ("newModel", newModel);
 
-			return props;
+			return newModel;
 		};
 
 		var truthy = function (val) {
 			return val === 1 || val === 't' || val === 'true' || val === true;
 		}
 
-		// Copy an existing crosslinkers attributes to the new crosslinker's model
+        /**
+        *   Copy an existing crosslinker's attributes to the new crosslinker's model
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        *   @param xlinker - crosslinker object as returned from xidb
+        */
 		var pushValuesToModel = function (xlinker) {
 			model.name = "NEW_"+xlinker.name;
 			model.mass = xlinker.mass;
 			model.isDecoy = truthy(xlinker.is_decoy);
 
-			var descriptionProps = parseDescription (xlinker.description);
+			var descriptionProps = parseCrossLinkerDescription (xlinker.description);
 			model.isSym = descriptionProps.symmetric;
 			model.acids1 = descriptionProps.acids1 || [];
 			model.acids2 = descriptionProps.acids2 || [];
@@ -180,7 +216,11 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		};
 
 
-		// copy widespread changes to model (like copying from a crosslinker) to the right inputs
+        /**
+        *   Copy model values to the right inputs
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        */
 		var pushModelToInputs = function () {
 			dialogBox.select(".crosslinkerName").property("value", model.name);
 			dialogBox.select(".crosslinkerMass").property("value", model.mass);
@@ -222,6 +262,14 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			return model.name && model.mass && model.acids1.length && (model.isSym || model.acids2.length) ? true : false;
 		};
 
+        
+        /**
+        *   Turn current model data into an object suitable for xidb submission.
+        *   Most of this is building the description string from the model fields.
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        *   @returns {object} - js object of crosslinker properties suitable for xidb submission
+        */
 		var submissionReadyOutput = function () {
 
 			var crosslinker = $.extend ({}, model);
@@ -274,6 +322,13 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		};
 
 
+        /**
+        *   Build a multipleselect widget constructed from current crosslinker objects
+        *   On selection will push that crosslinkers properties to current model and then to inputs
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        *   @param container - d3 selection of container to build this widget in
+        */
 		var addCrosslinkerBaseOptions = function (container) {
 			var baseBox = container.append("div").attr("class", "givens");
 			var baseSelect = baseBox.append("label")
@@ -386,6 +441,13 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 
 		var tableDiv = dialogBox.append("div").attr("class", "aminoAcids");
 
+        /**
+        *   Add two side-by-side amino acid tables to widget.
+        *   Selecting rows in tables will add/remove data to corresponding acids property in model.
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        *   @param container - d3 selection of container to build this widget in
+        */
 		var makeAminoAcidTables = function (container) {
 			var symmetries = ["Symmetric", "Asymmetric"];
 
@@ -486,7 +548,13 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		makeAminoAcidTables (tableDiv);
 
 
-		// Make modification table
+        /**
+        *   Add a modification table to widget
+        *   Selecting rows in tables will add/remove data to corresponding mods property in model.
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        *   @param container - d3 selection of container to build this widget in
+        */
 		var makeModTable = function (container) {
 
 			var modDiv = container

@@ -13,6 +13,16 @@
 /*global $, window, navigator, blueimp */
 
 var submitter = submitter || {};
+/**
+*   BlueImp uploader function.
+*   Passed in options object has keys corresponding to IDs of DOM elements of class "fileupload".
+*   These keys point to objects with properties fileTypes, maxFileSize, maxNumberOfFiles which are used to set
+*   limits (per fileupload widget) on the files which can be uploaded
+*   @namespace submitter
+*   @module submitter
+*   @function
+*   @param myOptions - options
+*/
 submitter.upload = function (myOptions) {
     'use strict';
 
@@ -58,24 +68,4 @@ submitter.upload = function (myOptions) {
             '/cors/result.html?%s'
         )
     );
-
-
-    // Load existing files:
-    /*
-    $('#fileupload').addClass('fileupload-processing');
-    $.ajax({
-        // Uncomment the following to send cross-domain cookies:
-        //xhrFields: {withCredentials: true},
-        url: $('#fileupload').fileupload('option', 'url'),
-        dataType: 'json',
-        context: $('#fileupload')[0]
-    }).always(function () {
-        $(this).removeClass('fileupload-processing');
-    }).done(function (result) {
-        $(this).fileupload('option', 'done')
-        .call(this, null, {
-            result: result
-        });
-    });
-    */
 };

@@ -1,19 +1,38 @@
 CLMSUI = CLMSUI || {};
 CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 
+/**
+*   @namespace CLMSUI.jqdialogs
+*/
 (function (obj) {
 
 	obj.errorDateFormat = d3.time.format ("%-d-%b-%Y %H:%M:%S %Z");
 
 	obj.digestCounter = 0;
 
+    /**
+    *   Function to make JQuery-UI dialog containing sequential digestion panel
+    *   Currently not used
+    *   @memberof CLMSUI.jqdialogs
+    *   @function
+    *   @param dialogID - domID of dialog element
+    *   @param data - data to pass into multipleDigestionInternals
+    *   @param defaults - defaults to pass into multipleDigestionInternals
+    */
 	obj.multipleDigestionDialog = function (dialogID, data, defaults) {
 		var dialog = obj.addStuffDialog (dialogID, "", "Define Sequential Digestion", "OK", "Cancel", function() {} /*ajaxSubmit*/);
 		dialog.dialog ("option", "width", 600);
 		obj.multipleDigestionInternals (d3.select(dialog[0]), data, defaults);
 	};
 
-
+    /**
+    *   Function to make JQuery-UI accordion containing sequential digestion panel
+    *   @memberof CLMSUI.jqdialogs
+    *   @function
+    *   @param dialogID - domID of dialog element
+    *   @param data - data to pass into multipleDigestionInternals
+    *   @param defaults - defaults to pass into multipleDigestionInternals
+    */
 	obj.makeMultiDigestAccordion = function (containerID, data, defaults, updateFunction) {
 		d3.select("#"+containerID)
 			.append("div")
@@ -36,6 +55,15 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 	};
 
 
+    /**
+    *   Function to make sequential digestion panel and widgets
+    *   @memberof CLMSUI.jqdialogs
+    *   @function
+    *   @param container - d3 selection of container to build panel in
+    *   @param data - data to pass into makeMultiDigestAccordion
+    *   @param defaults - defaults for new digestion step with properties mc, missed cleavages, and enzymeID, the enzyme id
+    *   @param extFuncs - object holding external functions to launch at certain points - notably buildMultipleSelect and revertFunc from submitSearch.js
+    */
 	obj.multipleDigestionInternals = function (container, data, defaults, extFuncs) {
 
 		container.style ("overflow", "visible");
@@ -48,7 +76,15 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			return str !== null && str !== "";
 		};
 
-		obj.addNewDigestItem = function (did, enzymeId, localmc) {
+        /**
+        *   Add new digest step widget
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        *   @param did - id value to distinguish this step from others (usually sequential numbers)
+        *   @param enzymeId - id of initial enzyme selection
+        *   @param localmc - initial local missed cleavages value for this step
+        */
+		obj.addNewDigestStep = function (did, enzymeId, localmc) {
 			console.log ("mc", localmc, defaults.mc);
 			var digestion = digestionList.append("li")
 				.attr("id", "digest"+did)
@@ -129,7 +165,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			.attr("class", "addNewDigestion")
 			.text("Add New Digestion Step")
 			.on ("click", function () {
-				obj.addNewDigestItem (obj.digestCounter++, defaults.enzymeId, defaults.mc);
+				obj.addNewDigestStep (obj.digestCounter++, defaults.enzymeId, defaults.mc);
 				cantDeleteWhenOnlyOne();
 			})
 			.each (function() {
@@ -152,6 +188,11 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		var digestionList = container.append("ul").attr("class", "sortable digestionList");
 		$(digestionList.node()).sortable({disabled: true}).disableSelection();
 
+        /**
+        *   Function to remove delete and sort options when only one digestion step is specified
+        *   @memberof CLMSUI.jqdialogs
+        *   @function
+        */
 		var cantDeleteWhenOnlyOne = function () {
 			var digestItems = digestionList.selectAll("li.digestItem");
 			var isSingleItem = (digestItems.size() === 1);
@@ -162,7 +203,13 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		container.select(".addNewDigestion").node().click();
 	};
 	
-	
+    /**
+    *   Function that generates a xisearch multiple digestion string from the contents of the accordion
+    *   @memberof CLMSUI.jqdialogs
+    *   @function
+    *   @param container - d3 selection of container that sequential digestion widget is in
+    *   @returns {string} - digestion string in a format recognisable by xi search
+    */
 	obj.generateMultipleDigestionString = function (container) {
 		var digests = [];
 		container.selectAll("li.digestItem").each (function () {
@@ -186,7 +233,14 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 		return string;
 	};
 	
-	
+    /**
+    *   Function that constructs a populated multiple digestion widget from a xiDB digestion string
+    *   @memberof CLMSUI.jqdialogs
+    *   @function
+    *   @param container - d3 selection of container to build panel in
+    *   @param multiDigestionString  - xiDB/search format digestion string
+    *   @param enzymes - array of enzyme objects as returned from xiDB
+    */
 	obj.populateMultipleDigestion = function (container, multiDigestionString, enzymes) {
 		container.selectAll("li.digestItem").remove();
 		
@@ -201,7 +255,7 @@ CLMSUI.jqdialogs = CLMSUI.jqdialogs || {};
 			}
 
 			var enzymeID = enzymeNameMap.get(name) ? enzymeNameMap.get(name).id : null;
-			obj.addNewDigestItem (i, enzymeID, missedCleavages);
+			obj.addNewDigestStep (i, enzymeID, missedCleavages);
 		});	
 		
 		obj.digestCounter = digestionStrings.length;

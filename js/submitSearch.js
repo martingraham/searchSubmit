@@ -436,7 +436,7 @@ CLMSUI.buildSubmitSearch = function () {
 			;	
 		};
 		
-		// construct select elements and then make multiple select dropdowns (using multiple-select.js) from supplied data (populationOptionLists)
+		// construct select elements and then make multiple select dropdowns (using multiple-select.js) from supplied data (populateOptionLists)
 		// Multiple Select elements need [] appended to name attr, see http://stackoverflow.com/questions/11616659/post-values-from-a-multiple-select
 		function makeMultipleSelectionElements (populateOptionLists, newButtonsShouldBeVisible) {
 			populateOptionLists.forEach (function (poplist) {
@@ -1161,13 +1161,13 @@ CLMSUI.buildSubmitSearch = function () {
 							
                             if (uploadSuccess) {
                                 var privateElem = d3.select(formid).select(".privacy");
-                                var private = privateElem.empty() ? false : privateElem.property("checked");
+                                var isPrivateSearch = privateElem.empty() ? false : privateElem.property("checked");
                                 var formData = {
                                     name: d3.select(textinputid).property("value"),
                                     filenames: filesUploaded,
                                     type: type,
                                     tabID: getTabSessionVar(),
-                                    private: private,
+                                    isPrivateSearch: isPrivateSearch,
                                 };
                                 
                                 $.ajax ({
