@@ -51,7 +51,7 @@ error_log (print_r ($data, true));
 
 $allUserFieldsMap = array_merge ($paramFieldNameMap, $paramLinkTableMap);
 
-$privacy = (isset($data["privateSearch"]) && $data["privateSearch"]) ? 1 : 0;    // convert presence of privacy field into 1 or 0 that can be used in database query as boolean field
+$isPrivateSearch = (isset($data["privateSearch"]) && $data["privateSearch"]) ? 1 : 0;    // convert presence of privacy field into 1 or 0 that can be used in database query as boolean field
 
 // Check everything necessary is in the bag
 $allGood = true;
@@ -168,7 +168,7 @@ if ($allGood) {
 			$searchName = ($data["searchName"] ? $data["searchName"] : $paramName);
 			$searchInsert = pg_prepare ($dbconn, "searchInsert", $preparedStatementTexts["newSearch"]);
 			
-			$result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $data["notes"], $privacy, $data["xiversion"]]);
+			$result = pg_execute ($dbconn, "searchInsert", [$paramid, $userGroupId, $searchName, $userID, $data["notes"], $isPrivateSearch, $data["xiversion"]]);
 			$searchRow = pg_fetch_assoc ($result); // get the newly added search id
 			$searchid = $searchRow["id"];
 
