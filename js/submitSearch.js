@@ -1525,7 +1525,7 @@ CLMSUI.buildSubmitSearch = function () {
         };
 
         var numberSetFunc = function (domElem, value) {
-            $(domElem).spinner("value", value);
+            $(domElem).spinner( "option", "step", 0.01 ).spinner("value", value);
         };
 
         var jquerySelectSetFunc = function (domElem, value) {
