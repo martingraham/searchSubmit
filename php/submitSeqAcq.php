@@ -19,6 +19,9 @@ $allGood = true;
 
 foreach ($paramFieldNameMap as $key => $value) {
 	$arrval = $_POST[$key];
+                if (!is_array ($arrval)) {
+                        $arrval = array($arrval);   // single item array
+                }
 	$count = count($arrval);
 	if (($count == 0 || ($count == 1 && strlen($arrval[0]) == 0)) && $value["required"] == true) {
 		$allGood = false;

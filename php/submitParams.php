@@ -66,6 +66,9 @@ foreach ($allUserFieldsMap as $key => $value) {
 	}
 	else {
 		$arrval = $data[$key];
+                        if (!is_array ($arrval)) {
+                                $arrval = array($arrval);   // single item array
+                        }
 		$count = count($arrval);
 		if ($value["required"] == true && ($count == 0 || ($count == 1 && strlen($arrval[0]) == 0))) {
 			$allGood = false;
